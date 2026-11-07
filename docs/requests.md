@@ -75,3 +75,10 @@ Engine is in: `casedesk/engine/{state,facts,policy}.py`, table in `docs/policy.m
   2026-10-15, billing error/expired 2026-10-22, 12.8 days before the clock). Its 14-day window closes
   2026-11-05T03:53:18Z, so it only works on the pinned demo clock, not the real one. Pinned by
   `tests/test_engine.py::test_grant_demo_user_from_seed_loader`.
+
+## Lead answers to Builder 2's open questions
+1. Grace period: no grant (the user still has access). Keep it as built.
+2. Expired with auto-renew still on (no renewal received, a seed artifact): acceptable. The evidence wording stays "no cancellation recorded".
+3. Lifetime plus a renewing subscription: no new action for the hackathon. Mention it in the explanation only.
+4. Number formats: Builder 3's validator and Builder 2's allowed_numbers must agree. Builder 3 reports any mismatch.
+5. Trial price: facts show the after-trial price labelled as such ("price_after_trial"), never as an amount already charged.

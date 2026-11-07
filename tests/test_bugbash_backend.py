@@ -215,10 +215,15 @@ def test_grant_failure_marks_failed_and_user_can_ask_again(app_and_mock):
     assert r.status_code == 502
     a = c.get("/api/approvals", headers=CON).json()["approvals"][0]
     assert a["status"] == "failed" and "503" in a["result"]["error"]
-    assert c.post(f"/api/approvals/{d['approval_id']}/approve", headers=CON).status_code == 409
+    # Round 2 retry contract (Builder 4, O6): a failed approval stays open. Asking again reuses it and the user is
+    # told it's still under review; the console can retry it, and the retry calls Adapty again.
+    d2 = chat(c, GRANT_USER).json()
+    assert d2["pending_approval"] and d2["approval_id"] == d["approval_id"]
+    assert c.post(f"/api/approvals/{d['approval_id']}/approve", headers=CON).status_code == 502   # still down
     flaky.fail["grant"] = None
-    d2 = chat(c, GRANT_USER).json()   # a failed grant does not use up the 90-day allowance
-    assert d2["approval_id"] and d2["approval_id"] != d["approval_id"]
+    r = c.post(f"/api/approvals/{d['approval_id']}/approve", headers=CON)
+    assert r.status_code == 200 and r.json()["approval"]["status"] == "approved"
+    assert c.post(f"/api/approvals/{d['approval_id']}/approve", headers=CON).status_code == 409
 
 
 def test_concurrent_approve_grants_once_and_expiry_follows_clock(client):

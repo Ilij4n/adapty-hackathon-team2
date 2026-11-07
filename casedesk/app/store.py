@@ -156,24 +156,27 @@ class Store:
         return out
 
     # ------------------------------------------------------------------ approvals
+    # Approval timestamps take `at` from the caller: the engine's clock (CASEDESK_NOW in demo), so the 90-day grant
+    # rule compares like with like. Everything else is stamped with the real clock.
     def create_approval(self, case_id: str, customer_user_id: str, access_level_id: str, days: int | None,
-                        expires_at: str | None) -> str:
+                        expires_at: str | None, at: str | None = None) -> str:
         aid = "a_" + uuid.uuid4().hex[:10]
         self._x("INSERT INTO approvals(id, case_id, customer_user_id, access_level_id, days, expires_at, status,"
                 " created_at) VALUES (?,?,?,?,?,?,?,?)",
-                (aid, case_id, customer_user_id, access_level_id, days, expires_at, "pending", now_iso()))
+                (aid, case_id, customer_user_id, access_level_id, days, expires_at, "pending", at or now_iso()))
         return aid
 
     def create_approval_once(self, case_id: str, customer_user_id: str, access_level_id: str, days: int | None,
-                             expires_at: str | None) -> tuple[str, bool]:
-        """(approval id, created?): the user's pending approval if there is one, else a new one. Atomic, so two
+                             expires_at: str | None, at: str | None = None) -> tuple[str, bool]:
+        """(approval id, created?): the user's open (pending or failed) approval if there is one, else a new one. Atomic, so two
         concurrent chats from one user cannot both create a pending grant."""
         with self._lock:
-            rows = self._all("SELECT id FROM approvals WHERE customer_user_id=? AND status='pending' "
+            # A failed grant (Adapty error) is still an open request the team can retry: reuse it too.
+            rows = self._all("SELECT id FROM approvals WHERE customer_user_id=? AND status IN ('pending', 'failed') "
                              "ORDER BY created_at DESC LIMIT 1", (customer_user_id,))
             if rows:
                 return rows[0]["id"], False
-            return self.create_approval(case_id, customer_user_id, access_level_id, days, expires_at), True
+            return self.create_approval(case_id, customer_user_id, access_level_id, days, expires_at, at), True
 
     def get_approval(self, aid: str) -> dict | None:
         rows = self._all("SELECT * FROM approvals WHERE id=?", (aid,))
@@ -194,10 +197,12 @@ class Store:
         return [self._decode_appr(r) for r in self._all(
             "SELECT * FROM approvals WHERE case_id=? ORDER BY created_at", (case_id,))]
 
-    def decide_approval(self, aid: str, status: str, result: dict | None = None) -> bool:
-        """Atomically move a pending approval to a final status. False if it was not pending."""
-        cur = self._x("UPDATE approvals SET status=?, decided_at=?, result=? WHERE id=? AND status='pending'",
-                      (status, now_iso(), self._j(result or {}), aid))
+    def decide_approval(self, aid: str, status: str, result: dict | None = None, at: str | None = None,
+                        from_statuses: tuple[str, ...] = ("pending",)) -> bool:
+        """Atomically move an approval in one of `from_statuses` (default: pending) to `status`. False otherwise."""
+        marks = ",".join("?" * len(from_statuses))
+        cur = self._x(f"UPDATE approvals SET status=?, decided_at=?, result=? WHERE id=? AND status IN ({marks})",
+                      (status, at or now_iso(), self._j(result or {}), aid, *from_statuses))
         return cur.rowcount == 1
 
     def set_approval_result(self, aid: str, status: str, result: dict) -> None:

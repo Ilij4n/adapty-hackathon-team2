@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import ipaddress
 import os
 import secrets
 
@@ -13,10 +14,57 @@ def demo_mode() -> bool:
     return os.environ.get("CASEDESK_DEMO", "").strip().lower() in ("1", "true", "yes")
 
 
+DEMO_SIGNING_SECRET = "casedesk-demo-signing-secret"
+DEMO_CONSOLE_TOKEN = "demo-console"
+
+
+def _flag(name: str) -> bool:
+    return os.environ.get(name, "").strip().lower() in ("1", "true", "yes")
+
+
+def public_mode() -> bool:
+    """CASEDESK_PUBLIC=1: reachable from the internet. Real secrets required, no console auto-cookie."""
+    return _flag("CASEDESK_PUBLIC")
+
+
+def check_public_config() -> None:
+    """Refuse to start a public instance with missing or built-in default secrets."""
+    if not public_mode():
+        return
+    problems = []
+    if os.environ.get("APP_SIGNING_SECRET", "") in ("", DEMO_SIGNING_SECRET):
+        problems.append("APP_SIGNING_SECRET is unset or the built-in demo default")
+    if os.environ.get("CONSOLE_TOKEN", "") in ("", DEMO_CONSOLE_TOKEN):
+        problems.append("CONSOLE_TOKEN is unset or the built-in demo default")
+    if problems:
+        raise RuntimeError("CASEDESK_PUBLIC=1 but " + "; ".join(problems) + ". Set real values.")
+
+
+# Loopback is checked separately. Python's `is_private` also covers documentation/reserved ranges, so be explicit.
+_LAN_NETS = [ipaddress.ip_network(n) for n in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "169.254.0.0/16",
+                                               "100.64.0.0/10", "fc00::/7", "fe80::/10")]
+
+
+def console_autocookie_allowed(client_host: str | None) -> bool:
+    """May GET /console pre-authorise this browser? Only in demo mode, never when public, and only for loopback /
+    private-LAN clients unless CASEDESK_CONSOLE_AUTOCOOKIE=1 says so explicitly."""
+    if not demo_mode() or public_mode():
+        return False
+    if _flag("CASEDESK_CONSOLE_AUTOCOOKIE"):
+        return True
+    try:
+        ip = ipaddress.ip_address((client_host or "").split("%")[0])
+    except ValueError:
+        return client_host == "testclient"  # Starlette's TestClient
+    if getattr(ip, "ipv4_mapped", None):
+        ip = ip.ipv4_mapped
+    return ip.is_loopback or any(ip in net for net in _LAN_NETS if net.version == ip.version)
+
+
 def _secret() -> bytes:
     s = os.environ.get("APP_SIGNING_SECRET", "")
-    if not s and demo_mode():
-        s = "casedesk-demo-signing-secret"
+    if not s and demo_mode() and not public_mode():
+        s = DEMO_SIGNING_SECRET
     return s.encode()
 
 
@@ -44,8 +92,8 @@ def verify(customer_user_id: str, signature: str | None) -> bool:
 
 def console_token() -> str:
     tok = os.environ.get("CONSOLE_TOKEN", "")
-    if not tok and demo_mode():
-        tok = "demo-console"
+    if not tok and demo_mode() and not public_mode():
+        tok = DEMO_CONSOLE_TOKEN
     return tok
 
 

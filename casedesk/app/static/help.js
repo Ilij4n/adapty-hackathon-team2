@@ -7,7 +7,7 @@
   const qs = new URLSearchParams(location.search);
 
   const S = {
-    lang: "en", user: null, sig: null, locale: null, caseId: null, busy: false, gen: 0,
+    lang: "en", user: null, sig: null, locale: null, caseId: null, busy: false, gen: 0, inflight: null,
     approvals: {}, approvalTimer: null, demoUsers: [], lastStatus: null,
   };
   const t = () => I[S.lang] || I.en;
@@ -99,7 +99,7 @@
     b.onclick = () => { ol.hidden = !ol.hidden; b.setAttribute("aria-expanded", String(!ol.hidden)); if (!ol.hidden) scrollDown(); };
     wrap.after(ol); return b;
   }
-  function renderActions(li, actions, facts) {
+  function renderActions(li, actions, facts, pendingApproval) {
     const tr = t(), A = tr.act; const store = (facts && facts.store) || "";
     const row = el("div", "actions"); li.append(row);
     const notes = [];
@@ -117,6 +117,8 @@
         default: break;
       }
     }
+    // Asked again while an earlier request is still under review: no new PROPOSE_GRANT, but say it's pending.
+    if (pendingApproval && !(actions || []).some((a) => a.kind === "PROPOSE_GRANT")) notes.push(["note grant", tr.grantNote]);
     if (!row.children.length) row.remove();
     for (const [cls, text] of notes) li.append(el("div", cls, text));
   }
@@ -124,7 +126,7 @@
     li.textContent = "";
     if (r.reply_status === "error") li.classList.add("error");
     const b = el("div", "bubble", r.reply || t().errGeneric); b.dir = "auto"; li.append(b);
-    renderActions(li, r.actions, facts || {});
+    renderActions(li, r.actions, facts || {}, r.pending_approval);
     scrollDown();
   }
 
@@ -150,11 +152,15 @@
     const typing = addTyping(); statusLoading();
     try {
       const d = await api("/api/chat", { method: "POST", body: JSON.stringify({ customer_user_id: user, signature: sig, message: text, locale: S.locale || navigator.language, case_id: S.caseId }) });
-      if (stale()) return typing.stop();
+      if (stale()) { // switched users while this POST was in flight
+        if (d.reply_status === "pending") fetch(`/api/chat/${d.message_id}/abandon?${q}`, { method: "POST" }).catch(() => {});
+        return typing.stop();
+      }
       S.caseId = d.case_id;
       renderStatus(d);
       noteApprovals(d.approvals, true);
       let r = d, misses = 0;
+      if (d.reply_status === "pending") S.inflight = { id: d.message_id, q };
       const deadline = Date.now() + 120000;
       while (r.reply_status === "pending" && Date.now() < deadline) {
         await sleep(1000);
@@ -163,6 +169,7 @@
         catch (e) { if (e.status || ++misses > 5) throw e; } // a network blip mid-poll: keep waiting for the reply
       }
       if (stale()) return typing.stop();
+      S.inflight = null;
       typing.stop();
       if (r.language) applyLang(r.language);
       if (r.reply_status === "pending") { typing.li.remove(); addMsg("bot error", t().errGeneric); }
@@ -218,6 +225,10 @@
   // ------------------------------------------------------------ identity
   async function selectUser(u) {
     stopWatch();
+    if (S.inflight) { // tell the server the old conversation was left before its reply arrived
+      const { id, q } = S.inflight; S.inflight = null;
+      fetch(`/api/chat/${id}/abandon?${q}`, { method: "POST" }).catch(() => {});
+    }
     S.user = u.customer_user_id; S.sig = u.signature; S.locale = (u.locale || "en").replace("_", "-");
     S.caseId = null; S.approvals = {}; S.lastStatus = null; S.gen++;
     S.busy = false; $("#send").disabled = false;

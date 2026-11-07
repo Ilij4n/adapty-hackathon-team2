@@ -213,6 +213,10 @@ _RULES = [
 
 def _lang(message: str, ui_locale: str) -> str:
     m = message.lower()
+    if re.search(r"[ђјљњћџ]", m):
+        return "sr-Cyrl"
+    if re.search(r"[а-я]", m):
+        return "ru"
     if re.search(r"[čćšžđ]|\b(nemam|platio|platila|zašto|kartica|telefon)\b", m):
         return "sr"
     if re.search(r"[ñ¿¡]|\b(hola|pagué|suscripción|cancelar)\b", m):
@@ -224,7 +228,7 @@ def _lang(message: str, ui_locale: str) -> str:
     return (ui_locale or "en").split("-")[0]
 
 
-def extract(message: str, ui_locale: str) -> Intent:
+def extract(message: str, ui_locale: str, history: list | None = None) -> Intent:
     m = message.lower()
     t = next((k for k, rx in _RULES if re.search(rx, m)), "STATUS_QUESTION")
     inj = bool(re.search(r"ignore (all|your|previous)|system prompt|give me premium", m))
@@ -273,11 +277,12 @@ class _Safe(dict):
         return "—"
 
 
-def reply(intent: Intent, state: CaseState, facts: FactSheet, actions: list[Action], language: str) -> Reply:
+def reply(intent: Intent, state: CaseState, facts: FactSheet, actions: list[Action], language: str,
+          history: list | None = None) -> Reply:
     t = _T.get(language, _T["en"])
     text = t.get(state.code, _T["en"].get(state.code, "Here is what I can see on your account.")).format_map(
         _Safe(facts.fields))
-    if any(a.kind == "PROPOSE_GRANT" for a in actions):
+    if any(a.kind == "PROPOSE_GRANT" for a in actions) or facts.fields.get("grant_request") == "pending":
         text += " " + t["grant"]
     return Reply(text=text, used_fallback=True, violations=[])
 

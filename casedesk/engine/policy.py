@@ -1,7 +1,10 @@
-"""Which actions a case gets: decided from (state, intent type) only (contract: ARCH.md, non-negotiable 2).
+"""Which actions a case gets: decided from (state, intent type, facts) (contract: ARCH.md, non-negotiable 2).
 
-The user's words never reach this module except as `intent.type`; claims, language and injection flags do not change
-the result. `decide()` expands a fixed table of *slots* into concrete Actions for the user's store.
+The user's words never reach this module. Only `intent.type` and a few *typed, sanitised* claims are read
+(`wants_refund: bool`, `claimed_store`/`claimed_platform`: closed enums, `claimed_amount`: digits). Free text,
+language and injection flags never change the result, and no claim can add a grant or a refund promise.
+`decide()` expands a fixed table of *slots* into concrete Actions for the user's store, then applies the fact checks
+below.
 
 Slots
   explain   EXPLAIN_STATUS
@@ -16,26 +19,58 @@ Slots
   restore   RESTORE_PURCHASES_STEPS
   payment   UPDATE_PAYMENT_METHOD
   grant     PROPOSE_GRANT, requires_approval=True, only if the ARCH grant policy allows it (see below)
-  human     ESCALATE_TO_HUMAN
+  human     ESCALATE_TO_HUMAN (reason `user_requested_human` for HUMAN_REQUEST, `privacy_request` for
+            PRIVACY_REQUEST, else `<STATE>:<INTENT>`)
+  (empty)   no actions at all (ACKNOWLEDGEMENT, OTHER_APP, THIRD_PARTY_ACCOUNT): the reply is just text
 Store links only exist for app_store / play_store: cancel / manage / payment / refund on any other store
 (stripe, adapty, unknown) become a single ESCALATE_TO_HUMAN.
 
 Decision table (rows: state; columns: intent type)
 | state | CHARGED_AFTER_CANCEL | PAID_NO_ACCESS | REFUND_REQUEST | HOW_TO_CANCEL | RESTORE_NEW_DEVICE | BILLING_FAILED | STATUS_QUESTION | OTHER |
 |---|---|---|---|---|---|---|---|---|
-| ACTIVE_RENEWING | explain! cancel refund | explain! restore | explain refund cancel | explain cancel | explain restore | explain! | explain | explain human |
-| CANCELLED_PAID_UP | charge? | explain! restore | explain refund | explain | explain restore | explain! | explain | explain human |
-| TRIAL_ACTIVE | explain! cancel | explain! restore | explain! cancel | explain cancel | explain restore | explain! | explain | explain human |
-| TRIAL_CANCELLED | explain! | explain! restore | explain! | explain | explain restore | explain! | explain | explain human |
-| GRACE_PERIOD | explain! cancel | explain! payment restore | explain refund | explain cancel | explain payment restore | explain payment | explain payment | explain human |
-| BILLING_RETRY | explain! cancel | explain payment grant | explain refund | explain cancel | explain payment grant | explain payment grant | explain payment grant | explain payment human |
-| EXPIRED_BILLING_ERROR | explain! | explain payment manage grant | explain refund | explain | explain payment manage grant | explain payment manage grant | explain payment manage grant | explain human |
-| EXPIRED_CANCELLED | charge? | explain! manage | explain refund | explain | explain manage | explain! | explain | explain human |
-| REFUNDED | explain! | explain! | explain! | explain | explain | explain | explain | explain human |
-| LIFETIME | explain! | explain! restore | explain refund | explain | explain restore | explain! | explain | explain human |
-| GRANTED_BY_DEVELOPER | explain! human | explain! restore | explain! | explain | explain restore | explain | explain | explain human |
-| FAMILY_SHARED | explain! | explain! restore | explain! | explain | explain restore | explain | explain | explain human |
-| NO_PURCHASE | explain! restore human | explain! restore human | explain human | explain manage | explain restore human | explain human | explain | explain human |
+| ACTIVE_RENEWING | explain! cancel refund | explain! restore | explain refund cancel | explain cancel | explain restore | explain! | explain | explain |
+| CANCELLED_PAID_UP | charge? | explain! restore | explain refund | explain | explain restore | explain! | explain | explain |
+| TRIAL_ACTIVE | explain! cancel | explain! restore | explain! cancel | explain cancel | explain restore | explain! | explain | explain |
+| TRIAL_CANCELLED | explain! | explain! restore | explain! | explain | explain restore | explain! | explain | explain |
+| GRACE_PERIOD | explain! cancel | explain! payment restore | explain refund | explain cancel | explain payment restore | explain payment | explain payment | explain |
+| BILLING_RETRY | explain! cancel | explain payment grant | explain refund | explain cancel | explain payment grant | explain payment grant | explain payment grant | explain |
+| EXPIRED_BILLING_ERROR | explain! | explain payment manage grant | explain refund | explain | explain payment manage grant | explain payment manage grant | explain payment manage grant | explain |
+| EXPIRED_CANCELLED | charge? | explain! manage | explain refund | explain | explain manage | explain! | explain | explain |
+| REFUNDED | explain! | explain! | explain! | explain | explain | explain | explain | explain |
+| LIFETIME | explain! | explain! restore | explain refund | explain | explain restore | explain! | explain | explain |
+| GRANTED_BY_DEVELOPER | explain! human | explain! restore | explain! | explain | explain restore | explain | explain | explain |
+| FAMILY_SHARED | explain! | explain! restore | explain! | explain | explain restore | explain | explain | explain |
+| NO_PURCHASE | explain! restore human | explain! restore human | explain human | explain manage | explain restore human | explain human | explain | explain |
+
+| state | HUMAN_REQUEST | ACKNOWLEDGEMENT | OTHER_APP | PRIVACY_REQUEST | THIRD_PARTY_ACCOUNT | DISCOUNT_REQUEST |
+|---|---|---|---|---|---|---|
+| ACTIVE_RENEWING | human | — | — | human | — | explain |
+| CANCELLED_PAID_UP | human | — | — | human | — | explain |
+| TRIAL_ACTIVE | human | — | — | human | — | explain |
+| TRIAL_CANCELLED | human | — | — | human | — | explain |
+| GRACE_PERIOD | human | — | — | human | — | explain |
+| BILLING_RETRY | human | — | — | human | — | explain grant |
+| EXPIRED_BILLING_ERROR | human | — | — | human | — | explain grant |
+| EXPIRED_CANCELLED | human | — | — | human | — | explain |
+| REFUNDED | human | — | — | human | — | explain |
+| LIFETIME | human | — | — | human | — | explain |
+| GRANTED_BY_DEVELOPER | human | — | — | human | — | explain |
+| FAMILY_SHARED | human | — | — | human | — | explain |
+| NO_PURCHASE | human | — | — | human | — | explain |
+
+Fact checks applied after the table (in this order):
+  H7 claims vs facts — for STATUS_QUESTION / CHARGED_AFTER_CANCEL / REFUND_REQUEST / PAID_NO_ACCESS: if
+     claims.claimed_store (app_store|play_store) differs from the account's store, or claims.claimed_amount is not a
+     number in the FactSheet (only checked when there is a `price`) -> the first action becomes explain! reason
+     `charge_not_found` with params store_mismatch / amount_mismatch; refund paths are dropped (that charge is not on
+     this account); a store mismatch adds ESCALATE_TO_HUMAN.
+  H4 never charged — facts.ever_charged == "no" with REFUND_REQUEST or CHARGED_AFTER_CANCEL (not FAMILY_SHARED):
+     explain! reason `nothing_charged` (`no_charge_on_account` for NO_PURCHASE / GRANTED_BY_DEVELOPER, and for
+     CHARGED_AFTER_CANCEL in CANCELLED_PAID_UP / EXPIRED_CANCELLED), and no refund path.
+  M5 charge? + claims.wants_refund — a contradicted charged-after-cancel claim still gets the store refund path when
+     the user explicitly asks for a refund (and was charged).
+  H5 restore — when the store is only guessed from the device (no purchase, no access level), RESTORE_PURCHASES_STEPS
+     uses steps_key restore_generic, unless claims.claimed_platform (ios|android) names the store.
 
 Grant policy (ARCH): PROPOSE_GRANT only when
   - state is BILLING_RETRY, or EXPIRED_BILLING_ERROR whose expiry is at most 14 days before `now`
@@ -55,13 +90,17 @@ from typing import Any, Iterable, Protocol
 from pydantic import BaseModel
 
 from casedesk.engine.facts import (GRANT_COOLDOWN_DAYS, GRANT_DAYS, MANAGE_URLS, PAYMENT_URLS, REFUND_URLS,
-                                   FactSheet, grant_access_level_id, grant_window_open)
-from casedesk.engine.state import CaseState, _utc, last_charge_at
+                                   RESTORE_KEYS, FactSheet, grant_access_level_id, grant_records, grant_window_open)
+from casedesk.engine.state import CaseState, _utc, ever_paid, last_charge_at
 
 ACTION_KINDS = ("EXPLAIN_STATUS", "MANAGE_SUBSCRIPTION_LINK", "CANCEL_STEPS", "REFUND_PATH_APPLE", "REFUND_PATH_GOOGLE",
                 "RESTORE_PURCHASES_STEPS", "UPDATE_PAYMENT_METHOD", "PROPOSE_GRANT", "ESCALATE_TO_HUMAN")
 INTENT_TYPES = ("CHARGED_AFTER_CANCEL", "PAID_NO_ACCESS", "REFUND_REQUEST", "HOW_TO_CANCEL", "RESTORE_NEW_DEVICE",
-                "BILLING_FAILED", "STATUS_QUESTION", "OTHER")
+                "BILLING_FAILED", "STATUS_QUESTION", "OTHER", "HUMAN_REQUEST", "ACKNOWLEDGEMENT", "OTHER_APP",
+                "PRIVACY_REQUEST", "THIRD_PARTY_ACCOUNT", "DISCOUNT_REQUEST")
+# Intents whose column is the same in every state except DISCOUNT_REQUEST's grant (see _UNIFORM below).
+UNIFORM_INTENTS = ("HUMAN_REQUEST", "ACKNOWLEDGEMENT", "OTHER_APP", "PRIVACY_REQUEST", "THIRD_PARTY_ACCOUNT",
+                   "DISCOUNT_REQUEST")
 
 
 class Action(BaseModel):
@@ -93,43 +132,54 @@ def _row(state: str, *cells: str) -> None:
 #                              STATUS_QUESTION            OTHER
 _row("ACTIVE_RENEWING",        "explain! cancel refund",  "explain! restore",           "explain refund cancel",
                                "explain cancel",          "explain restore",            "explain!",
-                               "explain",                 "explain human")
+                               "explain",                 "explain")
 _row("CANCELLED_PAID_UP",      "charge?",                 "explain! restore",           "explain refund",
                                "explain",                 "explain restore",            "explain!",
-                               "explain",                 "explain human")
+                               "explain",                 "explain")
 _row("TRIAL_ACTIVE",           "explain! cancel",         "explain! restore",           "explain! cancel",
                                "explain cancel",          "explain restore",            "explain!",
-                               "explain",                 "explain human")
+                               "explain",                 "explain")
 _row("TRIAL_CANCELLED",        "explain!",                "explain! restore",           "explain!",
                                "explain",                 "explain restore",            "explain!",
-                               "explain",                 "explain human")
+                               "explain",                 "explain")
 _row("GRACE_PERIOD",           "explain! cancel",         "explain! payment restore",   "explain refund",
                                "explain cancel",          "explain payment restore",    "explain payment",
-                               "explain payment",         "explain human")
+                               "explain payment",         "explain")
 _row("BILLING_RETRY",          "explain! cancel",         "explain payment grant",      "explain refund",
                                "explain cancel",          "explain payment grant",      "explain payment grant",
-                               "explain payment grant",   "explain payment human")
+                               "explain payment grant",   "explain")
 _row("EXPIRED_BILLING_ERROR",  "explain!",                "explain payment manage grant", "explain refund",
                                "explain",                 "explain payment manage grant", "explain payment manage grant",
-                               "explain payment manage grant", "explain human")
+                               "explain payment manage grant", "explain")
 _row("EXPIRED_CANCELLED",      "charge?",                 "explain! manage",            "explain refund",
                                "explain",                 "explain manage",             "explain!",
-                               "explain",                 "explain human")
+                               "explain",                 "explain")
 _row("REFUNDED",               "explain!",                "explain!",                   "explain!",
                                "explain",                 "explain",                    "explain",
-                               "explain",                 "explain human")
+                               "explain",                 "explain")
 _row("LIFETIME",               "explain!",                "explain! restore",           "explain refund",
                                "explain",                 "explain restore",            "explain!",
-                               "explain",                 "explain human")
+                               "explain",                 "explain")
 _row("GRANTED_BY_DEVELOPER",   "explain! human",          "explain! restore",           "explain!",
                                "explain",                 "explain restore",            "explain",
-                               "explain",                 "explain human")
+                               "explain",                 "explain")
 _row("FAMILY_SHARED",          "explain!",                "explain! restore",           "explain!",
                                "explain",                 "explain restore",            "explain",
-                               "explain",                 "explain human")
+                               "explain",                 "explain")
 _row("NO_PURCHASE",            "explain! restore human",  "explain! restore human",     "explain human",
                                "explain manage",          "explain restore human",      "explain human",
-                               "explain",                 "explain human")
+                               "explain",                 "explain")
+
+# The six newer intents: same cells for every state, except DISCOUNT_REQUEST may carry a grant where one is already
+# eligible (BILLING_RETRY / EXPIRED_BILLING_ERROR). Never `human` for a discount ask.
+_UNIFORM = {"HUMAN_REQUEST": "human", "ACKNOWLEDGEMENT": "", "OTHER_APP": "", "PRIVACY_REQUEST": "human",
+            "THIRD_PARTY_ACCOUNT": "", "DISCOUNT_REQUEST": "explain"}
+for _state, _cells in TABLE.items():
+    for _intent, _cell in _UNIFORM.items():
+        if _intent == "DISCOUNT_REQUEST" and _state in ("BILLING_RETRY", "EXPIRED_BILLING_ERROR"):
+            _cell = "explain grant"
+        _cells[_intent] = tuple(_cell.split())
+_HUMAN_REASONS = {"HUMAN_REQUEST": "user_requested_human", "PRIVACY_REQUEST": "privacy_request"}
 
 # Why the claim is contradicted, per (state, intent) where the slot is explain! — handed to the composer as a key.
 _CONTRADICTION = {
@@ -171,46 +221,84 @@ def charge_after_cancel(state: CaseState) -> bool | None:
     return charged is not None and charged > _utc(s.unsubscribed_at)
 
 
-def _parse_dt(v: Any) -> datetime | None:
-    if v is None or v == "":
-        return None
-    if isinstance(v, datetime):
-        return _utc(v)
-    try:
-        return _utc(datetime.fromisoformat(str(v).replace("Z", "+00:00")))
-    except ValueError:
-        return None
-
-
-def recent_grant(history: Iterable[Any] | None, now: datetime) -> bool:
-    """Was a grant approved or still pending for this user within the cooldown window?
-
-    Accepts the app's case records ({"created_at", "approval": {"status", "decided_at", ...}}) and, for convenience,
-    flat records ({"kind": "PROPOSE_GRANT", "status", "at"/"created_at"}) or Action-like objects.
-    Denied proposals do not count (no access was given)."""
+def recent_grant(history: Iterable[Any] | None, now: datetime, statuses=("pending", "approved")) -> bool:
+    """Was a grant with one of `statuses` recorded for this user within the 90-day cooldown? Denied (and failed)
+    proposals never count. A record without any timestamp counts (conservative)."""
     cutoff = _utc(now) - timedelta(days=GRANT_COOLDOWN_DAYS)
-    for h in history or []:
-        rec = h if isinstance(h, dict) else getattr(h, "__dict__", {})
-        appr = rec.get("approval")
-        if isinstance(appr, dict):
-            status = appr.get("status")
-            when = max(filter(None, [_parse_dt(appr.get("decided_at")), _parse_dt(rec.get("created_at"))]),
-                       default=None)
-        elif rec.get("kind") in ("PROPOSE_GRANT", "GRANT"):
-            status = rec.get("status", "pending")
-            when = _parse_dt(rec.get("at") or rec.get("created_at") or rec.get("decided_at"))
-        else:
-            continue
-        if status not in ("pending", "approved"):
-            continue
-        if when is None or when >= cutoff:   # unknown time: be conservative, count it
-            return True
-    return False
+    return any(st in statuses and (when is None or when >= cutoff) for st, when in grant_records(history))
 
 
 def grant_eligible(state: CaseState, facts: FactSheet, history, now: datetime | None = None) -> bool:
     now = _utc(now or facts.as_of or datetime.now(timezone.utc))
     return grant_window_open(state, now) and not recent_grant(history, now)
+
+
+def grant_recheck(state: CaseState, facts: FactSheet, history, now: datetime | None = None) -> tuple[bool, str]:
+    """Approve-time re-check (bug bash O4). Call with a FRESH state/facts (re-classified at approval time) and the
+    user's history. Pending requests are ignored (the one being approved is pending itself); an approved grant in
+    the last 90 days, a closed window, a state change (e.g. the user resubscribed) or a never-paid subscription all
+    block. Returns (ok, reason) with reason in {ok, state_changed, window_closed, never_paid, granted_recently}."""
+    now = _utc(now or facts.as_of or datetime.now(timezone.utc))
+    if state.code not in ("BILLING_RETRY", "EXPIRED_BILLING_ERROR"):
+        return False, "state_changed"
+    if state.primary is None or not ever_paid(state.primary):
+        return False, "never_paid"
+    if not grant_window_open(state, now):
+        return False, "window_closed"
+    if recent_grant(history, now, statuses=("approved",)):
+        return False, "granted_recently"
+    return True, "ok"
+
+
+def grant_still_eligible(state: CaseState, facts: FactSheet, history, now: datetime | None = None) -> bool:
+    """Boolean form of `grant_recheck` for the app's approve endpoint."""
+    return grant_recheck(state, facts, history, now)[0]
+
+
+# --------------------------------------------------------------------------- claims (typed, sanitised only)
+
+_CHARGE_TOPICS = {"STATUS_QUESTION", "CHARGED_AFTER_CANCEL", "REFUND_REQUEST", "PAID_NO_ACCESS"}
+_PLATFORM_STORE = {"ios": "app_store", "android": "play_store"}
+
+
+def _claims(intent: Any) -> dict:
+    c = intent.get("claims") if isinstance(intent, dict) else getattr(intent, "claims", None)
+    return c if isinstance(c, dict) else {}
+
+
+def claim_mismatch(claims: dict, facts: FactSheet, intent_type: str) -> tuple[bool, bool]:
+    """(store_mismatch, amount_mismatch) — same rule as casedesk.ai.templates.charge_claim_mismatch (copied, the
+    engine must not import ai): a claimed app_store/play_store that differs from the account's store, or a claimed
+    amount that is none of the FactSheet's numbers (only checked when the sheet has a `price`)."""
+    if intent_type not in _CHARGE_TOPICS:
+        return False, False
+    store = facts.fields.get("store")
+    cs = claims.get("claimed_store")
+    store_mm = bool(cs in ("app_store", "play_store") and store in ("app_store", "play_store") and cs != store)
+    amt = claims.get("claimed_amount")
+    amount_mm = False
+    if isinstance(amt, str) and amt and facts.fields.get("price"):
+        variants = {amt, amt.replace(".", ",")}
+        if "." in amt and amt.split(".")[1].strip("0") == "":
+            variants.add(amt.split(".")[0])
+        amount_mm = not (variants & {str(x) for x in facts.allowed_numbers})
+    return store_mm, amount_mm
+
+
+def _never_charged_reason(state_code: str, itype: str) -> str:
+    if state_code in ("NO_PURCHASE", "GRANTED_BY_DEVELOPER"):
+        return "no_charge_on_account"
+    if itype == "CHARGED_AFTER_CANCEL" and state_code in ("CANCELLED_PAID_UP", "EXPIRED_CANCELLED"):
+        return "no_charge_on_account"   # B1: a trial cancelled before it converted
+    return "nothing_charged"
+
+
+def _explain(state: CaseState, contradicted: bool, reason: str | None = None, **extra) -> Action:
+    params: dict = {"state": state.code, "claim_contradicted": contradicted}
+    if reason:
+        params["reason"] = reason
+    params.update(extra)
+    return Action(kind="EXPLAIN_STATUS", params=params)
 
 
 def _store_actions(slot: str, store: str | None) -> list[Action]:
@@ -239,25 +327,52 @@ def slots_for(state_code: str, intent_type: str) -> tuple[str, ...]:
 
 def decide(state: CaseState, intent: IntentLike | str, facts: FactSheet, history=None,
            now: datetime | None = None) -> list[Action]:
-    """Actions for this case. `intent` may be an Intent (uses only `.type`) or the type string; unknown types are
-    treated as OTHER. `now` defaults to facts.as_of. Pure function of (state, intent type, facts, history)."""
+    """Actions for this case. `intent` may be an Intent (uses `.type` and the typed claims listed in the module
+    docstring) or the type string; unknown types are treated as OTHER. `now` defaults to facts.as_of."""
     itype = intent if isinstance(intent, str) else getattr(intent, "type", "OTHER")
     itype = str(getattr(itype, "value", itype))
     if itype not in INTENT_TYPES:
         itype = "OTHER"
+    claims = {} if isinstance(intent, str) else _claims(intent)
     now = _utc(now or facts.as_of or datetime.now(timezone.utc))
     store = facts.fields.get("store") or (state.primary.store if state.primary else None)
+    never_charged = facts.fields.get("ever_charged") == "no" and state.code != "FAMILY_SHARED"
 
     slots = list(slots_for(state.code, itype))
     if slots == ["charge?"]:
         after = charge_after_cancel(state)
-        slots = ["explain", "refund", "human"] if after else ["explain!"]
+        if after:
+            slots = ["explain", "refund", "human"]
+        else:
+            slots = ["explain!"]
+            if claims.get("wants_refund") is True and not never_charged:   # M5
+                slots.append("refund")
+
+    # H4: nothing was ever charged -> say so, never send them to a refund form.
+    h4_reason = None
+    if never_charged and itype in ("REFUND_REQUEST", "CHARGED_AFTER_CANCEL"):
+        h4_reason = _never_charged_reason(state.code, itype)
+        slots = [("explain!" if sl == "explain" else sl) for sl in slots if sl != "refund"]
+
+    # H7: the claimed charge is not this account's.
+    store_mm, amount_mm = claim_mismatch(claims, facts, itype)
+    if store_mm or amount_mm:
+        slots = [("explain!" if sl == "explain" else sl) for sl in slots if sl != "refund"]
+        if store_mm and "human" not in slots:
+            slots.append("human")
 
     out: list[Action] = []
     for slot in slots:
         if slot == "explain":
-            out.append(Action(kind="EXPLAIN_STATUS", params={"state": state.code, "claim_contradicted": False}))
+            out.append(_explain(state, False))
         elif slot == "explain!":
+            if store_mm or amount_mm:
+                out.append(_explain(state, True, "charge_not_found", store_mismatch=store_mm,
+                                    amount_mismatch=amount_mm))
+                continue
+            if h4_reason:
+                out.append(_explain(state, True, h4_reason))
+                continue
             reason = _contradiction_reason(state.code, itype)
             if itype == "CHARGED_AFTER_CANCEL" and state.code in ("CANCELLED_PAID_UP", "EXPIRED_CANCELLED"):
                 if state.primary is not None and last_charge_at(state.primary) is None:
@@ -265,21 +380,27 @@ def decide(state: CaseState, intent: IntentLike | str, facts: FactSheet, history
                 else:
                     reason = ("charged_before_cancel" if charge_after_cancel(state) is False
                               else "no_cancellation_recorded")
-            out.append(Action(kind="EXPLAIN_STATUS", params={"state": state.code, "claim_contradicted": True,
-                                                             "reason": reason}))
+            out.append(_explain(state, True, reason))
         elif slot in _STORE_SLOTS:
             out.extend(_store_actions(slot, store))
         elif slot == "restore":
-            out.append(Action(kind="RESTORE_PURCHASES_STEPS",
-                              params={"store": store or "unknown",
-                                      "steps_key": facts.fields.get("restore_steps_key", "restore_generic")}))
+            guessed = state.primary is None and state.access_level is None
+            rstore, key = store or "unknown", facts.fields.get("restore_steps_key", "restore_generic")
+            if guessed:
+                rstore, key = "unknown", "restore_generic"
+                claimed = _PLATFORM_STORE.get(str(claims.get("claimed_platform") or claims.get("platform") or "")
+                                              .lower())
+                if claimed:
+                    rstore, key = claimed, RESTORE_KEYS[claimed]
+            out.append(Action(kind="RESTORE_PURCHASES_STEPS", params={"store": rstore, "steps_key": key}))
         elif slot == "grant":
             if grant_eligible(state, facts, history, now):
                 out.append(Action(kind="PROPOSE_GRANT", requires_approval=True, params={
                     "access_level_id": grant_access_level_id(state), "days": GRANT_DAYS,
                     "expires_at": (now + timedelta(days=GRANT_DAYS)).isoformat(), "reason": state.code}))
         elif slot == "human":
-            out.append(Action(kind="ESCALATE_TO_HUMAN", params={"reason": f"{state.code}:{itype}"}))
+            out.append(Action(kind="ESCALATE_TO_HUMAN",
+                              params={"reason": _HUMAN_REASONS.get(itype, f"{state.code}:{itype}")}))
         else:  # pragma: no cover - table typo
             raise ValueError(f"unknown slot {slot}")
 
@@ -295,9 +416,15 @@ def decide(state: CaseState, intent: IntentLike | str, facts: FactSheet, history
 
 
 def render_table() -> str:
-    """The decision table as markdown (docs/policy.md embeds exactly this; a test keeps them in sync)."""
-    lines = ["| state | " + " | ".join(_C) + " |", "|---" * (len(_C) + 1) + "|"]
+    """The decision table as markdown (docs/policy.md and this module's docstring embed exactly this; a test keeps
+    them in sync). Two tables: the state-dependent intents, then the six uniform ones ("—" = no actions)."""
+    def cell(t):
+        return " ".join(t) or "—"
+    main = [c for c in INTENT_TYPES if c not in UNIFORM_INTENTS]
+    lines = ["| state | " + " | ".join(main) + " |", "|---" * (len(main) + 1) + "|"]
     for state, row in TABLE.items():
-        lines.append(f"| {state} | " + " | ".join(" ".join(row[i]) for i in _C) + " |")
+        lines.append(f"| {state} | " + " | ".join(cell(row[i]) for i in main) + " |")
+    lines += ["", "| state | " + " | ".join(UNIFORM_INTENTS) + " |", "|---" * (len(UNIFORM_INTENTS) + 1) + "|"]
+    for state, row in TABLE.items():
+        lines.append(f"| {state} | " + " | ".join(cell(row[i]) for i in UNIFORM_INTENTS) + " |")
     return "\n".join(lines)
-

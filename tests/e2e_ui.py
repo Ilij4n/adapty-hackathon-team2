@@ -223,6 +223,10 @@ def main() -> int:
             expect(page.locator("a.act").first).to_be_visible()
             print("  reply:", bot.locator(".bubble").inner_text()[:120])
             shot(page, "help-reply-390")
+            # round 2: asking again while the request is pending repeats the "requested — under review" note
+            page.fill("#msg", "Any news on that?")
+            page.click("#send")
+            expect(page.locator(".note.grant")).to_have_count(2, timeout=60000)
 
             con = browser.new_context(viewport={"width": 1280, "height": 900}).new_page()
             con.on("pageerror", lambda e: errors.append(str(e)))
@@ -230,6 +234,8 @@ def main() -> int:
             expect(con.locator(".q-item")).to_have_count(1, timeout=10000)
             con.locator(".q-item").get_by_role("button", name="Open case").click()
             expect(con.locator(".d-head h2")).to_have_text(grant_user)
+            expect(con.locator("#filters .filt")).to_have_count(4)
+            expect(con.get_by_role("heading", name="What the user claims")).to_be_visible()
             shot(con, "console-pending-1280")
             con.locator(".q-item").get_by_role("button", name="Approve").click()
             expect(con.locator(".appr .st")).to_have_text("approved", timeout=10000)

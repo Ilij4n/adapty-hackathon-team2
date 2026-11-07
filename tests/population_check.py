@@ -122,7 +122,14 @@ def run_a(now: datetime, repo: Path) -> None:
         fs = facts_mod.build(p, st, now)
         for intent in policy.INTENT_TYPES:   # every profile x every intent: invariants hold, no crash
             acts = policy.decide(st, intent, fs, [])
-            assert acts[0].kind == "EXPLAIN_STATUS", (u["user_id"], intent)
+            if intent in ("ACKNOWLEDGEMENT", "OTHER_APP", "THIRD_PARTY_ACCOUNT"):
+                assert acts == [], (u["user_id"], intent)
+            elif intent in ("HUMAN_REQUEST", "PRIVACY_REQUEST"):
+                assert [a.kind for a in acts] == ["ESCALATE_TO_HUMAN"], (u["user_id"], intent)
+            else:
+                assert acts[0].kind == "EXPLAIN_STATUS", (u["user_id"], intent)
+                if fs.fields.get("ever_charged") == "no" and intent in ("REFUND_REQUEST", "CHARGED_AFTER_CANCEL"):
+                    assert not {"REFUND_PATH_APPLE", "REFUND_PATH_GOOGLE"} & {a.kind for a in acts}
             for a in acts:
                 actions[a.kind] += 1
                 if a.kind == "PROPOSE_GRANT":

@@ -38,13 +38,13 @@ APP_NAME = os.environ.get("CASEDESK_APP_NAME", "Lumen")
 
 STATE_LABELS: dict[str, tuple[str, str]] = {
     # code: (plain-language label, tone ok|warn|bad|info)
-    "ACTIVE_RENEWING": ("Active — renews automatically", "ok"),
-    "CANCELLED_PAID_UP": ("Cancelled — still active until the end of the period", "info"),
+    "ACTIVE_RENEWING": ("Active, renews automatically", "ok"),
+    "CANCELLED_PAID_UP": ("Cancelled, still active until the end of the period", "info"),
     "TRIAL_ACTIVE": ("Free trial running", "ok"),
-    "TRIAL_CANCELLED": ("Trial cancelled — no charge will follow", "info"),
-    "GRACE_PERIOD": ("Payment problem — still active for now", "warn"),
-    "BILLING_RETRY": ("Payment problem — the store is retrying", "warn"),
-    "EXPIRED_BILLING_ERROR": ("Ended — the payment didn't go through", "bad"),
+    "TRIAL_CANCELLED": ("Trial cancelled: no charge will follow", "info"),
+    "GRACE_PERIOD": ("Payment problem, still active for now", "warn"),
+    "BILLING_RETRY": ("Payment problem: the store is retrying", "warn"),
+    "EXPIRED_BILLING_ERROR": ("Ended: the payment didn't go through", "bad"),
     "EXPIRED_CANCELLED": ("Ended after you cancelled", "info"),
     "REFUNDED": ("Refunded", "info"),
     "LIFETIME": ("Lifetime access", "ok"),
@@ -262,7 +262,7 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
     def check_user(cuid: str, signature: str | None, request: Request | None = None) -> None:
         ip = (request.client.host if request is not None and request.client else None) or "unknown"
         if app.state.auth_fail.full(ip):
-            raise HTTPException(status_code=429, detail="Too many failed sign-in attempts — wait a minute.",
+            raise HTTPException(status_code=429, detail="Too many failed sign-in attempts. Wait a minute.",
                                 headers={"Retry-After": "60"})
         if not auth.valid_user_id(cuid) or not auth.verify(cuid, signature):
             app.state.auth_fail.allow(ip)  # count the failure
@@ -275,8 +275,8 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
             p = await A().get_profile(cuid)
         except Exception as e:  # noqa: BLE001 — Adapty 5xx/429/401/network after retries
             log.warning("get_profile failed for %s: %s", cuid[:64], type(e).__name__)
-            raise HTTPException(status_code=503, detail="We can't reach your account details right now — "
-                                                        "please try again in a minute.") from e
+            raise HTTPException(status_code=503, detail="We can't reach your account details right now. "
+                                                        "Please try again in a minute.") from e
         if p is None:
             return Profile(profile_id="unknown", customer_user_id=cuid)
         return p
@@ -399,7 +399,7 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
             return phase2(*args)
         except Exception as e:  # noqa: BLE001 — never leave the user without an answer
             log.exception("phase 2 failed for case %s", case_id)
-            text = ("Sorry — I couldn't finish checking that. Your account status above is correct; "
+            text = ("Sorry, I couldn't finish checking that. Your account status above is correct; "
                     "please try again in a minute.")
             S().update_message(msg_id, text, {"status": "error", "error": type(e).__name__})
             S().audit("system", "reply_error", case_id, {"error": type(e).__name__})
@@ -421,7 +421,7 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
         check_user(cuid, body.signature, request)
         if not app.state.limiter.allow(cuid):
             S().audit(cuid, "rate_limited")
-            return JSONResponse({"detail": "Too many messages — please wait a minute and try again."},
+            return JSONResponse({"detail": "Too many messages. Please wait a minute and try again."},
                                 status_code=429, headers={"Retry-After": "60"})
         st = S()
         now = now_utc()
@@ -466,7 +466,7 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
         if (m.get("meta") or {}).get("status") == "pending" and message_id not in app.state.tasks \
                 and _age_s(m.get("created_at")) > ORPHAN_AFTER_S:
             # Its worker died with the previous server process: answer instead of leaving the user polling forever.
-            text = ("Sorry — I couldn't finish checking that. Your account status above is correct; "
+            text = ("Sorry, I couldn't finish checking that. Your account status above is correct; "
                     "please send your message again.")
             S().update_message(message_id, text, {"status": "error", "error": "interrupted"})
             m = S().get_message(message_id)

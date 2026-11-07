@@ -766,11 +766,11 @@ Intent types (pick exactly one):
 - RESTORE_NEW_DEVICE: new or reset phone, reinstalled app, different device, lost purchase after switching, restore
 - BILLING_FAILED: card declined, payment failed, needs to update payment method
 - STATUS_QUESTION: asks about their plan, renewal/expiry/trial-end date, whether they are subscribed, what a charge was
-  (including "my bank shows a charge of X — why?"), or asks for a reminder before the trial ends
+  (including "my bank shows a charge of X, why?"), or asks for a reminder before the trial ends
 - HUMAN_REQUEST: wants a real person / human agent / not a bot
 - ACKNOWLEDGEMENT: only "ok", "thanks", "got it", "hi", "help", "???" and similar, with no question of substance
 - OTHER_APP: about a different app or service (Spotify, Netflix, iCloud, ...), not Lumen
-- PRIVACY_REQUEST: GDPR/data request — delete my data/account, export or access my data
+- PRIVACY_REQUEST: GDPR/data request: delete my data/account, export or access my data
 - THIRD_PARTY_ACCOUNT: asks about someone else's account (brother, wife, another user id or e-mail)
 - DISCOUNT_REQUEST: asks for a discount, coupon, free month/time or compensation (also with a chargeback threat)
 - OTHER: anything else

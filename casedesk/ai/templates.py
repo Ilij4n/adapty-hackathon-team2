@@ -31,7 +31,7 @@ EN = {
             "Your subscription is active and renews automatically.",
         ],
         "CANCELLED_PAID_UP": [
-            "Your {product_name} subscription is cancelled, so it won't renew — you keep full access until {expires_on}.",
+            "Your {product_name} subscription is cancelled, so it won't renew. You keep full access until {expires_on}.",
             "Your {product_name} subscription is cancelled, so it won't renew.",
             "Your subscription is cancelled, so it won't renew.",
         ],
@@ -90,8 +90,8 @@ EN = {
         ],
     },
     "contra": {
-        "not_cancelled": ["I don't see a cancellation on this subscription — it's still set to renew."],
-        "nothing_charged": ["Nothing has been charged for this — you're on the free trial."],
+        "not_cancelled": ["I don't see a cancellation on this subscription. It's still set to renew."],
+        "nothing_charged": ["Nothing has been charged for this. You're on the free trial."],
         "renewal_charge_failed": ["The renewal payment didn't go through, so you weren't charged for a new period."],
         "already_refunded": ["This purchase has already been refunded."],
         "one_time_purchase": ["Lifetime access is a one-time purchase, so there are no recurring charges."],
@@ -105,13 +105,13 @@ EN = {
         "has_access": ["Your account does have premium access right now."],
         "claim_does_not_match": ["What I see on your account is a little different."],
         "charged_before_cancel": [
-            "The last charge was on {last_charged_on} and you turned off renewal on {cancelled_on}, after that charge — so nothing was charged after you cancelled.",
-            "The last charge happened before you cancelled — nothing was charged after you cancelled.",
+            "The last charge was on {last_charged_on} and you turned off renewal on {cancelled_on}, after that charge. So nothing was charged after you cancelled.",
+            "The last charge happened before you cancelled, so nothing was charged after you cancelled.",
         ],
         "no_cancellation_recorded": ["I can't see any charge after your cancellation on this account."],
     },
     "action": {
-        "MANAGE_SUBSCRIPTION_LINK": ["Your subscription page is {manage_url} — you can see and change it there.",
+        "MANAGE_SUBSCRIPTION_LINK": ["Your subscription page is {manage_url}. You can see and change it there.",
                                      "You can manage your subscription in your store account's subscription settings."],
         "CANCEL_STEPS:app_store": [
             "To cancel: open Settings on your iPhone, tap your name, then Subscriptions, choose {product_name} and tap Cancel Subscription ({manage_url}).",
@@ -123,8 +123,8 @@ EN = {
         ],
         "CANCEL_STEPS": ["To cancel, turn off renewal on the subscriptions page of the store where you subscribed."],
         "REFUND_PATH_APPLE": [
-            "Refunds for App Store purchases are decided by Apple, not by us — you can request one at {refund_url}.",
-            "Refunds for App Store purchases are decided by Apple, not by us — you can request one at reportaproblem.apple.com.",
+            "Refunds for App Store purchases are decided by Apple, not by us. You can request one at {refund_url}.",
+            "Refunds for App Store purchases are decided by Apple, not by us. You can request one at reportaproblem.apple.com.",
         ],
         "REFUND_PATH_GOOGLE": [
             "You can request a refund through Google Play at {refund_url}; Google reviews the request.",
@@ -143,11 +143,11 @@ EN = {
         ],
         "UPDATE_PAYMENT_METHOD": ["Please update your payment method in the store where you subscribed."],
         "PROPOSE_GRANT": [
-            "I've asked the team to review a {grant_days}-day courtesy extension of your access. It isn't active yet — it only starts if they approve it.",
-            "I've asked the team to review a short courtesy extension of your access. It isn't active yet — it only starts if they approve it.",
+            "I've asked the team to review a {grant_days}-day courtesy extension of your access. It isn't active yet and only starts if they approve it.",
+            "I've asked the team to review a short courtesy extension of your access. It isn't active yet and only starts if they approve it.",
         ],
         "ESCALATE_TO_HUMAN": ["I've passed this to our support team, and a person will get back to you here."],
-        "ESCALATE_TO_HUMAN:no_store": ["This purchase isn't managed through the App Store or Google Play, so I've passed it to our support team — a person will get back to you here."],
+        "ESCALATE_TO_HUMAN:no_store": ["This purchase isn't managed through the App Store or Google Play, so I've passed it to our support team. A person will get back to you here."],
     },
 }
 
@@ -164,7 +164,7 @@ SR = {
             "Vaša pretplata je aktivna i automatski se obnavlja.",
         ],
         "CANCELLED_PAID_UP": [
-            "Vaša pretplata {product_name} je otkazana i neće se obnoviti — pun pristup imate do {expires_on}.",
+            "Vaša pretplata {product_name} je otkazana i neće se obnoviti. Pun pristup imate do {expires_on}.",
             "Vaša pretplata {product_name} je otkazana i neće se obnoviti.",
             "Vaša pretplata je otkazana i neće se obnoviti.",
         ],
@@ -223,8 +223,8 @@ SR = {
         ],
     },
     "contra": {
-        "not_cancelled": ["Ne vidim da je ova pretplata otkazana — i dalje je podešena da se obnavlja."],
-        "nothing_charged": ["Za ovo vam ništa nije naplaćeno — koristite besplatni probni period."],
+        "not_cancelled": ["Ne vidim da je ova pretplata otkazana. I dalje je podešena da se obnavlja."],
+        "nothing_charged": ["Za ovo vam ništa nije naplaćeno jer koristite besplatni probni period."],
         "renewal_charge_failed": ["Naplata obnove nije prošla, pa vam novi period nije naplaćen."],
         "already_refunded": ["Za ovu kupovinu novac je već vraćen."],
         "one_time_purchase": ["Doživotni pristup je jednokratna kupovina, pa nema ponavljajućih naplata."],
@@ -238,13 +238,13 @@ SR = {
         "has_access": ["Vaš nalog trenutno ima premium pristup."],
         "claim_does_not_match": ["Na vašem nalogu vidim malo drugačije stanje."],
         "charged_before_cancel": [
-            "Poslednja naplata je bila {last_charged_on}, a obnovu ste isključili {cancelled_on}, posle te naplate — tako da posle otkazivanja ništa nije naplaćeno.",
-            "Poslednja naplata je bila pre vašeg otkazivanja — posle otkazivanja ništa nije naplaćeno.",
+            "Poslednja naplata je bila {last_charged_on}, a obnovu ste isključili {cancelled_on}, posle te naplate. Dakle, posle otkazivanja ništa nije naplaćeno.",
+            "Poslednja naplata je bila pre vašeg otkazivanja, tako da posle otkazivanja ništa nije naplaćeno.",
         ],
         "no_cancellation_recorded": ["Na ovom nalogu ne vidim naplatu posle vašeg otkazivanja."],
     },
     "action": {
-        "MANAGE_SUBSCRIPTION_LINK": ["Stranica vaše pretplate je {manage_url} — tamo je možete pogledati i menjati.",
+        "MANAGE_SUBSCRIPTION_LINK": ["Stranica vaše pretplate je {manage_url}. Tamo je možete pogledati i menjati.",
                                      "Pretplatu možete menjati u podešavanjima pretplata na nalogu prodavnice."],
         "CANCEL_STEPS:app_store": [
             "Da otkažete: otvorite Podešavanja na iPhone-u, dodirnite svoje ime, zatim Pretplate, izaberite {product_name} i dodirnite Otkaži pretplatu ({manage_url}).",
@@ -256,8 +256,8 @@ SR = {
         ],
         "CANCEL_STEPS": ["Da otkažete, isključite obnavljanje na stranici pretplata u prodavnici u kojoj ste se pretplatili."],
         "REFUND_PATH_APPLE": [
-            "O povraćaju novca za kupovine u App Store-u odlučuje Apple, a ne mi — zahtev možete poslati na {refund_url}.",
-            "O povraćaju novca za kupovine u App Store-u odlučuje Apple, a ne mi — zahtev možete poslati na reportaproblem.apple.com.",
+            "O povraćaju novca za kupovine u App Store-u odlučuje Apple, a ne mi. Zahtev možete poslati na {refund_url}.",
+            "O povraćaju novca za kupovine u App Store-u odlučuje Apple, a ne mi. Zahtev možete poslati na reportaproblem.apple.com.",
         ],
         "REFUND_PATH_GOOGLE": [
             "Povraćaj novca možete zatražiti preko Google Play-a na {refund_url}; Google razmatra zahtev.",
@@ -276,11 +276,11 @@ SR = {
         ],
         "UPDATE_PAYMENT_METHOD": ["Ažurirajte način plaćanja u prodavnici u kojoj ste se pretplatili."],
         "PROPOSE_GRANT": [
-            "Poslali smo timu zahtev da razmotri produženje vašeg pristupa za {grant_days} dana, kao gest dobre volje. Još nije aktivno — počinje samo ako ga odobre.",
-            "Poslali smo timu zahtev da razmotri kratko produženje vašeg pristupa, kao gest dobre volje. Još nije aktivno — počinje samo ako ga odobre.",
+            "Poslali smo timu zahtev da razmotri produženje vašeg pristupa za {grant_days} dana, kao gest dobre volje. Još nije aktivno i počinje samo ako ga odobre.",
+            "Poslali smo timu zahtev da razmotri kratko produženje vašeg pristupa, kao gest dobre volje. Još nije aktivno i počinje samo ako ga odobre.",
         ],
         "ESCALATE_TO_HUMAN": ["Prosledili smo vaš slučaj našem timu podrške i neko od njih će vam odgovoriti ovde."],
-        "ESCALATE_TO_HUMAN:no_store": ["Ova kupovina nije preko App Store-a ni Google Play-a, pa smo vaš slučaj prosledili našem timu podrške — neko od njih će vam odgovoriti ovde."],
+        "ESCALATE_TO_HUMAN:no_store": ["Ova kupovina nije preko App Store-a ni Google Play-a, pa smo vaš slučaj prosledili našem timu podrške. Neko od njih će vam odgovoriti ovde."],
     },
 }
 
@@ -430,7 +430,7 @@ DE = {
             "Ihr Abo ist aktiv und verlängert sich automatisch.",
         ],
         "CANCELLED_PAID_UP": [
-            "Ihr Abo {product_name} ist gekündigt und verlängert sich nicht – Sie haben vollen Zugang bis zum {expires_on}.",
+            "Ihr Abo {product_name} ist gekündigt und verlängert sich nicht. Sie haben vollen Zugang bis zum {expires_on}.",
             "Ihr Abo {product_name} ist gekündigt und verlängert sich nicht.",
             "Ihr Abo ist gekündigt und verlängert sich nicht.",
         ],
@@ -447,7 +447,7 @@ DE = {
             "Ihre kostenlose Testphase ist gekündigt, Ihnen wird also nichts berechnet.",
         ],
         "GRACE_PERIOD": [
-            "{store_name} konnte die Zahlung für {product_name} nicht einziehen (erster Fehlversuch am {billing_issue_on}). Solange es erneut versucht wird, behalten Sie den Zugang – bis zum {grace_ends_on}.",
+            "{store_name} konnte die Zahlung für {product_name} nicht einziehen (erster Fehlversuch am {billing_issue_on}). Solange es erneut versucht wird, behalten Sie den Zugang bis zum {grace_ends_on}.",
             "{store_name} konnte die Zahlung für {product_name} nicht einziehen. Solange es erneut versucht wird, behalten Sie vorerst den Zugang.",
             "Der Store konnte Ihre letzte Zahlung nicht einziehen. Solange es erneut versucht wird, behalten Sie vorerst den Zugang.",
         ],
@@ -462,7 +462,7 @@ DE = {
             "Ihr Abo ist abgelaufen, weil der Store die Verlängerung nicht abbuchen konnte.",
         ],
         "EXPIRED_CANCELLED": [
-            "Ihr Abo {product_name} wurde gekündigt und ist am {expires_on} abgelaufen – es ist nicht mehr aktiv und verlängert sich nicht.",
+            "Ihr Abo {product_name} wurde gekündigt und ist am {expires_on} abgelaufen. Es ist nicht mehr aktiv und verlängert sich nicht.",
             "Ihr Abo {product_name} wurde gekündigt und ist abgelaufen, es verlängert sich also nicht.",
             "Ihr Abo wurde gekündigt und ist abgelaufen, es verlängert sich also nicht.",
         ],
@@ -484,13 +484,13 @@ DE = {
             "Ich finde auf diesem Konto keinen Kauf. Wenn Sie mit einer anderen Apple-ID oder einem anderen Google-Konto bezahlt haben, ist der Kauf mit diesem Konto verknüpft.",
         ],
         "FAMILY_SHARED": [
-            "Ihr Zugang zu {product_name} kommt über die Familienfreigabe – Abo und Abrechnung gehören zum Konto des Familienorganisators, nicht zu Ihrem.",
-            "Ihr Zugang kommt über die Familienfreigabe – Abo und Abrechnung gehören zum Konto des Familienorganisators, nicht zu Ihrem.",
+            "Ihr Zugang zu {product_name} kommt über die Familienfreigabe. Abo und Abrechnung gehören zum Konto des Familienorganisators, nicht zu Ihrem.",
+            "Ihr Zugang kommt über die Familienfreigabe. Abo und Abrechnung gehören zum Konto des Familienorganisators, nicht zu Ihrem.",
         ],
     },
     "contra": {
-        "not_cancelled": ["Ich sehe keine Kündigung für dieses Abo – es ist weiterhin auf Verlängerung eingestellt."],
-        "nothing_charged": ["Dafür wurde Ihnen nichts berechnet – Sie sind in der kostenlosen Testphase."],
+        "not_cancelled": ["Ich sehe keine Kündigung für dieses Abo. Es ist weiterhin auf Verlängerung eingestellt."],
+        "nothing_charged": ["Dafür wurde Ihnen nichts berechnet, da Sie in der kostenlosen Testphase sind."],
         "renewal_charge_failed": ["Die Abbuchung für die Verlängerung ist fehlgeschlagen, ein neuer Zeitraum wurde Ihnen also nicht berechnet."],
         "already_refunded": ["Dieser Kauf wurde bereits erstattet."],
         "one_time_purchase": ["Lebenslanger Zugang ist ein Einmalkauf, es gibt keine wiederkehrenden Abbuchungen."],
@@ -504,13 +504,13 @@ DE = {
         "has_access": ["Ihr Konto hat gerade Premium-Zugang."],
         "claim_does_not_match": ["Auf Ihrem Konto sieht es etwas anders aus."],
         "charged_before_cancel": [
-            "Die letzte Abbuchung war am {last_charged_on}, gekündigt haben Sie am {cancelled_on}, also nach dieser Abbuchung – nach der Kündigung wurde nichts mehr abgebucht.",
-            "Die letzte Abbuchung war vor Ihrer Kündigung – danach wurde nichts mehr abgebucht.",
+            "Die letzte Abbuchung war am {last_charged_on}, gekündigt haben Sie am {cancelled_on}, also nach dieser Abbuchung. Nach der Kündigung wurde nichts mehr abgebucht.",
+            "Die letzte Abbuchung war vor Ihrer Kündigung. Danach wurde nichts mehr abgebucht.",
         ],
         "no_cancellation_recorded": ["Auf diesem Konto sehe ich keine Abbuchung nach Ihrer Kündigung."],
     },
     "action": {
-        "MANAGE_SUBSCRIPTION_LINK": ["Ihre Abo-Seite ist {manage_url} – dort können Sie es ansehen und ändern.",
+        "MANAGE_SUBSCRIPTION_LINK": ["Ihre Abo-Seite ist {manage_url}. Dort können Sie es ansehen und ändern.",
                                      "Sie können Ihr Abo in den Abo-Einstellungen Ihres Store-Kontos verwalten."],
         "CANCEL_STEPS:app_store": [
             "So kündigen Sie: Öffnen Sie die Einstellungen auf dem iPhone, tippen Sie auf Ihren Namen, dann auf Abonnements, wählen Sie {product_name} und tippen Sie auf Abo kündigen ({manage_url}).",
@@ -522,8 +522,8 @@ DE = {
         ],
         "CANCEL_STEPS": ["Zum Kündigen schalten Sie die Verlängerung auf der Abo-Seite des Stores aus, in dem Sie abgeschlossen haben."],
         "REFUND_PATH_APPLE": [
-            "Über Erstattungen für App-Store-Käufe entscheidet Apple, nicht wir – Sie können sie unter {refund_url} beantragen.",
-            "Über Erstattungen für App-Store-Käufe entscheidet Apple, nicht wir – Sie können sie unter reportaproblem.apple.com beantragen.",
+            "Über Erstattungen für App-Store-Käufe entscheidet Apple, nicht wir. Sie können sie unter {refund_url} beantragen.",
+            "Über Erstattungen für App-Store-Käufe entscheidet Apple, nicht wir. Sie können sie unter reportaproblem.apple.com beantragen.",
         ],
         "REFUND_PATH_GOOGLE": [
             "Sie können eine Erstattung über Google Play unter {refund_url} beantragen; Google prüft die Anfrage.",
@@ -542,11 +542,11 @@ DE = {
         ],
         "UPDATE_PAYMENT_METHOD": ["Bitte aktualisieren Sie Ihre Zahlungsmethode in dem Store, in dem Sie abgeschlossen haben."],
         "PROPOSE_GRANT": [
-            "Ich habe das Team gebeten, eine Verlängerung Ihres Zugangs um {grant_days} Tage aus Kulanz zu prüfen. Sie ist noch nicht aktiv – sie startet nur, wenn das Team zustimmt.",
-            "Ich habe das Team gebeten, eine kurze Verlängerung Ihres Zugangs aus Kulanz zu prüfen. Sie ist noch nicht aktiv – sie startet nur, wenn das Team zustimmt.",
+            "Ich habe das Team gebeten, eine Verlängerung Ihres Zugangs um {grant_days} Tage aus Kulanz zu prüfen. Sie ist noch nicht aktiv und startet nur, wenn das Team zustimmt.",
+            "Ich habe das Team gebeten, eine kurze Verlängerung Ihres Zugangs aus Kulanz zu prüfen. Sie ist noch nicht aktiv und startet nur, wenn das Team zustimmt.",
         ],
         "ESCALATE_TO_HUMAN": ["Ich habe Ihren Fall an unser Support-Team weitergegeben, eine Person meldet sich hier bei Ihnen."],
-        "ESCALATE_TO_HUMAN:no_store": ["Dieser Kauf lief nicht über den App Store oder Google Play, deshalb habe ich Ihren Fall an unser Support-Team weitergegeben – eine Person meldet sich hier bei Ihnen."],
+        "ESCALATE_TO_HUMAN:no_store": ["Dieser Kauf lief nicht über den App Store oder Google Play, deshalb habe ich Ihren Fall an unser Support-Team weitergegeben. Eine Person meldet sich hier bei Ihnen."],
     },
 }
 
@@ -563,7 +563,7 @@ PT = {
             "Sua assinatura está ativa e renova automaticamente.",
         ],
         "CANCELLED_PAID_UP": [
-            "Sua assinatura {product_name} está cancelada e não vai renovar — você mantém o acesso completo até {expires_on}.",
+            "Sua assinatura {product_name} está cancelada e não vai renovar. Você mantém o acesso completo até {expires_on}.",
             "Sua assinatura {product_name} está cancelada e não vai renovar.",
             "Sua assinatura está cancelada e não vai renovar.",
         ],
@@ -622,8 +622,8 @@ PT = {
         ],
     },
     "contra": {
-        "not_cancelled": ["Não vejo nenhum cancelamento nesta assinatura — ela continua configurada para renovar."],
-        "nothing_charged": ["Nada foi cobrado por isso — você está no teste grátis."],
+        "not_cancelled": ["Não vejo nenhum cancelamento nesta assinatura. Ela continua configurada para renovar."],
+        "nothing_charged": ["Nada foi cobrado por isso, pois você está no teste grátis."],
         "renewal_charge_failed": ["A cobrança da renovação não foi concluída, então um novo período não foi cobrado."],
         "already_refunded": ["Esta compra já foi reembolsada."],
         "one_time_purchase": ["O acesso vitalício é uma compra única, sem cobranças recorrentes."],
@@ -637,13 +637,13 @@ PT = {
         "has_access": ["Sua conta está com acesso premium agora."],
         "claim_does_not_match": ["O que vejo na sua conta é um pouco diferente."],
         "charged_before_cancel": [
-            "A última cobrança foi em {last_charged_on} e você desativou a renovação em {cancelled_on}, depois dessa cobrança — então nada foi cobrado após o cancelamento.",
-            "A última cobrança foi antes do seu cancelamento — depois dele, nada foi cobrado.",
+            "A última cobrança foi em {last_charged_on} e você desativou a renovação em {cancelled_on}, depois dessa cobrança. Então, nada foi cobrado após o cancelamento.",
+            "A última cobrança foi antes do seu cancelamento. Depois dele, nada foi cobrado.",
         ],
         "no_cancellation_recorded": ["Não vejo nenhuma cobrança depois do seu cancelamento nesta conta."],
     },
     "action": {
-        "MANAGE_SUBSCRIPTION_LINK": ["A página da sua assinatura é {manage_url} — lá você pode ver e alterar.",
+        "MANAGE_SUBSCRIPTION_LINK": ["A página da sua assinatura é {manage_url}. Lá você pode ver e alterar.",
                                      "Você pode gerenciar sua assinatura nas configurações de assinaturas da sua conta da loja."],
         "CANCEL_STEPS:app_store": [
             "Para cancelar: abra Ajustes no iPhone, toque no seu nome, depois em Assinaturas, escolha {product_name} e toque em Cancelar Assinatura ({manage_url}).",
@@ -655,8 +655,8 @@ PT = {
         ],
         "CANCEL_STEPS": ["Para cancelar, desative a renovação na página de assinaturas da loja onde você assinou."],
         "REFUND_PATH_APPLE": [
-            "Reembolsos de compras na App Store são decididos pela Apple, não por nós — você pode solicitar em {refund_url}.",
-            "Reembolsos de compras na App Store são decididos pela Apple, não por nós — você pode solicitar em reportaproblem.apple.com.",
+            "Reembolsos de compras na App Store são decididos pela Apple, não por nós. Você pode solicitar em {refund_url}.",
+            "Reembolsos de compras na App Store são decididos pela Apple, não por nós. Você pode solicitar em reportaproblem.apple.com.",
         ],
         "REFUND_PATH_GOOGLE": [
             "Você pode solicitar um reembolso pelo Google Play em {refund_url}; o Google analisa o pedido.",
@@ -675,11 +675,11 @@ PT = {
         ],
         "UPDATE_PAYMENT_METHOD": ["Atualize sua forma de pagamento na loja onde você assinou."],
         "PROPOSE_GRANT": [
-            "Pedi à equipe que analise uma extensão de cortesia de {grant_days} dias para o seu acesso. Ainda não está ativa — só começa se for aprovada.",
-            "Pedi à equipe que analise uma breve extensão de cortesia para o seu acesso. Ainda não está ativa — só começa se for aprovada.",
+            "Pedi à equipe que analise uma extensão de cortesia de {grant_days} dias para o seu acesso. Ainda não está ativa e só começa se for aprovada.",
+            "Pedi à equipe que analise uma breve extensão de cortesia para o seu acesso. Ainda não está ativa e só começa se for aprovada.",
         ],
         "ESCALATE_TO_HUMAN": ["Passei seu caso para a nossa equipe de suporte, e uma pessoa vai responder aqui."],
-        "ESCALATE_TO_HUMAN:no_store": ["Esta compra não foi feita pela App Store nem pelo Google Play, então passei seu caso para a nossa equipe de suporte — uma pessoa vai responder aqui."],
+        "ESCALATE_TO_HUMAN:no_store": ["Esta compra não foi feita pela App Store nem pelo Google Play, então passei seu caso para a nossa equipe de suporte. Uma pessoa vai responder aqui."],
     },
 }
 
@@ -690,13 +690,13 @@ RU = {
     "ack": {"charged_after_cancel": ["Вы правы: продление вы отключили {cancelled_on}, но {last_charged_on} всё равно прошло списание.", "Вы правы: списание прошло уже после того, как вы отключили продление."]},
     "status": {
         "ACTIVE_RENEWING": [
-            "Ваша подписка {product_name} ({store_name}) активна; следующее продление — {renews_on}, стоимость — {price}.",
-            "Ваша подписка {product_name} ({store_name}) активна; следующее продление — {renews_on}.",
+            "Ваша подписка {product_name} ({store_name}) активна. Следующее продление: {renews_on}, стоимость: {price}.",
+            "Ваша подписка {product_name} ({store_name}) активна. Следующее продление: {renews_on}.",
             "Ваша подписка {product_name} активна и продлевается автоматически.",
             "Ваша подписка активна и продлевается автоматически.",
         ],
         "CANCELLED_PAID_UP": [
-            "Ваша подписка {product_name} отменена и не продлится — полный доступ сохраняется до {expires_on}.",
+            "Ваша подписка {product_name} отменена и не продлится. Полный доступ сохраняется до {expires_on}.",
             "Ваша подписка {product_name} отменена и не продлится.",
             "Ваша подписка отменена и не продлится.",
         ],
@@ -713,7 +713,7 @@ RU = {
             "Ваш бесплатный пробный период отменён, поэтому ничего списано не будет.",
         ],
         "GRACE_PERIOD": [
-            "{store_name} не удалось списать оплату за {product_name} (первая неудачная попытка — {billing_issue_on}). Пока оплата повторяется, доступ сохраняется — до {grace_ends_on}.",
+            "{store_name} не удалось списать оплату за {product_name} (первая неудачная попытка: {billing_issue_on}). Пока оплата повторяется, доступ сохраняется до {grace_ends_on}.",
             "{store_name} не удалось списать оплату за {product_name}. Пока оплата повторяется, доступ пока сохраняется.",
             "Магазину не удалось списать последнюю оплату. Пока оплата повторяется, доступ пока сохраняется.",
         ],
@@ -742,9 +742,9 @@ RU = {
             "У вас пожизненный доступ: это разовая покупка, поэтому нет ни продлений, ни новых списаний.",
         ],
         "GRANTED_BY_DEVELOPER": [
-            "Ваш доступ к {product_name} — подарок от команды приложения, он действует до {granted_until}. Это не платная подписка, поэтому ничего списано не будет.",
-            "Ваш доступ к {product_name} — подарок от команды приложения, он действует до {expires_on}. Это не платная подписка, поэтому ничего списано не будет.",
-            "Ваш доступ — подарок от команды приложения. Это не платная подписка, поэтому ничего списано не будет.",
+            "Ваш доступ к {product_name} является подарком от команды приложения и действует до {granted_until}. Это не платная подписка, поэтому ничего списано не будет.",
+            "Ваш доступ к {product_name} является подарком от команды приложения и действует до {expires_on}. Это не платная подписка, поэтому ничего списано не будет.",
+            "Ваш доступ является подарком от команды приложения. Это не платная подписка, поэтому ничего списано не будет.",
         ],
         "NO_PURCHASE": [
             "Я не вижу покупок в этом аккаунте. Если вы платили с другого Apple ID или аккаунта Google, покупка привязана к тому аккаунту.",
@@ -755,11 +755,11 @@ RU = {
         ],
     },
     "contra": {
-        "not_cancelled": ["Я не вижу отмены этой подписки — она по-прежнему продлевается автоматически."],
-        "nothing_charged": ["За это ничего не списывалось — у вас бесплатный пробный период."],
+        "not_cancelled": ["Я не вижу отмены этой подписки. Она по-прежнему продлевается автоматически."],
+        "nothing_charged": ["За это ничего не списывалось, потому что у вас бесплатный пробный период."],
         "renewal_charge_failed": ["Списание за продление не прошло, поэтому новый период не оплачен."],
         "already_refunded": ["За эту покупку уже был сделан возврат."],
-        "one_time_purchase": ["Пожизненный доступ — это разовая покупка, регулярных списаний нет."],
+        "one_time_purchase": ["Пожизненный доступ является разовой покупкой, регулярных списаний нет."],
         "no_charge_on_account": ["Я не вижу списаний за подписку в этом аккаунте."],
         "organizer_pays": ["Списания за Семейный доступ идут организатору семьи, а не на ваш аккаунт."],
         "refund_ended_access": ["Доступ закончился, потому что за покупку был сделан возврат."],
@@ -770,13 +770,13 @@ RU = {
         "has_access": ["Сейчас у вашего аккаунта есть премиум-доступ."],
         "claim_does_not_match": ["В вашем аккаунте я вижу немного другую картину."],
         "charged_before_cancel": [
-            "Последнее списание было {last_charged_on}, а продление вы отключили {cancelled_on}, уже после него — поэтому после отмены ничего не списывалось.",
-            "Последнее списание было до вашей отмены — после неё ничего не списывалось.",
+            "Последнее списание было {last_charged_on}, а продление вы отключили {cancelled_on}, уже после него. Поэтому после отмены ничего не списывалось.",
+            "Последнее списание было до вашей отмены. После неё ничего не списывалось.",
         ],
         "no_cancellation_recorded": ["Я не вижу списаний после вашей отмены в этом аккаунте."],
     },
     "action": {
-        "MANAGE_SUBSCRIPTION_LINK": ["Страница вашей подписки — {manage_url}: там её можно посмотреть и изменить.",
+        "MANAGE_SUBSCRIPTION_LINK": ["Страница вашей подписки: {manage_url}. Там её можно посмотреть и изменить.",
                                      "Управлять подпиской можно в настройках подписок вашего аккаунта магазина."],
         "CANCEL_STEPS:app_store": [
             "Чтобы отменить: откройте Настройки на iPhone, нажмите на своё имя, затем «Подписки», выберите {product_name} и нажмите «Отменить подписку» ({manage_url}).",
@@ -788,8 +788,8 @@ RU = {
         ],
         "CANCEL_STEPS": ["Чтобы отменить, отключите продление на странице подписок в магазине, где вы оформили подписку."],
         "REFUND_PATH_APPLE": [
-            "Решение о возврате за покупки в App Store принимает Apple, а не мы — запросить возврат можно на {refund_url}.",
-            "Решение о возврате за покупки в App Store принимает Apple, а не мы — запросить возврат можно на reportaproblem.apple.com.",
+            "Решение о возврате за покупки в App Store принимает Apple, а не мы. Запросить возврат можно на {refund_url}.",
+            "Решение о возврате за покупки в App Store принимает Apple, а не мы. Запросить возврат можно на reportaproblem.apple.com.",
         ],
         "REFUND_PATH_GOOGLE": [
             "Запросить возврат можно через Google Play: {refund_url}; запрос рассматривает Google.",
@@ -808,11 +808,11 @@ RU = {
         ],
         "UPDATE_PAYMENT_METHOD": ["Обновите способ оплаты в магазине, где вы оформили подписку."],
         "PROPOSE_GRANT": [
-            "Мы попросили команду рассмотреть продление вашего доступа в качестве жеста доброй воли (дней: {grant_days}). Оно пока не действует — начнётся, только если его одобрят.",
-            "Мы попросили команду рассмотреть короткое продление вашего доступа в качестве жеста доброй воли. Оно пока не действует — начнётся, только если его одобрят.",
+            "Мы попросили команду рассмотреть продление вашего доступа в качестве жеста доброй воли (дней: {grant_days}). Оно пока не действует и начнётся, только если его одобрят.",
+            "Мы попросили команду рассмотреть короткое продление вашего доступа в качестве жеста доброй воли. Оно пока не действует и начнётся, только если его одобрят.",
         ],
-        "ESCALATE_TO_HUMAN": ["Мы передали ваш вопрос нашей команде поддержки — сотрудник ответит вам здесь."],
-        "ESCALATE_TO_HUMAN:no_store": ["Эта покупка сделана не через App Store или Google Play, поэтому мы передали ваш вопрос команде поддержки — сотрудник ответит вам здесь."],
+        "ESCALATE_TO_HUMAN": ["Мы передали ваш вопрос нашей команде поддержки. Сотрудник ответит вам здесь."],
+        "ESCALATE_TO_HUMAN:no_store": ["Эта покупка сделана не через App Store или Google Play, поэтому мы передали ваш вопрос команде поддержки. Сотрудник ответит вам здесь."],
     },
 }
 
@@ -823,32 +823,32 @@ RU = {
 ROUND2: dict[str, dict] = {
     "en": {
         "intent": {
-            "HUMAN_REQUEST:escalated": ["Of course — I've passed your conversation to our support team, and a person will reply to you here."],
+            "HUMAN_REQUEST:escalated": ["Of course. I've passed your conversation to our support team, and a person will reply to you here."],
             "HUMAN_REQUEST": ["I'm the app's automated help; tell me what happened and I'll check your account right away."],
             "ACKNOWLEDGEMENT:thanks": ["You're welcome! If anything else comes up with your subscription, just write here."],
             "ACKNOWLEDGEMENT": ["How can I help? I can explain your subscription, help you cancel, get premium back on a new device, or show you how to request a refund."],
-            "OTHER_APP": ["I can only help with your {app_name} subscription. For another app, please contact that app's support — your store's subscription list shows who is charging you.",
+            "OTHER_APP": ["I can only help with your {app_name} subscription. For another app, please contact that app's support. Your store's subscription list shows who is charging you.",
                           "I can only help with this app's subscription. For another app, please contact that app's support."],
-            "PRIVACY_REQUEST:escalated": ["Thank you — I've passed your data request to the {app_name} team; they will handle it and confirm with you. Deleting your data doesn't cancel a store subscription; that is done in your store account.",
-                                          "Thank you — I've passed your data request to the app team; they will handle it and confirm with you. Deleting your data doesn't cancel a store subscription."],
+            "PRIVACY_REQUEST:escalated": ["Thank you. I've passed your data request to the {app_name} team; they will handle it and confirm with you. Deleting your data doesn't cancel a store subscription; that is done in your store account.",
+                                          "Thank you. I've passed your data request to the app team; they will handle it and confirm with you. Deleting your data doesn't cancel a store subscription."],
             "PRIVACY_REQUEST": ["Data requests are handled by the {app_name} team. Deleting your data doesn't cancel a store subscription; that is done in your store account.",
                                 "Data requests are handled by the app team. Deleting your data doesn't cancel a store subscription."],
             "THIRD_PARTY_ACCOUNT": ["I can only see the account this message comes from, so I can't share anything about someone else's subscription. They can write to us from the app on their own account."],
-            "DISCOUNT_REQUEST": ["I can't offer discounts or change prices myself — prices are set in the store."],
+            "DISCOUNT_REQUEST": ["I can't offer discounts or change prices myself, because prices are set in the store."],
         },
         "extra": {
-            "pending_grant": ["Your request for a courtesy extension is still with the team for review — it isn't active yet, and you'll see it in the app once it's approved."],
-            "cannot_act": ["I can't cancel it for you — a subscription can only be cancelled from your own Apple ID or Google account."],
+            "pending_grant": ["Your request for a courtesy extension is still with the team for review. It isn't active yet, and you'll see it in the app once it's approved."],
+            "cannot_act": ["I can't cancel it for you. A subscription can only be cancelled from your own Apple ID or Google account."],
             "chargeback": ["A refund request through the store is usually faster than a chargeback, and a chargeback can lead the store to lock your account."],
             "angry": ["I'm sorry this has been so frustrating."],
         },
         "contra": {
-            "charge_not_found": ["I don't see a charge like that on your {app_name} account. It may have been made with another Apple ID or Google account, or by another app — your store's purchase history shows who charged you.",
-                                 "I don't see a charge like that on this account. It may have been made with another Apple ID or Google account, or by another app — your store's purchase history shows who charged you."],
+            "charge_not_found": ["I don't see a charge like that on your {app_name} account. It may have been made with another Apple ID or Google account, or by another app. Your store's purchase history shows who charged you.",
+                                 "I don't see a charge like that on this account. It may have been made with another Apple ID or Google account, or by another app. Your store's purchase history shows who charged you."],
             "never_charged": ["You were never charged: the free trial ended without a payment."],
         },
         "status": {
-            "EXPIRED_BILLING_ERROR:never_charged": ["Your free trial of {product_name} ended on {expires_on} without a payment — {store_name} couldn't charge your payment method, so nothing was charged.",
+            "EXPIRED_BILLING_ERROR:never_charged": ["Your free trial of {product_name} ended on {expires_on} without a payment. {store_name} couldn't charge your payment method, so nothing was charged.",
                                                     "Your free trial ended without a payment, so nothing was charged."],
             "EXPIRED_CANCELLED:never_charged": ["Your free trial of {product_name} was cancelled and ended on {expires_on}, so you were never charged.",
                                                 "Your free trial was cancelled and has ended, so you were never charged."],
@@ -861,32 +861,32 @@ ROUND2: dict[str, dict] = {
     },
     "sr": {
         "intent": {
-            "HUMAN_REQUEST:escalated": ["Naravno — prosledili smo razgovor našem timu podrške i neko iz tima će vam odgovoriti ovde."],
+            "HUMAN_REQUEST:escalated": ["Naravno, prosledili smo razgovor našem timu podrške i neko iz tima će vam odgovoriti ovde."],
             "HUMAN_REQUEST": ["Ja sam automatska pomoć aplikacije; napišite mi šta se desilo i odmah ću proveriti vaš nalog."],
             "ACKNOWLEDGEMENT:thanks": ["Nema na čemu! Ako vam bude trebalo još nešto oko pretplate, samo pišite ovde."],
             "ACKNOWLEDGEMENT": ["Kako mogu da pomognem? Mogu da objasnim vašu pretplatu, pomognem oko otkazivanja, pomognem da vratite premium na novom uređaju ili pokažem kako da zatražite povraćaj novca."],
-            "OTHER_APP": ["Mogu da pomognem samo oko pretplate na {app_name}. Za drugu aplikaciju obratite se njenoj podršci — u listi pretplata u prodavnici vidite ko vam naplaćuje.",
+            "OTHER_APP": ["Mogu da pomognem samo oko pretplate na {app_name}. Za drugu aplikaciju obratite se njenoj podršci. U listi pretplata u prodavnici vidite ko vam naplaćuje.",
                           "Mogu da pomognem samo oko pretplate na ovu aplikaciju. Za drugu aplikaciju obratite se njenoj podršci."],
-            "PRIVACY_REQUEST:escalated": ["Hvala — vaš zahtev u vezi sa podacima prosledili smo timu aplikacije {app_name}; oni će ga obraditi i javiti vam se. Brisanje podataka ne otkazuje pretplatu u prodavnici; to se radi na vašem nalogu prodavnice.",
-                                          "Hvala — vaš zahtev u vezi sa podacima prosledili smo timu aplikacije; oni će ga obraditi i javiti vam se. Brisanje podataka ne otkazuje pretplatu u prodavnici."],
+            "PRIVACY_REQUEST:escalated": ["Hvala. Vaš zahtev u vezi sa podacima prosledili smo timu aplikacije {app_name}; oni će ga obraditi i javiti vam se. Brisanje podataka ne otkazuje pretplatu u prodavnici; to se radi na vašem nalogu prodavnice.",
+                                          "Hvala. Vaš zahtev u vezi sa podacima prosledili smo timu aplikacije; oni će ga obraditi i javiti vam se. Brisanje podataka ne otkazuje pretplatu u prodavnici."],
             "PRIVACY_REQUEST": ["Zahteve u vezi sa podacima obrađuje tim aplikacije {app_name}. Brisanje podataka ne otkazuje pretplatu u prodavnici; to se radi na vašem nalogu prodavnice.",
                                 "Zahteve u vezi sa podacima obrađuje tim aplikacije. Brisanje podataka ne otkazuje pretplatu u prodavnici."],
             "THIRD_PARTY_ACCOUNT": ["Vidim samo nalog sa kog je stigla ova poruka, pa ne mogu da delim podatke o tuđoj pretplati. Ta osoba nam može pisati iz aplikacije sa svog naloga."],
-            "DISCOUNT_REQUEST": ["Ne mogu da ponudim popust ni besplatan period — cene određuje prodavnica."],
+            "DISCOUNT_REQUEST": ["Ne mogu da ponudim popust ni besplatan period jer cene određuje prodavnica."],
         },
         "extra": {
-            "pending_grant": ["Vaš zahtev za produženje pristupa kao gest dobre volje tim još razmatra — još nije aktivno, a videćete ga u aplikaciji kada bude odobreno."],
-            "cannot_act": ["Ne mogu da otkažem umesto vas — pretplata se može otkazati samo sa vašeg Apple ID-ja ili Google naloga."],
+            "pending_grant": ["Vaš zahtev za produženje pristupa kao gest dobre volje tim još razmatra. Još nije aktivno, a videćete ga u aplikaciji kada bude odobreno."],
+            "cannot_act": ["Ne mogu da otkažem umesto vas. Pretplata se može otkazati samo sa vašeg Apple ID-ja ili Google naloga."],
             "chargeback": ["Zahtev za povraćaj preko prodavnice je obično brži od reklamacije u banci, a reklamacija može dovesti do toga da prodavnica zaključa vaš nalog."],
             "angry": ["Žao mi je što je ovo toliko frustrirajuće."],
         },
         "contra": {
-            "charge_not_found": ["Na vašem nalogu za {app_name} ne vidim takvu naplatu. Možda je napravljena drugim Apple ID-jem ili Google nalogom, ili je to druga aplikacija — u istoriji kupovina u prodavnici vidite ko vam je naplatio.",
-                                 "Na ovom nalogu ne vidim takvu naplatu. Možda je napravljena drugim Apple ID-jem ili Google nalogom, ili je to druga aplikacija — u istoriji kupovina u prodavnici vidite ko vam je naplatio."],
+            "charge_not_found": ["Na vašem nalogu za {app_name} ne vidim takvu naplatu. Možda je napravljena drugim Apple ID-jem ili Google nalogom, ili je to druga aplikacija. U istoriji kupovina u prodavnici vidite ko vam je naplatio.",
+                                 "Na ovom nalogu ne vidim takvu naplatu. Možda je napravljena drugim Apple ID-jem ili Google nalogom, ili je to druga aplikacija. U istoriji kupovina u prodavnici vidite ko vam je naplatio."],
             "never_charged": ["Nikada vam ništa nije naplaćeno: besplatni probni period je istekao bez plaćanja."],
         },
         "status": {
-            "EXPIRED_BILLING_ERROR:never_charged": ["Vaš besplatni probni period za {product_name} istekao je {expires_on} bez plaćanja — {store_name} nije uspeo da naplati, pa vam ništa nije naplaćeno.",
+            "EXPIRED_BILLING_ERROR:never_charged": ["Vaš besplatni probni period za {product_name} istekao je {expires_on} bez plaćanja jer {store_name} nije uspeo da naplati, pa vam ništa nije naplaćeno.",
                                                     "Vaš besplatni probni period je istekao bez plaćanja, pa vam ništa nije naplaćeno."],
             "EXPIRED_CANCELLED:never_charged": ["Vaš besplatni probni period za {product_name} je otkazan i istekao je {expires_on}, tako da vam nikada ništa nije naplaćeno.",
                                                 "Vaš besplatni probni period je otkazan i istekao je, tako da vam nikada ništa nije naplaćeno."],
@@ -937,32 +937,32 @@ ROUND2: dict[str, dict] = {
     },
     "de": {
         "intent": {
-            "HUMAN_REQUEST:escalated": ["Selbstverständlich – ich habe Ihr Gespräch an unser Support-Team weitergegeben, eine Person meldet sich hier bei Ihnen."],
+            "HUMAN_REQUEST:escalated": ["Selbstverständlich. Ich habe Ihr Gespräch an unser Support-Team weitergegeben, eine Person meldet sich hier bei Ihnen."],
             "HUMAN_REQUEST": ["Ich bin die automatische Hilfe der App; schreiben Sie mir, was passiert ist, dann prüfe ich Ihr Konto sofort."],
             "ACKNOWLEDGEMENT:thanks": ["Gern geschehen! Wenn Sie noch etwas zu Ihrem Abo brauchen, schreiben Sie einfach hier."],
             "ACKNOWLEDGEMENT": ["Wie kann ich helfen? Ich kann Ihnen Ihr Abo erklären, beim Kündigen helfen, Premium auf ein neues Gerät zurückholen oder zeigen, wie Sie eine Erstattung beantragen."],
-            "OTHER_APP": ["Ich kann nur bei Ihrem {app_name}-Abo helfen. Bei einer anderen App wenden Sie sich bitte an deren Support – in der Abo-Liste Ihres Stores sehen Sie, wer abbucht.",
+            "OTHER_APP": ["Ich kann nur bei Ihrem {app_name}-Abo helfen. Bei einer anderen App wenden Sie sich bitte an deren Support. In der Abo-Liste Ihres Stores sehen Sie, wer abbucht.",
                           "Ich kann nur beim Abo dieser App helfen. Bei einer anderen App wenden Sie sich bitte an deren Support."],
-            "PRIVACY_REQUEST:escalated": ["Danke – ich habe Ihre Datenanfrage an das {app_name}-Team weitergegeben; es bearbeitet sie und bestätigt sie Ihnen. Das Löschen Ihrer Daten kündigt kein Store-Abo; das geht in Ihrem Store-Konto.",
-                                          "Danke – ich habe Ihre Datenanfrage an das App-Team weitergegeben; es bearbeitet sie und bestätigt sie Ihnen. Das Löschen Ihrer Daten kündigt kein Store-Abo."],
+            "PRIVACY_REQUEST:escalated": ["Danke. Ich habe Ihre Datenanfrage an das {app_name}-Team weitergegeben; es bearbeitet sie und bestätigt sie Ihnen. Das Löschen Ihrer Daten kündigt kein Store-Abo; das geht in Ihrem Store-Konto.",
+                                          "Danke. Ich habe Ihre Datenanfrage an das App-Team weitergegeben; es bearbeitet sie und bestätigt sie Ihnen. Das Löschen Ihrer Daten kündigt kein Store-Abo."],
             "PRIVACY_REQUEST": ["Datenanfragen bearbeitet das {app_name}-Team. Das Löschen Ihrer Daten kündigt kein Store-Abo; das geht in Ihrem Store-Konto.",
                                 "Datenanfragen bearbeitet das App-Team. Das Löschen Ihrer Daten kündigt kein Store-Abo."],
             "THIRD_PARTY_ACCOUNT": ["Ich sehe nur das Konto, von dem diese Nachricht kommt, und kann daher nichts über das Abo einer anderen Person sagen. Diese Person kann uns aus der App mit ihrem eigenen Konto schreiben."],
-            "DISCOUNT_REQUEST": ["Rabatte oder Gratiszeit kann ich selbst nicht anbieten – die Preise legt der Store fest."],
+            "DISCOUNT_REQUEST": ["Rabatte oder Gratiszeit kann ich selbst nicht anbieten, denn die Preise legt der Store fest."],
         },
         "extra": {
-            "pending_grant": ["Ihre Anfrage für eine Verlängerung aus Kulanz liegt noch beim Team zur Prüfung – sie ist noch nicht aktiv, und Sie sehen sie in der App, sobald sie genehmigt ist."],
-            "cannot_act": ["Ich kann das Abo nicht für Sie kündigen – ein Abo lässt sich nur über Ihre eigene Apple-ID oder Ihr Google-Konto kündigen."],
+            "pending_grant": ["Ihre Anfrage für eine Verlängerung aus Kulanz liegt noch beim Team zur Prüfung. Sie ist noch nicht aktiv, und Sie sehen sie in der App, sobald sie genehmigt ist."],
+            "cannot_act": ["Ich kann das Abo nicht für Sie kündigen. Ein Abo lässt sich nur über Ihre eigene Apple-ID oder Ihr Google-Konto kündigen."],
             "chargeback": ["Eine Erstattungsanfrage beim Store ist meist schneller als eine Rückbuchung über die Bank, und eine Rückbuchung kann dazu führen, dass der Store Ihr Konto sperrt."],
             "angry": ["Es tut mir leid, dass das so ärgerlich war."],
         },
         "contra": {
-            "charge_not_found": ["Eine solche Abbuchung sehe ich auf Ihrem {app_name}-Konto nicht. Sie könnte über eine andere Apple-ID oder ein anderes Google-Konto oder von einer anderen App stammen – im Kaufverlauf Ihres Stores sehen Sie, wer abgebucht hat.",
-                                 "Eine solche Abbuchung sehe ich auf diesem Konto nicht. Sie könnte über eine andere Apple-ID oder ein anderes Google-Konto oder von einer anderen App stammen – im Kaufverlauf Ihres Stores sehen Sie, wer abgebucht hat."],
+            "charge_not_found": ["Eine solche Abbuchung sehe ich auf Ihrem {app_name}-Konto nicht. Sie könnte über eine andere Apple-ID oder ein anderes Google-Konto oder von einer anderen App stammen. Im Kaufverlauf Ihres Stores sehen Sie, wer abgebucht hat.",
+                                 "Eine solche Abbuchung sehe ich auf diesem Konto nicht. Sie könnte über eine andere Apple-ID oder ein anderes Google-Konto oder von einer anderen App stammen. Im Kaufverlauf Ihres Stores sehen Sie, wer abgebucht hat."],
             "never_charged": ["Ihnen wurde nie etwas berechnet: Die kostenlose Testphase ist ohne Zahlung abgelaufen."],
         },
         "status": {
-            "EXPIRED_BILLING_ERROR:never_charged": ["Ihre kostenlose Testphase von {product_name} ist am {expires_on} ohne Zahlung abgelaufen – {store_name} konnte nicht abbuchen, Ihnen wurde also nichts berechnet.",
+            "EXPIRED_BILLING_ERROR:never_charged": ["Ihre kostenlose Testphase von {product_name} ist am {expires_on} ohne Zahlung abgelaufen. {store_name} konnte nicht abbuchen, Ihnen wurde also nichts berechnet.",
                                                     "Ihre kostenlose Testphase ist ohne Zahlung abgelaufen, Ihnen wurde also nichts berechnet."],
             "EXPIRED_CANCELLED:never_charged": ["Ihre kostenlose Testphase von {product_name} wurde gekündigt und ist am {expires_on} abgelaufen, Ihnen wurde also nie etwas berechnet.",
                                                 "Ihre kostenlose Testphase wurde gekündigt und ist abgelaufen, Ihnen wurde also nie etwas berechnet."],
@@ -975,32 +975,32 @@ ROUND2: dict[str, dict] = {
     },
     "pt": {
         "intent": {
-            "HUMAN_REQUEST:escalated": ["Claro — passei sua conversa para a nossa equipe de suporte, e uma pessoa vai responder aqui."],
+            "HUMAN_REQUEST:escalated": ["Claro, passei sua conversa para a nossa equipe de suporte, e uma pessoa vai responder aqui."],
             "HUMAN_REQUEST": ["Sou a ajuda automática do app; me conte o que aconteceu e eu verifico sua conta na hora."],
             "ACKNOWLEDGEMENT:thanks": ["De nada! Se precisar de mais alguma coisa com sua assinatura, é só escrever aqui."],
             "ACKNOWLEDGEMENT": ["Como posso ajudar? Posso explicar sua assinatura, ajudar a cancelar, recuperar o premium em um aparelho novo ou mostrar como pedir reembolso."],
-            "OTHER_APP": ["Só posso ajudar com sua assinatura do {app_name}. Para outro app, fale com o suporte dele — a lista de assinaturas da sua loja mostra quem está cobrando você.",
+            "OTHER_APP": ["Só posso ajudar com sua assinatura do {app_name}. Para outro app, fale com o suporte dele. A lista de assinaturas da sua loja mostra quem está cobrando você.",
                           "Só posso ajudar com a assinatura deste app. Para outro app, fale com o suporte dele."],
-            "PRIVACY_REQUEST:escalated": ["Obrigado — passei seu pedido sobre dados para a equipe do {app_name}, que vai tratá-lo e confirmar com você. Apagar seus dados não cancela uma assinatura da loja; isso é feito na sua conta da loja.",
-                                          "Obrigado — passei seu pedido sobre dados para a equipe do app, que vai tratá-lo e confirmar com você. Apagar seus dados não cancela uma assinatura da loja."],
+            "PRIVACY_REQUEST:escalated": ["Obrigado. Passei seu pedido sobre dados para a equipe do {app_name}, que vai tratá-lo e confirmar com você. Apagar seus dados não cancela uma assinatura da loja; isso é feito na sua conta da loja.",
+                                          "Obrigado. Passei seu pedido sobre dados para a equipe do app, que vai tratá-lo e confirmar com você. Apagar seus dados não cancela uma assinatura da loja."],
             "PRIVACY_REQUEST": ["Pedidos sobre dados são tratados pela equipe do {app_name}. Apagar seus dados não cancela uma assinatura da loja; isso é feito na sua conta da loja.",
                                 "Pedidos sobre dados são tratados pela equipe do app. Apagar seus dados não cancela uma assinatura da loja."],
             "THIRD_PARTY_ACCOUNT": ["Só consigo ver a conta de onde vem esta mensagem, então não posso compartilhar nada sobre a assinatura de outra pessoa. Essa pessoa pode nos escrever pelo app na própria conta."],
-            "DISCOUNT_REQUEST": ["Não consigo oferecer descontos nem tempo grátis — os preços são definidos pela loja."],
+            "DISCOUNT_REQUEST": ["Não consigo oferecer descontos nem tempo grátis, pois os preços são definidos pela loja."],
         },
         "extra": {
-            "pending_grant": ["Seu pedido de extensão de cortesia ainda está em análise pela equipe — ainda não está ativo, e você verá no app quando for aprovado."],
-            "cannot_act": ["Não consigo cancelar por você — a assinatura só pode ser cancelada no seu próprio ID Apple ou conta Google."],
+            "pending_grant": ["Seu pedido de extensão de cortesia ainda está em análise pela equipe. Ainda não está ativo, e você verá no app quando for aprovado."],
+            "cannot_act": ["Não consigo cancelar por você. A assinatura só pode ser cancelada no seu próprio ID Apple ou conta Google."],
             "chargeback": ["Pedir reembolso pela loja costuma ser mais rápido que contestar no banco, e uma contestação pode fazer a loja bloquear sua conta."],
             "angry": ["Sinto muito que isso esteja sendo tão frustrante."],
         },
         "contra": {
-            "charge_not_found": ["Não vejo uma cobrança assim na sua conta do {app_name}. Ela pode ter sido feita com outro ID Apple ou outra conta Google, ou por outro app — o histórico de compras da sua loja mostra quem cobrou.",
-                                 "Não vejo uma cobrança assim nesta conta. Ela pode ter sido feita com outro ID Apple ou outra conta Google, ou por outro app — o histórico de compras da sua loja mostra quem cobrou."],
+            "charge_not_found": ["Não vejo uma cobrança assim na sua conta do {app_name}. Ela pode ter sido feita com outro ID Apple ou outra conta Google, ou por outro app. O histórico de compras da sua loja mostra quem cobrou.",
+                                 "Não vejo uma cobrança assim nesta conta. Ela pode ter sido feita com outro ID Apple ou outra conta Google, ou por outro app. O histórico de compras da sua loja mostra quem cobrou."],
             "never_charged": ["Você nunca foi cobrado: o teste grátis terminou sem nenhum pagamento."],
         },
         "status": {
-            "EXPIRED_BILLING_ERROR:never_charged": ["Seu teste grátis de {product_name} terminou em {expires_on} sem pagamento — {store_name} não conseguiu cobrar, então nada foi cobrado.",
+            "EXPIRED_BILLING_ERROR:never_charged": ["Seu teste grátis de {product_name} terminou em {expires_on} sem pagamento. {store_name} não conseguiu cobrar, então nada foi cobrado.",
                                                     "Seu teste grátis terminou sem pagamento, então nada foi cobrado."],
             "EXPIRED_CANCELLED:never_charged": ["Seu teste grátis de {product_name} foi cancelado e terminou em {expires_on}, então você nunca foi cobrado.",
                                                 "Seu teste grátis foi cancelado e já terminou, então você nunca foi cobrado."],
@@ -1013,32 +1013,32 @@ ROUND2: dict[str, dict] = {
     },
     "ru": {
         "intent": {
-            "HUMAN_REQUEST:escalated": ["Конечно — мы передали ваш разговор команде поддержки, и сотрудник ответит вам здесь."],
+            "HUMAN_REQUEST:escalated": ["Конечно, мы передали ваш разговор команде поддержки, и сотрудник ответит вам здесь."],
             "HUMAN_REQUEST": ["Я автоматическая помощь приложения; напишите, что случилось, и я сразу проверю ваш аккаунт."],
             "ACKNOWLEDGEMENT:thanks": ["Пожалуйста! Если появятся ещё вопросы о подписке, просто напишите сюда."],
             "ACKNOWLEDGEMENT": ["Чем помочь? Я могу объяснить вашу подписку, помочь её отменить, вернуть премиум на новом устройстве или показать, как запросить возврат."],
-            "OTHER_APP": ["Я могу помочь только с подпиской {app_name}. По другому приложению обратитесь в его поддержку — в списке подписок вашего магазина видно, кто списывает деньги.",
+            "OTHER_APP": ["Я могу помочь только с подпиской {app_name}. По другому приложению обратитесь в его поддержку. В списке подписок вашего магазина видно, кто списывает деньги.",
                           "Я могу помочь только с подпиской этого приложения. По другому приложению обратитесь в его поддержку."],
-            "PRIVACY_REQUEST:escalated": ["Спасибо — мы передали ваш запрос о данных команде {app_name}; они его обработают и подтвердят вам. Удаление данных не отменяет подписку в магазине — это делается в вашем аккаунте магазина.",
-                                          "Спасибо — мы передали ваш запрос о данных команде приложения; они его обработают и подтвердят вам. Удаление данных не отменяет подписку в магазине."],
-            "PRIVACY_REQUEST": ["Запросы о данных обрабатывает команда {app_name}. Удаление данных не отменяет подписку в магазине — это делается в вашем аккаунте магазина.",
+            "PRIVACY_REQUEST:escalated": ["Спасибо, мы передали ваш запрос о данных команде {app_name}; они его обработают и подтвердят вам. Удаление данных не отменяет подписку в магазине. Это делается в вашем аккаунте магазина.",
+                                          "Спасибо, мы передали ваш запрос о данных команде приложения; они его обработают и подтвердят вам. Удаление данных не отменяет подписку в магазине."],
+            "PRIVACY_REQUEST": ["Запросы о данных обрабатывает команда {app_name}. Удаление данных не отменяет подписку в магазине. Это делается в вашем аккаунте магазина.",
                                 "Запросы о данных обрабатывает команда приложения. Удаление данных не отменяет подписку в магазине."],
             "THIRD_PARTY_ACCOUNT": ["Я вижу только аккаунт, с которого пришло это сообщение, поэтому не могу рассказать о чужой подписке. Этот человек может написать нам из приложения со своего аккаунта."],
-            "DISCOUNT_REQUEST": ["Я не могу предложить скидку или бесплатное время — цены устанавливает магазин."],
+            "DISCOUNT_REQUEST": ["Я не могу предложить скидку или бесплатное время, потому что цены устанавливает магазин."],
         },
         "extra": {
-            "pending_grant": ["Ваш запрос на продление доступа в качестве жеста доброй воли ещё у команды на рассмотрении — пока он не действует, а после одобрения вы увидите это в приложении."],
-            "cannot_act": ["Я не могу отменить подписку за вас — это можно сделать только в вашем Apple ID или аккаунте Google."],
+            "pending_grant": ["Ваш запрос на продление доступа в качестве жеста доброй воли ещё у команды на рассмотрении. Пока он не действует, а после одобрения вы увидите это в приложении."],
+            "cannot_act": ["Я не могу отменить подписку за вас. Это можно сделать только в вашем Apple ID или аккаунте Google."],
             "chargeback": ["Запрос на возврат через магазин обычно быстрее, чем оспаривание платежа в банке, а такое оспаривание может привести к блокировке вашего аккаунта в магазине."],
             "angry": ["Мне очень жаль, что это доставило столько неудобств."],
         },
         "contra": {
-            "charge_not_found": ["Я не вижу такого списания в вашем аккаунте {app_name}. Возможно, оно было сделано с другого Apple ID или аккаунта Google либо другим приложением — в истории покупок магазина видно, кто списал деньги.",
-                                 "Я не вижу такого списания в этом аккаунте. Возможно, оно было сделано с другого Apple ID или аккаунта Google либо другим приложением — в истории покупок магазина видно, кто списал деньги."],
+            "charge_not_found": ["Я не вижу такого списания в вашем аккаунте {app_name}. Возможно, оно было сделано с другого Apple ID или аккаунта Google либо другим приложением. В истории покупок магазина видно, кто списал деньги.",
+                                 "Я не вижу такого списания в этом аккаунте. Возможно, оно было сделано с другого Apple ID или аккаунта Google либо другим приложением. В истории покупок магазина видно, кто списал деньги."],
             "never_charged": ["С вас никогда ничего не списывалось: бесплатный пробный период закончился без оплаты."],
         },
         "status": {
-            "EXPIRED_BILLING_ERROR:never_charged": ["Ваш бесплатный пробный период {product_name} закончился {expires_on} без оплаты — {store_name} не удалось списать деньги, поэтому ничего не списано.",
+            "EXPIRED_BILLING_ERROR:never_charged": ["Ваш бесплатный пробный период {product_name} закончился {expires_on} без оплаты. {store_name} не удалось списать деньги, поэтому ничего не списано.",
                                                     "Ваш бесплатный пробный период закончился без оплаты, поэтому ничего не списано."],
             "EXPIRED_CANCELLED:never_charged": ["Ваш бесплатный пробный период {product_name} был отменён и закончился {expires_on}, поэтому с вас ничего не списывалось.",
                                                 "Ваш бесплатный пробный период был отменён и закончился, поэтому с вас ничего не списывалось."],

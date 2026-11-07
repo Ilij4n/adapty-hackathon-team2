@@ -70,7 +70,7 @@ def llm_timeout() -> float:
 
 
 JSON_SUFFIX = (
-    "\n\nOutput format: a single JSON object and nothing else — no prose before or after it, no markdown code fences."
+    "\n\nOutput format: a single JSON object and nothing else: no prose before or after it, no markdown code fences."
 )
 
 

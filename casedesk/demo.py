@@ -50,11 +50,18 @@ def main() -> None:
     ap.add_argument("--llm", help="claude-cli | anthropic | fake | none (sets CASEDESK_LLM)")
     ap.add_argument("--external-mock", action="store_true", help="serve the mock Adapty API on port+1 instead of in-process")
     ap.add_argument("--open", action="store_true", help="open a browser on /help")
+    ap.add_argument("--fresh", action="store_true", help="start from a clean demo: delete the case database (the mock Adapty data always reloads on start)")
     a = ap.parse_args()
 
     os.environ.setdefault("CASEDESK_DEMO", "1")
     os.environ.setdefault("CONSOLE_TOKEN", "demo-console")
     os.environ.setdefault("CASEDESK_DB", str(Path.cwd() / "var" / "casedesk.db"))
+    if a.fresh:
+        db = Path(os.environ["CASEDESK_DB"])
+        for f in (db, db.with_name(db.name + "-wal"), db.with_name(db.name + "-shm")):
+            if f.exists():
+                f.unlink()
+        print(f"  fresh start: removed {db}")
     now = _seed_now()
     if now:
         os.environ.setdefault("CASEDESK_NOW", now)

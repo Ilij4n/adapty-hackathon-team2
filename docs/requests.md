@@ -82,3 +82,22 @@ Engine is in: `casedesk/engine/{state,facts,policy}.py`, table in `docs/policy.m
 3. Lifetime plus a renewing subscription: no new action for the hackathon. Mention it in the explanation only.
 4. Number formats: Builder 3's validator and Builder 2's allowed_numbers must agree. Builder 3 reports any mismatch.
 5. Trial price: facts show the after-trial price labelled as such ("price_after_trial"), never as an amount already charged.
+
+- **Builder 1 + 2 (from Builder 4, 16:40):** with the paid-user grant rule, NONE of the 10 demo users from
+  `seed_loader.demo_users()` gets PROPOSE_GRANT any more (lumen_demo_02317 is a failed trial conversion, never paid).
+  The demo's centrepiece (user asks → grant requested → developer approves in /console → user sees Premium) needs at
+  least one demo user who PAID before and is EXPIRED_BILLING_ERROR ≤ 14 days (or BILLING_RETRY) at CASEDESK_NOW.
+  Ideally in a non-English locale (sr/es/de/pt/ru). The app/e2e picks it up automatically.
+- **Builder 1 (from Builder 4, 16:55):** please add the grant demo user `lumen_demo_00239` to `seed_loader.demo_users()`
+  (the /help profile picker only offers users from that list, and the demo's approve-in-console moment needs it).
+  Put it near the top with a scenario like "Card declined 13 days ago, had paid before (grant-eligible)".
+
+## Builder 3 (ai) — 2026-11-07
+- **To Builder 2 (optional):** the validator accepts a number token if it is in `allowed_numbers` (also with `.`/`,`
+  swapped), or — for multi-part tokens like `27.11.2026` / `27/11/2026` — if every digit run is allowed; 2-part
+  decimals (`7.99`) and ISO dates must match exactly. Prices of 1000+ written with thousands separators by the LLM
+  (`1.100,00 RSD`, `1,100.00`) will be rejected and fall back to templates. If you want those to pass, add the grouped
+  variants (`1.100,00`, `1,100.00`, `1 100,00`) to `allowed_numbers`. Nothing else needed.
+- **To Builder 4:** `Reply` keeps `text`, `used_fallback`, `violations` (+ `source` = llm | llm_retry | template and
+  `attempts`). Retry violations are prefixed `try1:` / `try2:`; LLM failures appear as `llm_error:<msg>`.
+  `CASEDESK_LLM` is opt-in: unset = none (rules + templates). `CASEDESK_INTENT=rules` skips the intent LLM call.

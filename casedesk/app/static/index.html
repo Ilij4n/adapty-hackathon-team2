@@ -132,7 +132,7 @@
         <div class="s-head"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/static/lumen.svg#mark"/></svg><b id="dTitle">Lumen pomoć</b><span class="lang" id="dLang">sr</span></div>
         <div class="s-body" id="dBody"></div>
       </div></div>
-      <figcaption class="demo-cap">A real case: the card was declined, so Premium lapsed.</figcaption>
+      <figcaption class="demo-cap" id="dCap">A real case: the card was declined, so Premium lapsed.</figcaption>
     </figure>
   </section>
 
@@ -180,20 +180,23 @@
 
 <script>
 (() => {
-  const body = document.getElementById("dBody"), title = document.getElementById("dTitle"), lang = document.getElementById("dLang");
+  const body = document.getElementById("dBody"), title = document.getElementById("dTitle"), lang = document.getElementById("dLang"), cap = document.getElementById("dCap");
   const SCRIPTS = [
     { lang: "sr", title: "Lumen pomoć", user: "Platila sam, a nemam Premium?", typing: "Proveravam vaš nalog…",
       badge: ["bad", "Istekla — plaćanje nije prošlo"], rows: [["Plaćanje nije uspelo", "23. okt 2026."], ["Kupljeno na", "App Store"]],
       reply: "Pretplata je istekla 23. oktobra jer App Store nije uspeo da naplati sa kartice. Promenite karticu i Premium se vraća.",
-      acts: ["Promeni način plaćanja ↗"], note: "Zahtev je poslat — Lumen tim će ga razmotriti." },
+      acts: ["Promeni način plaćanja ↗"], note: "Zahtev je poslat — Lumen tim će ga razmotriti.",
+      cap: "A real case: the card was declined, so Premium lapsed." },
     { lang: "es", title: "Ayuda de Lumen", user: "Me cobraron después de cancelar", typing: "Revisando tu cuenta…",
       badge: ["info", "Cancelada — activa hasta fin de periodo"], rows: [["Cancelada el", "23 oct 2026"], ["Acceso hasta", "20 nov 2026"]],
       reply: "Cancelaste el 23 de octubre; el último cobro fue el 20 de octubre, antes de cancelar. No habrá más cobros y Premium sigue activo hasta el 20 de noviembre.",
-      acts: ["Gestionar suscripción ↗"], note: null },
+      acts: ["Gestionar suscripción ↗"], note: null,
+      cap: "A real case: the last charge came before the cancellation." },
     { lang: "en", title: "Lumen Help", user: "New phone, my Pro is gone", typing: "Checking your account…",
       badge: ["ok", "Active — renews automatically"], rows: [["Plan", "Lumen Pro Annual"], ["Renews on", "14 Mar 2027"]],
       reply: "Your Lumen Pro Annual is active — nothing was lost. On the new phone, sign in with the same Apple ID and tap Restore purchases.",
-      acts: ["Restore my purchase"], note: null },
+      acts: ["Restore my purchase"], note: null,
+      cap: "A real case: nothing was lost — it just needs restoring." },
   ];
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const mk = (cls, html) => { const d = document.createElement("div"); d.className = cls; if (html != null) d.textContent = html; return d; };
@@ -205,7 +208,7 @@
     c.append(b, dl); return c;
   }
   async function play(s) {
-    body.textContent = ""; title.textContent = s.title; lang.textContent = s.lang;
+    body.textContent = ""; title.textContent = s.title; lang.textContent = s.lang; cap.textContent = s.cap;
     await show(mk("d-msg d-user", s.user), 700);
     const ty = mk("d-typing"); ty.innerHTML = "<span><i></i><i></i><i></i></span>"; ty.append(document.createTextNode(s.typing));
     await show(ty, 900);

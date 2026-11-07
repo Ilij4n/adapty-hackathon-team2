@@ -7,22 +7,27 @@
   const qs = new URLSearchParams(location.search);
 
   const S = {
-    lang: "en", user: null, sig: null, locale: null, caseId: null, busy: false,
+    lang: "en", user: null, sig: null, locale: null, caseId: null, busy: false, gen: 0,
     approvals: {}, approvalTimer: null, demoUsers: [], lastStatus: null,
   };
   const t = () => I[S.lang] || I.en;
-  const pickLang = (loc) => { const l = String(loc || "en").toLowerCase().split(/[-_]/)[0]; return I[l] ? l : "en"; };
+  const pickLang = (loc) => {
+    const raw = String(loc || "en").toLowerCase().replace(/_/g, "-"), l = raw.split("-")[0];
+    if (l === "sr" && /(^|-)cyrl(-|$)/.test(raw) && I["sr-Cyrl"]) return "sr-Cyrl";
+    return I[l] ? l : "en";
+  };
+  const intlLocale = () => (S.lang === "sr" ? "sr-Latn" : S.lang);
 
   // ------------------------------------------------------------ chrome / language
   function applyLang(lang) {
     S.lang = pickLang(lang);
-    document.documentElement.lang = S.lang;
+    document.documentElement.lang = S.lang === "sr" ? "sr-Latn" : S.lang;
     const tr = t();
     document.querySelectorAll("[data-i18n]").forEach((n) => { const k = n.dataset.i18n; if (typeof tr[k] === "string") n.textContent = tr[k]; });
     document.querySelectorAll("[data-i18n-placeholder]").forEach((n) => { n.placeholder = tr[n.dataset.i18nPlaceholder]; });
     $("#send").setAttribute("aria-label", tr.send);
-    const chips = $("#chips"); chips.textContent = "";
-    tr.chips.forEach((c) => { const b = el("button", "chip", c); b.type = "button"; b.setAttribute("role", "listitem"); b.onclick = () => send(c); chips.append(b); });
+    const chips = $("#chips"); chips.textContent = ""; chips.setAttribute("aria-label", tr.suggestions || "Suggestions");
+    tr.chips.forEach((c) => { const b = el("button", "chip", c); b.type = "button"; b.onclick = () => send(c); chips.append(b); });
     if (S.lastStatus) renderStatus(S.lastStatus);
   }
 
@@ -31,21 +36,21 @@
   function fmtDate(v) {
     const d = new Date(/^\d{4}-\d{2}-\d{2}$/.test(v) ? v + "T00:00:00Z" : v);
     if (isNaN(d)) return v;
-    try { return new Intl.DateTimeFormat(S.lang === "sr" ? "sr-Latn" : S.lang, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(d); }
+    try { return new Intl.DateTimeFormat(intlLocale(), { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(d); }
     catch { return v; }
   }
   function cardRows(f) {
     const L = t().facts, rows = [];
     const add = (label, key, val) => { if (f[key]) rows.push([label, val ?? f[key]]); };
     add(L.product_name, "product_name");
-    add(L.store_name, "store_name");
+    if (f.product_name && !f.granted_until && f.state !== "NO_PURCHASE") add(L.store_name, "store_name");
     add(L.price, "price");
     if (f.granted_until) add(L.granted_until, "granted_until", fmtDate(f.granted_until));
-    else if (f.renews_on) add(L.renews_on, "renews_on", fmtDate(f.renews_on));
     else if (f.trial_ends_on) add(L.trial_ends_on, "trial_ends_on", fmtDate(f.trial_ends_on));
+    else if (f.renews_on) add(L.renews_on, "renews_on", fmtDate(f.renews_on));
     else if (f.grace_ends_on) add(L.grace_until, "grace_ends_on", fmtDate(f.grace_ends_on));
     else if (f.expires_on) add(f.days_since_expired != null ? L.expired_on : L.expires_on, "expires_on", fmtDate(f.expires_on));
-    if (f.days_left && !f.renews_on) add(L.days_left, "days_left", t().days(f.days_left));
+    if (f.days_left && (!f.renews_on || f.trial_ends_on)) add(L.days_left, "days_left", t().days(f.days_left));
     add(L.cancelled_on, "cancelled_on", f.cancelled_on && fmtDate(f.cancelled_on));
     add(L.billing_issue_on, "billing_issue_on", f.billing_issue_on && fmtDate(f.billing_issue_on));
     add(L.refunded_on, "refunded_on", f.refunded_on && fmtDate(f.refunded_on));
@@ -53,7 +58,10 @@
   }
   function renderStatus(st) {
     S.lastStatus = st;
-    const card = $("#statusCard"); card.hidden = false; card.classList.remove("loading");
+    const card = $("#statusCard"); card.classList.remove("loading");
+    const key = JSON.stringify([S.lang, st.state_badge, st.facts]);
+    if (!card.hidden && card.dataset.key === key) return;
+    card.dataset.key = key; card.hidden = false;
     const b = $("#stateBadge"); const code = st.state_badge.code;
     b.className = "badge " + (st.state_badge.tone || "info");
     b.textContent = (SL[S.lang] && SL[S.lang][code]) || st.state_badge.label;
@@ -66,7 +74,7 @@
   const log = $("#log"), scroller = $("#scroller");
   const scrollDown = () => requestAnimationFrame(() => { scroller.scrollTop = scroller.scrollHeight; });
   function addMsg(kind, text) {
-    const li = el("li", "msg " + kind); const b = el("div", "bubble", text); li.append(b); log.append(li); scrollDown(); return li;
+    const li = el("li", "msg " + kind); const b = el("div", "bubble", text); b.dir = "auto"; li.append(b); log.append(li); scrollDown(); return li;
   }
   function addTyping() {
     const li = el("li", "msg bot"); const b = el("div", "bubble typing");
@@ -115,7 +123,7 @@
   function renderReply(li, r, facts) {
     li.textContent = "";
     if (r.reply_status === "error") li.classList.add("error");
-    li.append(el("div", "bubble", r.reply || t().errGeneric));
+    const b = el("div", "bubble", r.reply || t().errGeneric); b.dir = "auto"; li.append(b);
     renderActions(li, r.actions, facts || {});
     scrollDown();
   }
@@ -133,21 +141,28 @@
   async function send(text) {
     text = String(text || "").trim();
     if (!text || S.busy || !S.user) return;
+    // Everything below belongs to this user's conversation; if the user is switched mid-request, drop the result.
+    const gen = S.gen, user = S.user, sig = S.sig, q = authQ();
+    const stale = () => S.gen !== gen;
     S.busy = true; $("#send").disabled = true; $("#msg").value = ""; autosize();
     $("#intro").hidden = true;
     addMsg("user", text);
     const typing = addTyping(); statusLoading();
     try {
-      const d = await api("/api/chat", { method: "POST", body: JSON.stringify({ customer_user_id: S.user, signature: S.sig, message: text, locale: S.locale || navigator.language, case_id: S.caseId }) });
+      const d = await api("/api/chat", { method: "POST", body: JSON.stringify({ customer_user_id: user, signature: sig, message: text, locale: S.locale || navigator.language, case_id: S.caseId }) });
+      if (stale()) return typing.stop();
       S.caseId = d.case_id;
       renderStatus(d);
       noteApprovals(d.approvals, true);
-      let r = d;
+      let r = d, misses = 0;
       const deadline = Date.now() + 120000;
       while (r.reply_status === "pending" && Date.now() < deadline) {
         await sleep(1000);
-        r = await api(`/api/chat/${d.message_id}?${authQ()}`);
+        if (stale()) return typing.stop();
+        try { r = await api(`/api/chat/${d.message_id}?${q}`); misses = 0; }
+        catch (e) { if (e.status || ++misses > 5) throw e; } // a network blip mid-poll: keep waiting for the reply
       }
+      if (stale()) return typing.stop();
       typing.stop();
       if (r.language) applyLang(r.language);
       if (r.reply_status === "pending") { typing.li.remove(); addMsg("bot error", t().errGeneric); }
@@ -157,11 +172,14 @@
         watchApprovals();
       }
     } catch (e) {
-      typing.stop(); typing.li.remove();
+      typing.stop();
+      if (stale()) return;
+      typing.li.remove();
       const c = $("#statusCard"); c.classList.remove("loading");
       addMsg("bot error", e.status === 429 ? t().errRate : e.status === 401 ? t().errAuth : t().errGeneric);
+      if (!e.status && !$("#msg").value) { $("#msg").value = text; autosize(); } // offline: keep what they wrote
     } finally {
-      S.busy = false; $("#send").disabled = false;
+      if (!stale()) { S.busy = false; $("#send").disabled = false; }
     }
   }
 
@@ -183,11 +201,12 @@
   }
   function watchApprovals() {
     if (S.approvalTimer) return;
-    const user = S.user;
+    const gen = S.gen, q = authQ();
     S.approvalTimer = setInterval(async () => {
-      if (S.user !== user) return stopWatch();
+      if (S.gen !== gen) return;
       try {
-        const st = await api(`/api/status?${authQ()}`);
+        const st = await api(`/api/status?${q}`);
+        if (S.gen !== gen) return; // switched users while this was in flight
         renderStatus(st);
         noteApprovals(st.approvals, false);
         if (!Object.values(S.approvals).includes("pending")) stopWatch();
@@ -200,17 +219,19 @@
   async function selectUser(u) {
     stopWatch();
     S.user = u.customer_user_id; S.sig = u.signature; S.locale = (u.locale || "en").replace("_", "-");
-    S.caseId = null; S.approvals = {}; S.lastStatus = null;
+    S.caseId = null; S.approvals = {}; S.lastStatus = null; S.gen++;
+    S.busy = false; $("#send").disabled = false;
     log.textContent = ""; $("#intro").hidden = false; $("#statusCard").hidden = true;
-    document.querySelectorAll(".profile").forEach((p) => p.setAttribute("aria-checked", String(p.dataset.uid === S.user)));
+    document.querySelectorAll(".profile").forEach((p) => { const on = p.dataset.uid === S.user; p.setAttribute("aria-checked", String(on)); p.tabIndex = on ? 0 : -1; });
     $("#demoSelect").value = S.user;
     applyLang(S.locale);
+    const gen = S.gen;
     try {
       const st = await api(`/api/status?${authQ()}`);
-      if (S.user !== u.customer_user_id) return;
+      if (S.gen !== gen) return;
       renderStatus(st); noteApprovals(st.approvals, true);
       if (Object.values(S.approvals).includes("pending")) watchApprovals();
-    } catch (e) { addMsg("bot error", e.status === 401 ? t().errAuth : t().errGeneric); }
+    } catch (e) { if (S.gen === gen) addMsg("bot error", e.status === 401 ? t().errAuth : t().errGeneric); }
   }
   function initials(name) { return (String(name).replace(/\(.*?\)/g, "").match(/\p{L}/gu) || ["?"])[0].toUpperCase(); }
 
@@ -228,9 +249,23 @@
     const box = $("#profiles"), sel = $("#demoSelect");
     users.forEach((u) => {
       const b = el("button", "profile"); b.type = "button"; b.dataset.uid = u.customer_user_id; b.setAttribute("role", "radio"); b.setAttribute("aria-checked", "false");
-      b.append(el("span", "av", initials(u.display_name)), el("b", null, `${u.display_name} · ${u.locale}`), el("small", null, u.scenario));
-      b.onclick = () => selectUser(u); box.append(b);
-      const o = el("option", null, `Demo: ${u.display_name}`); o.value = u.customer_user_id; o.title = u.scenario; sel.append(o);
+      const av = el("span", "av", initials(u.display_name)); av.setAttribute("aria-hidden", "true");
+      const shown = String(u.display_name).replace(/[-_]/g, "").toLowerCase().includes(String(u.locale).replace(/[-_]/g, "").toLowerCase());
+      b.append(av, el("b", null, shown ? u.display_name : `${u.display_name} · ${u.locale}`), el("small", null, u.scenario));
+      b.tabIndex = -1; b.onclick = () => selectUser(u); box.append(b);
+      // the narrow-screen select: short first name + id, so the five "Jake"s stay tell-apart-able when truncated
+      const short = String(u.display_name).replace(/\s*\(.*?\)\s*/g, "") || u.customer_user_id;
+      const o = el("option", null, `${short} · ${String(u.customer_user_id).replace(/^.*_/, "")}`); o.value = u.customer_user_id; o.title = u.scenario; sel.append(o);
+    });
+    // radiogroup keyboard pattern: one tab stop, arrow keys move and select
+    box.addEventListener("keydown", (e) => {
+      const keys = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 };
+      if (!(e.key in keys) && e.key !== "Home" && e.key !== "End") return;
+      const all = [...box.querySelectorAll(".profile")], i = all.indexOf(document.activeElement);
+      if (i < 0) return;
+      e.preventDefault();
+      const j = e.key === "Home" ? 0 : e.key === "End" ? all.length - 1 : (i + keys[e.key] + all.length) % all.length;
+      all[j].focus(); all[j].click();
     });
     sel.onchange = () => { const u = users.find((x) => x.customer_user_id === sel.value); if (u) selectUser(u); };
     const want = qs.get("demo_user");

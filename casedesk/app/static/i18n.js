@@ -3,7 +3,7 @@ window.CD_I18N = {
   en: {
     title: "Lumen Help", subtitle: "Subscription",
     introTitle: "Hi! What's going on with your subscription?",
-    introBody: "I can see your Lumen Pro purchase, so I can tell you exactly what's true — and what to do next. Write in any language.",
+    introBody: "I can see your Lumen purchases, so I can tell you exactly what's true — and what to do next. Write in any language.",
     placeholder: "Describe the problem…", send: "Send",
     whatWeFound: "What we found on your account",
     chips: ["I was charged after cancelling", "I paid but have no premium", "New phone", "Cancel my subscription", "Refund"],
@@ -18,7 +18,7 @@ window.CD_I18N = {
     grantNote: "Requested — the Lumen team will review it. Nothing changes until they decide; you'll see it here.",
     grantApproved: (d) => `Good news — the Lumen team added Premium${d ? " until " + d : ""}. It's active now.`,
     grantDenied: "The Lumen team reviewed the request and didn't add access this time.",
-    escalate: "A person from the Lumen team will look at this and reply by email.",
+    escalate: "A person from the Lumen team will look at this and reply here.",
     refundAppleNote: "Only Apple can refund App Store purchases — Apple decides.",
     refundGoogleNote: "Google reviews the request; it isn't guaranteed.",
     restoreIos: ["Open Lumen on the new phone.", "Sign in with the same Apple ID you paid with.", "Go to Settings → Subscription → Restore purchases."],
@@ -29,12 +29,12 @@ window.CD_I18N = {
     errRate: "That's a lot of messages — please wait a minute and try again.",
     errAuth: "We couldn't confirm it's you. Please reopen Help from the Lumen app.",
     slow: "Still working on it — your status above is already up to date.",
-    you: "You", helper: "Lumen Help",
+    you: "You", helper: "Lumen Help", suggestions: "Suggestions",
   },
   sr: {
     title: "Lumen pomoć", subtitle: "Pretplata",
     introTitle: "Zdravo! Šta se dešava sa vašom pretplatom?",
-    introBody: "Vidim vašu Lumen Pro kupovinu, pa mogu tačno da kažem šta je istina — i šta je sledeći korak. Pišite na bilo kom jeziku.",
+    introBody: "Vidim vaše Lumen kupovine, pa mogu tačno da kažem šta je istina — i šta je sledeći korak. Pišite na bilo kom jeziku.",
     placeholder: "Opišite problem…", send: "Pošalji",
     whatWeFound: "Šta smo našli na vašem nalogu",
     chips: ["Naplaćeno mi je posle otkazivanja", "Platio sam, a nemam premium", "Novi telefon", "Otkaži pretplatu", "Povraćaj novca"],
@@ -49,7 +49,7 @@ window.CD_I18N = {
     grantNote: "Zahtev je poslat — Lumen tim će ga razmotriti. Ništa se ne menja dok ne odluče; videćete ovde.",
     grantApproved: (d) => `Dobre vesti — Lumen tim vam je dodao Premium${d ? " do " + d : ""}. Aktivan je sada.`,
     grantDenied: "Lumen tim je razmotrio zahtev i ovog puta nije dodao pristup.",
-    escalate: "Neko iz Lumen tima će pogledati ovo i odgovoriti vam mejlom.",
+    escalate: "Neko iz Lumen tima će pogledati ovo i odgovoriti vam ovde.",
     refundAppleNote: "Samo Apple može da vrati novac za App Store kupovine — Apple odlučuje.",
     refundGoogleNote: "Google razmatra zahtev; povraćaj nije zagarantovan.",
     restoreIos: ["Otvorite Lumen na novom telefonu.", "Prijavite se istim Apple ID-jem kojim ste platili.", "Podešavanja → Pretplata → Vrati kupovine."],
@@ -60,12 +60,12 @@ window.CD_I18N = {
     errRate: "Previše poruka — sačekajte minut pa pokušajte ponovo.",
     errAuth: "Nismo mogli da potvrdimo da ste to vi. Otvorite Pomoć ponovo iz Lumen aplikacije.",
     slow: "Još radim na tome — status gore je već ažuran.",
-    you: "Vi", helper: "Lumen pomoć",
+    you: "Vi", helper: "Lumen pomoć", suggestions: "Predlozi",
   },
   es: {
     title: "Ayuda de Lumen", subtitle: "Suscripción",
     introTitle: "¡Hola! ¿Qué pasa con tu suscripción?",
-    introBody: "Puedo ver tu compra de Lumen Pro, así que te digo exactamente qué es cierto y qué hacer ahora. Escribe en cualquier idioma.",
+    introBody: "Puedo ver tus compras de Lumen, así que te digo exactamente qué es cierto y qué hacer ahora. Escribe en cualquier idioma.",
     placeholder: "Describe el problema…", send: "Enviar",
     whatWeFound: "Lo que vemos en tu cuenta",
     chips: ["Me cobraron después de cancelar", "Pagué y no tengo premium", "Teléfono nuevo", "Cancelar mi suscripción", "Reembolso"],
@@ -80,7 +80,7 @@ window.CD_I18N = {
     grantNote: "Solicitado — el equipo de Lumen lo revisará. Nada cambia hasta que decidan; lo verás aquí.",
     grantApproved: (d) => `Buenas noticias: el equipo de Lumen te añadió Premium${d ? " hasta el " + d : ""}. Ya está activo.`,
     grantDenied: "El equipo de Lumen revisó la solicitud y esta vez no añadió acceso.",
-    escalate: "Una persona del equipo de Lumen lo revisará y te responderá por correo.",
+    escalate: "Una persona del equipo de Lumen lo revisará y te responderá aquí.",
     refundAppleNote: "Solo Apple puede reembolsar compras del App Store — Apple decide.",
     refundGoogleNote: "Google revisa la solicitud; no está garantizado.",
     restoreIos: ["Abre Lumen en el teléfono nuevo.", "Inicia sesión con el mismo Apple ID con el que pagaste.", "Ajustes → Suscripción → Restaurar compras."],
@@ -91,12 +91,12 @@ window.CD_I18N = {
     errRate: "Demasiados mensajes — espera un minuto e inténtalo de nuevo.",
     errAuth: "No pudimos confirmar que eres tú. Vuelve a abrir Ayuda desde la app de Lumen.",
     slow: "Sigo con ello — tu estado de arriba ya está al día.",
-    you: "Tú", helper: "Ayuda de Lumen",
+    you: "Tú", helper: "Ayuda de Lumen", suggestions: "Sugerencias",
   },
   de: {
     title: "Lumen Hilfe", subtitle: "Abo",
     introTitle: "Hallo! Was ist mit deinem Abo los?",
-    introBody: "Ich sehe deinen Lumen-Pro-Kauf und kann dir genau sagen, was stimmt — und was als Nächstes zu tun ist. Schreib in jeder Sprache.",
+    introBody: "Ich sehe deine Lumen-Käufe und kann dir genau sagen, was stimmt — und was als Nächstes zu tun ist. Schreib in jeder Sprache.",
     placeholder: "Beschreib das Problem…", send: "Senden",
     whatWeFound: "Das sehen wir in deinem Konto",
     chips: ["Nach der Kündigung abgebucht", "Bezahlt, aber kein Premium", "Neues Handy", "Abo kündigen", "Erstattung"],
@@ -111,7 +111,7 @@ window.CD_I18N = {
     grantNote: "Angefragt — das Lumen-Team prüft es. Bis zur Entscheidung ändert sich nichts; du siehst es hier.",
     grantApproved: (d) => `Gute Nachricht — das Lumen-Team hat dir Premium${d ? " bis " + d : ""} freigeschaltet. Es ist jetzt aktiv.`,
     grantDenied: "Das Lumen-Team hat die Anfrage geprüft und diesmal keinen Zugang hinzugefügt.",
-    escalate: "Jemand aus dem Lumen-Team schaut sich das an und antwortet per E-Mail.",
+    escalate: "Jemand aus dem Lumen-Team schaut sich das an und antwortet dir hier.",
     refundAppleNote: "Nur Apple kann App-Store-Käufe erstatten — Apple entscheidet.",
     refundGoogleNote: "Google prüft die Anfrage; eine Erstattung ist nicht garantiert.",
     restoreIos: ["Öffne Lumen auf dem neuen Handy.", "Melde dich mit derselben Apple-ID an, mit der du bezahlt hast.", "Einstellungen → Abo → Käufe wiederherstellen."],
@@ -122,12 +122,12 @@ window.CD_I18N = {
     errRate: "Viele Nachrichten — bitte warte eine Minute.",
     errAuth: "Wir konnten dich nicht bestätigen. Öffne die Hilfe bitte erneut aus der Lumen-App.",
     slow: "Ich arbeite noch daran — dein Status oben ist schon aktuell.",
-    you: "Du", helper: "Lumen Hilfe",
+    you: "Du", helper: "Lumen Hilfe", suggestions: "Vorschläge",
   },
   pt: {
     title: "Ajuda Lumen", subtitle: "Assinatura",
     introTitle: "Olá! O que está acontecendo com sua assinatura?",
-    introBody: "Consigo ver sua compra do Lumen Pro, então digo exatamente o que é verdade — e o que fazer agora. Escreva em qualquer idioma.",
+    introBody: "Consigo ver suas compras do Lumen, então digo exatamente o que é verdade — e o que fazer agora. Escreva em qualquer idioma.",
     placeholder: "Descreva o problema…", send: "Enviar",
     whatWeFound: "O que encontramos na sua conta",
     chips: ["Fui cobrado depois de cancelar", "Paguei e não tenho premium", "Celular novo", "Cancelar minha assinatura", "Reembolso"],
@@ -142,7 +142,7 @@ window.CD_I18N = {
     grantNote: "Solicitado — a equipe Lumen vai analisar. Nada muda até decidirem; você verá aqui.",
     grantApproved: (d) => `Boa notícia — a equipe Lumen adicionou Premium${d ? " até " + d : ""}. Já está ativo.`,
     grantDenied: "A equipe Lumen analisou o pedido e desta vez não adicionou acesso.",
-    escalate: "Uma pessoa da equipe Lumen vai analisar e responder por e-mail.",
+    escalate: "Uma pessoa da equipe Lumen vai analisar e responder aqui.",
     refundAppleNote: "Só a Apple pode reembolsar compras da App Store — a Apple decide.",
     refundGoogleNote: "O Google analisa o pedido; não é garantido.",
     restoreIos: ["Abra o Lumen no celular novo.", "Entre com o mesmo Apple ID usado no pagamento.", "Ajustes → Assinatura → Restaurar compras."],
@@ -153,12 +153,12 @@ window.CD_I18N = {
     errRate: "Muitas mensagens — espere um minuto e tente de novo.",
     errAuth: "Não conseguimos confirmar que é você. Abra a Ajuda de novo pelo app Lumen.",
     slow: "Ainda trabalhando — seu status acima já está atualizado.",
-    you: "Você", helper: "Ajuda Lumen",
+    you: "Você", helper: "Ajuda Lumen", suggestions: "Sugestões",
   },
   ru: {
     title: "Помощь Lumen", subtitle: "Подписка",
     introTitle: "Здравствуйте! Что случилось с подпиской?",
-    introBody: "Я вижу вашу покупку Lumen Pro и могу точно сказать, что происходит и что делать дальше. Пишите на любом языке.",
+    introBody: "Я вижу ваши покупки Lumen и могу точно сказать, что происходит и что делать дальше. Пишите на любом языке.",
     placeholder: "Опишите проблему…", send: "Отправить",
     whatWeFound: "Что мы видим в вашем аккаунте",
     chips: ["Списали деньги после отмены", "Оплатил, но нет премиума", "Новый телефон", "Отменить подписку", "Возврат денег"],
@@ -173,7 +173,7 @@ window.CD_I18N = {
     grantNote: "Запрос отправлен — команда Lumen его рассмотрит. До решения ничего не меняется; вы увидите это здесь.",
     grantApproved: (d) => `Хорошие новости — команда Lumen добавила Premium${d ? " до " + d : ""}. Уже активно.`,
     grantDenied: "Команда Lumen рассмотрела запрос и на этот раз не добавила доступ.",
-    escalate: "Сотрудник Lumen посмотрит и ответит по электронной почте.",
+    escalate: "Сотрудник Lumen посмотрит и ответит вам здесь.",
     refundAppleNote: "Вернуть деньги за покупки в App Store может только Apple — решает Apple.",
     refundGoogleNote: "Google рассматривает запрос; возврат не гарантирован.",
     restoreIos: ["Откройте Lumen на новом телефоне.", "Войдите с тем же Apple ID, с которого платили.", "Настройки → Подписка → Восстановить покупки."],
@@ -184,7 +184,7 @@ window.CD_I18N = {
     errRate: "Слишком много сообщений — подождите минуту.",
     errAuth: "Не удалось подтвердить, что это вы. Откройте Помощь заново из приложения Lumen.",
     slow: "Ещё работаю — статус выше уже актуален.",
-    you: "Вы", helper: "Помощь Lumen",
+    you: "Вы", helper: "Помощь Lumen", suggestions: "Подсказки",
   },
 };
 window.CD_STATE_LABELS = {
@@ -210,3 +210,23 @@ window.CD_STATE_LABELS = {
     EXPIRED_BILLING_ERROR: "Закончилась — оплата не прошла", EXPIRED_CANCELLED: "Закончилась после отмены", REFUNDED: "Деньги возвращены", LIFETIME: "Пожизненный доступ",
     GRANTED_BY_DEVELOPER: "Premium от команды", NO_PURCHASE: "Покупок в аккаунте нет", FAMILY_SHARED: "Через Семейный доступ" },
 };
+
+/* Serbian in Cyrillic: the server answers "sr-Cyrl" when the user writes in Cyrillic, so the chrome follows.
+   Generated from the Latin strings by the standard 1:1 transliteration; brand and store names stay in Latin. */
+(() => {
+  const KEEP = /(Lumen Pro|Lumen|Premium|App Store|Google Play|Play|Apple ID|Apple|Google|iPhone|Family Sharing)/g;
+  const DI = { "lj": "љ", "nj": "њ", "dž": "џ", "Lj": "Љ", "Nj": "Њ", "Dž": "Џ", "LJ": "Љ", "NJ": "Њ", "DŽ": "Џ" };
+  const MAP = { a: "а", b: "б", c: "ц", č: "ч", ć: "ћ", d: "д", đ: "ђ", e: "е", f: "ф", g: "г", h: "х", i: "и", j: "ј", k: "к", l: "л", m: "м",
+    n: "н", o: "о", p: "п", r: "р", s: "с", š: "ш", t: "т", u: "у", v: "в", z: "з", ž: "ж" };
+  const one = (seg) => seg.replace(/[LlNnDd][jJžŽ]|./g, (ch) => {
+    if (DI[ch]) return DI[ch];
+    if (ch.length > 1) return one(ch[0]) + one(ch[1]);
+    const lo = ch.toLowerCase(), m = MAP[lo];
+    return m ? (ch === lo ? m : m.toUpperCase()) : ch;
+  });
+  const tr = (str) => str.split(KEEP).map((seg, i) => (i % 2 ? seg : one(seg))).join("");
+  const conv = (v) => typeof v === "string" ? tr(v) : Array.isArray(v) ? v.map(conv)
+    : typeof v === "function" ? (...a) => tr(v(...a)) : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, conv(x)])) : v;
+  window.CD_I18N["sr-Cyrl"] = conv(window.CD_I18N.sr);
+  window.CD_STATE_LABELS["sr-Cyrl"] = conv(window.CD_STATE_LABELS.sr);
+})();

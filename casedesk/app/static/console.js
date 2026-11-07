@@ -17,6 +17,11 @@
   const ago = (iso) => { const s = (Date.now() - new Date(iso)) / 1000; if (s < 60) return "just now"; if (s < 3600) return Math.floor(s / 60) + " min ago"; if (s < 86400) return Math.floor(s / 3600) + " h ago"; return fmtTime(iso); };
   function toast(text) { const t = el("div", "toast", text); t.setAttribute("role", "status"); document.body.append(t); setTimeout(() => t.remove(), 3200); }
 
+  // "llm_error:..." entries mean the model was unreachable and the template answered; they are not rule breaks.
+  const isLlmErr = (x) => /^llm_error\b/i.test(String(x));
+  const realViolations = (v) => (v || []).filter((x) => !isLlmErr(x));
+  const llmErrors = (v) => (v || []).filter(isLlmErr);
+  const auto = (n) => { n.dir = "auto"; return n; };
   function badgeEl(b) { const s = el("span", "badge " + ((b && b.tone) || "info"), (b && b.label) || "—"); if (b && b.code) s.title = b.code; return s; }
   function saleEl(sc) {
     const w = el("span", "sale"); sc = sc || {};
@@ -58,7 +63,7 @@
       tags.append(badgeEl(c.state_badge));
       if (c.pending_approval) tags.append(el("span", "tag wait", "approval waiting"));
       const sale = el("div", "c-tags"); sale.append(saleEl(c.sale_context));
-      b.append(top, el("div", "c-msg", c.first_message || "…"), tags, sale);
+      b.append(top, auto(el("div", "c-msg", c.first_message || "…")), tags, sale);
       b.onclick = () => select(c.id);
       li.append(b); list.append(li);
     }
@@ -97,10 +102,12 @@
       const who = el("div", "who"); who.append(el("span", null, m.role === "user" ? "user" : m.role === "system" ? "system" : "Case Desk"), el("span", null, fmtTime(m.created_at)));
       if (m.role === "assistant" && !pending && meta.status !== "error") {
         who.append(el("span", "vflag " + (meta.used_fallback ? "" : "ok"), meta.used_fallback ? "template fallback" : "LLM reply passed"));
-        if ((meta.violations || []).length) who.append(el("span", "vflag bad", meta.violations.length + " violation(s)"));
+        const rv = realViolations(meta.violations), le = llmErrors(meta.violations);
+        if (rv.length) who.append(el("span", "vflag bad", rv.length + " violation(s)"));
+        if (le.length) { const f = el("span", "vflag", "LLM unavailable"); f.title = le.join("\n"); who.append(f); }
       }
       if (meta.status === "error") who.append(el("span", "vflag bad", "pipeline error"));
-      t.append(who, el("div", "txt", pending ? "writing the reply…" : m.text));
+      t.append(who, auto(el("div", "txt", pending ? "writing the reply…" : m.text)));
       convo.append(t);
     }
 
@@ -117,8 +124,11 @@
     const ver = el("div", "verdict");
     if (c.validator) {
       ver.append(el("span", "vflag " + (v.used_fallback ? "" : "ok"), v.used_fallback ? "fallback used: yes" : "fallback used: no"));
-      ver.append(el("span", "vflag " + ((v.violations || []).length ? "bad" : "ok"), `violations: ${(v.violations || []).length}`));
-      if ((v.violations || []).length) { const ul = el("ul"); v.violations.forEach((x) => ul.append(el("li", null, x))); ver.append(ul); }
+      const rv = realViolations(v.violations), le = llmErrors(v.violations);
+      ver.append(el("span", "vflag " + (rv.length ? "bad" : "ok"), `violations: ${rv.length}`));
+      if (le.length) ver.append(el("span", "vflag", "LLM unavailable — template answered"));
+      if (rv.length) { const ul = el("ul"); rv.forEach((x) => ul.append(el("li", null, x))); ver.append(ul); }
+      if (le.length) { const ul = el("ul", "info"); le.forEach((x) => ul.append(el("li", null, x))); ver.append(ul); }
     } else ver.append(el("span", "empty", "Reply still being written."));
 
     // approvals
@@ -198,6 +208,9 @@
       else { $("#live").textContent = "can't reach the server"; setTimeout(start, 3000); }
     }
   }
+  // the header wraps on narrower desktops; the sticky case list sits just below whatever height it has
+  const topEl = document.querySelector(".top");
+  new ResizeObserver(() => document.documentElement.style.setProperty("--top-h", topEl.offsetHeight + "px")).observe(topEl);
   $("#gateForm").addEventListener("submit", (e) => {
     e.preventDefault(); S.token = $("#tok").value.trim(); sessionStorage.setItem("casedesk_console", S.token); start();
   });

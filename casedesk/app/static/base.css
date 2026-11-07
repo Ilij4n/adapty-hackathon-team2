@@ -7,7 +7,7 @@
   --surface-2: #eceef3;
   --ink: #14161d;
   --ink-2: #4b5060;
-  --ink-3: #737a8c;
+  --ink-3: #646b7c;  /* AA (>=4.5) on ground, surface and surface-2 */
   --line: #dde0e7;
   --accent: #2a4fe0;
   --accent-ink: #ffffff;
@@ -31,7 +31,7 @@
     --surface-2: #1f232c;
     --ink: #e9ebf1;
     --ink-2: #aab0be;
-    --ink-3: #828999;
+    --ink-3: #8a91a1;
     --line: #2b303b;
     --accent: #8aa2ff;
     --accent-ink: #0e1015;

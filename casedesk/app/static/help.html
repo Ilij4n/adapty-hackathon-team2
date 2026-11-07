@@ -53,10 +53,10 @@
       </div>
 
       <footer class="w-foot">
-        <div class="chips" id="chips" role="list"></div>
+        <div class="chips" id="chips" role="group" aria-label="Suggestions"></div>
         <form class="composer" id="composer" autocomplete="off">
           <label for="msg" class="sr-only" data-i18n="placeholder">Describe the problem…</label>
-          <textarea id="msg" rows="1" maxlength="2000" data-i18n-placeholder="placeholder" placeholder="Describe the problem…"></textarea>
+          <textarea id="msg" dir="auto" rows="1" maxlength="2000" data-i18n-placeholder="placeholder" placeholder="Describe the problem…"></textarea>
           <button class="send" id="send" type="submit" aria-label="Send">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h13M12 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>

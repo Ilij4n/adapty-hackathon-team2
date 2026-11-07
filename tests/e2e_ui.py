@@ -69,6 +69,95 @@ def shot(page, name: str) -> None:
     print("  screenshot", SHOTS / f"{name}.png")
 
 
+def bugbash_checks(browser, url: str, users: list[dict], errors: list[str]) -> None:
+    """Regression checks for the UI bug bash (docs/bugbash-ui.md)."""
+    print("  bug-bash regressions")
+    ids = [u["customer_user_id"] for u in users]
+    a, b = ids[0], ids[1]
+    page = browser.new_context(viewport={"width": 390, "height": 844}).new_page()
+    page.on("pageerror", lambda e: errors.append(str(e)))
+
+    # 01: switching users while a reply is still being polled must not leak into the new user's conversation
+    page.goto(f"{url}/help?demo_user={a}")
+    expect(page.locator("#statusCard")).to_be_visible()
+    page.route("**/api/chat/*", lambda r: (time.sleep(1.5), r.continue_()))
+    page.fill("#msg", "question from the first user")
+    page.keyboard.press("Enter")
+    expect(page.locator(".typing")).to_be_visible()
+    page.select_option("#demoSelect", b)
+    page.wait_for_timeout(3500)
+    assert page.locator("#log .msg").count() == 0, page.locator("#log").inner_text()
+    assert not page.locator("#send").is_disabled()
+    page.unroute("**/api/chat/*")
+
+    # 08: one failed poll (network blip) must not throw away the reply
+    hits = {"n": 0}
+    def blip(route):
+        hits["n"] += 1
+        route.abort() if hits["n"] == 1 else route.continue_()
+    page.route("**/api/chat/*", blip)
+    page.fill("#msg", "network blips once")
+    page.keyboard.press("Enter")
+    expect(page.locator(".msg.bot .bubble").last).not_to_have_class("bubble typing", timeout=30000)
+    assert page.locator(".msg.error").count() == 0, "a single failed poll ended the conversation"
+    page.unroute("**/api/chat/*")
+
+    # 02: right-to-left text is laid out right-to-left
+    page.fill("#msg", "مرحبا، لقد دفعت ولكن لا يوجد بريميوم!")
+    page.keyboard.press("Enter")
+    expect(page.locator(".msg.bot .bubble").last).not_to_have_class("bubble typing", timeout=30000)
+    assert page.locator(".msg.user .bubble").last.evaluate("b => getComputedStyle(b).direction") == "rtl"
+
+    # chips stay buttons for assistive tech (role=listitem hid that)
+    assert page.locator(".chip").first.get_attribute("role") is None
+
+    # 03: Serbian written in Cyrillic -> the chrome switches to Cyrillic too
+    sr = next((u["customer_user_id"] for u in users if str(u.get("locale", "")).startswith("sr")), None)
+    if sr:
+        page.goto(f"{url}/help?demo_user={sr}")
+        expect(page.locator("#statusCard")).to_be_visible()
+        page.fill("#msg", "Здраво, платио сам а немам премијум")
+        page.keyboard.press("Enter")
+        expect(page.locator(".msg.bot .bubble").last).not_to_have_class("bubble typing", timeout=30000)
+        lang = page.evaluate("document.documentElement.lang")
+        if lang.startswith("sr"):
+            assert lang == "sr-Cyrl", lang
+            assert "Претплата" in page.locator(".w-title").inner_text()
+
+    # 04: a profile without a purchase does not claim "Bought on <store>"
+    for u in users:
+        q = urllib.parse.urlencode({"customer_user_id": u["customer_user_id"], "signature": u["signature"]})
+        st = json.loads(urllib.request.urlopen(f"{url}/api/status?{q}").read())
+        if st["state_badge"]["code"] == "NO_PURCHASE":
+            page.goto(f"{url}/help?demo_user={u['customer_user_id']}")
+            expect(page.locator("#statusCard")).to_be_visible()
+            page.wait_for_timeout(300)
+            assert "Bought on" not in page.locator("#facts").inner_text()
+            break
+
+    # XSS: user text is rendered as text in the console; nothing executes
+    dialogs: list[str] = []
+    page.on("dialog", lambda d: (dialogs.append(d.message), d.dismiss()))
+    page.goto(f"{url}/help?demo_user={a}")
+    expect(page.locator("#statusCard")).to_be_visible()
+    payload = '<img src=x onerror=alert(1)><script>alert(2)</script>'
+    page.fill("#msg", payload)
+    page.keyboard.press("Enter")
+    expect(page.locator(".msg.bot .bubble").last).not_to_have_class("bubble typing", timeout=30000)
+    con = browser.new_context(viewport={"width": 360, "height": 800}).new_page()
+    con.on("pageerror", lambda e: errors.append(str(e)))
+    con.on("dialog", lambda d: (dialogs.append(d.message), d.dismiss()))
+    con.goto(url + "/console")
+    expect(con.locator(".c-item").first).to_be_visible(timeout=10000)
+    con.locator(".c-item").first.click()
+    expect(con.locator(".turn.user .txt").last).to_have_text(payload, timeout=10000)
+    assert con.evaluate("document.querySelectorAll('#app img, #app script').length") == 0
+    assert not dialogs, dialogs
+    # 09/10: the console fits a 360px phone and its header does not cover the case it scrolls to
+    shot(con, "console-detail-360")
+    assert con.evaluate("getComputedStyle(document.querySelector('.top')).position") != "sticky"
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--url")
@@ -163,6 +252,7 @@ def main() -> int:
             print("  screenshot", SHOTS / "help-progress-1280.png")
             expect(wide.locator(".msg.bot .bubble").last).not_to_have_class("bubble typing", timeout=60000)
             shot(wide, "help-reply-1280")
+            bugbash_checks(browser, url, users, errors)
             assert not errors, errors
             browser.close()
         print("E2E OK")

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f3f4f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1015" media="(prefers-color-scheme: dark)">
+<title>Case Desk — developer console</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/base.css">
+<link rel="stylesheet" href="/static/console.css">
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <a class="mark" href="/" title="Back to the Lumen landing page"><span class="cd">Case Desk</span><span class="for">for Lumen</span></a>
+    <div class="top-meta" id="topMeta"></div>
+    <span class="live" id="live" aria-live="polite">—</span>
+  </div>
+</header>
+
+<section class="gate" id="gate" hidden>
+  <form id="gateForm" class="gate-card">
+    <h1>Console token</h1>
+    <p>Enter the <code>CONSOLE_TOKEN</code> this server was started with.</p>
+    <label class="sr-only" for="tok">Console token</label>
+    <input id="tok" type="password" autocomplete="off" required>
+    <button class="btn" type="submit">Open console</button>
+    <p class="err" id="gateErr" hidden>That token was not accepted.</p>
+  </form>
+</section>
+
+<main class="layout" id="app" hidden>
+  <aside class="side">
+    <section class="queue" aria-labelledby="qH">
+      <div class="sec-head"><h2 id="qH">Waiting for approval</h2><span class="count" id="qCount">0</span></div>
+      <ol class="q-list" id="queue"></ol>
+      <p class="empty" id="qEmpty">Nothing waiting. Courtesy grants proposed by the policy land here; nothing is given until you approve.</p>
+    </section>
+    <section aria-labelledby="cH">
+      <div class="sec-head"><h2 id="cH">Cases</h2><span class="count" id="cCount">0</span></div>
+      <ol class="c-list" id="cases"></ol>
+      <p class="empty" id="cEmpty">No cases yet. Open <a href="/help" target="_blank" rel="noopener">/help</a> and send a message.</p>
+    </section>
+  </aside>
+  <section class="detail" id="detail" aria-live="polite">
+    <div class="placeholder">
+      <h2>Pick a case</h2>
+      <p>You'll see the conversation, the FactSheet the reply was allowed to use, the actions the policy decided, and whether the validator had to fall back to a template.</p>
+    </div>
+  </section>
+</main>
+<script src="/static/console.js"></script>
+</body>
+</html>

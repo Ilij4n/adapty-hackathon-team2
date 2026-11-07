@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <symbol id="mark" viewBox="0 0 32 32">
+    <rect x=".5" y=".5" width="31" height="31" rx="8.5" fill="#14161d" stroke="#3a3f4c"/>
+    <g fill="none" stroke-width="2.4" stroke-linecap="round">
+      <path d="M16 6.5a9.5 9.5 0 0 1 8.2 4.7" stroke="#ff6a48"/>
+      <path d="M25.3 14.4a9.5 9.5 0 0 1-2.6 8.3" stroke="#ffb199"/>
+      <path d="M19.6 24.8a9.5 9.5 0 0 1-9.1-.6" stroke="#8aa2ff"/>
+      <path d="M8 21.4a9.5 9.5 0 0 1-1.4-8.6" stroke="#5b7bff"/>
+      <path d="M8.3 10.1A9.5 9.5 0 0 1 13 7" stroke="#ff6a48"/>
+    </g>
+    <circle cx="16" cy="16" r="3.2" fill="#ffffff"/>
+  </symbol>
+  <use href="#mark"/>
+</svg>

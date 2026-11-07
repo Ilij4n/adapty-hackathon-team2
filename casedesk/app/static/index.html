@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Lumen Help: subscription help that reads your real Lumen Pro purchase and tells you what's true, in your language.">
+<meta name="theme-color" content="#f3f4f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1015" media="(prefers-color-scheme: dark)">
+<title>Lumen Help — subscription help that actually knows your account</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/base.css">
+<style>
+  html, body { overflow-x: clip; }
+  main { overflow-x: clip; }
+  .wrap { width: min(1160px, 100% - 40px); margin-inline: auto; }
+
+  /* nav */
+  .nav { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 0; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; }
+  .brand svg { width: 34px; height: 34px; }
+  .brand span { color: var(--ink-3); font-weight: 500; }
+  .nav .btn { min-height: 40px; }
+
+  /* hero */
+  .hero { position: relative; display: grid; grid-template-columns: 1fr; gap: 40px; padding: 28px 0 56px; align-items: center; }
+  .hero::before {
+    content: ""; position: absolute; inset: -120px -40vw auto auto; width: 820px; height: 620px; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(closest-side, color-mix(in srgb, var(--flare) 26%, transparent), transparent 70%) 70% 30% / 70% 70% no-repeat,
+      radial-gradient(closest-side, color-mix(in srgb, var(--accent) 20%, transparent), transparent 70%) 20% 70% / 60% 60% no-repeat;
+    filter: blur(10px);
+  }
+  .hero-copy { display: grid; gap: 22px; align-content: start; }
+  .hero h1 { font-size: clamp(2.5rem, 9.5vw, 4.9rem); line-height: .98; font-weight: 800; letter-spacing: -0.035em; }
+  .hero h1 em { font-style: normal; background: linear-gradient(100deg, var(--accent) 10%, var(--flare) 90%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lede { font-size: clamp(1.05rem, 2.4vw, 1.2rem); color: var(--ink-2); max-width: 46ch; }
+  .cta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
+  .cta .btn { min-height: 52px; padding: 0 28px; font-size: 1.05rem; }
+  .cta small { color: var(--ink-3); font-size: .88rem; }
+  .langs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .langs span { font-family: var(--font-mono); font-size: .75rem; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--line); color: var(--ink-2); background: var(--surface); }
+
+  /* live demo */
+  .demo { justify-self: center; width: min(380px, 100%); }
+  .screen {
+    border-radius: 34px; padding: 10px; background: #0b0c10;
+    box-shadow: 0 0 0 1px #2a2d36, 0 30px 70px rgba(10, 12, 20, .25);
+  }
+  .screen-in { border-radius: 26px; background: var(--ground); height: 480px; overflow: hidden; display: flex; flex-direction: column; }
+  .s-head { display: flex; align-items: center; gap: 10px; padding: 16px 14px 10px; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .s-head svg { width: 28px; height: 28px; }
+  .s-head b { font-family: var(--font-display); }
+  .s-head .lang { margin-left: auto; font-family: var(--font-mono); font-size: .72rem; color: var(--ink-3); }
+  .s-body { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 10px; justify-content: flex-end; }
+  .d-msg { max-width: 85%; padding: 9px 12px; border-radius: 16px; font-size: .9rem; line-height: 1.4; opacity: 0; transform: translateY(6px); transition: opacity .3s, transform .3s; }
+  .d-msg.on { opacity: 1; transform: none; }
+  .d-user { align-self: flex-end; background: var(--accent); color: var(--accent-ink); border-bottom-right-radius: 5px; }
+  .d-bot { align-self: flex-start; background: var(--surface); border: 1px solid var(--line); border-bottom-left-radius: 5px; }
+  .d-card { align-self: stretch; padding: 10px 12px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); display: grid; gap: 8px; opacity: 0; transform: translateY(6px); transition: opacity .3s, transform .3s; }
+  .d-card.on { opacity: 1; transform: none; }
+  .d-card dl { margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; }
+  .d-card dt { font-size: .68rem; color: var(--ink-3); }
+  .d-card dd { margin: 0; font-weight: 600; font-size: .84rem; font-variant-numeric: tabular-nums; }
+  .d-typing { align-self: flex-start; display: flex; gap: 8px; align-items: center; font-size: .82rem; color: var(--ink-2); opacity: 0; transition: opacity .2s; }
+  .d-typing.on { opacity: 1; }
+  .d-typing i { width: 5px; height: 5px; border-radius: 50%; background: var(--ink-3); display: inline-block; margin-right: 3px; animation: blink 1.2s infinite; }
+  .d-typing i:nth-child(2) { animation-delay: .15s; } .d-typing i:nth-child(3) { animation-delay: .3s; }
+  .d-acts { display: flex; flex-wrap: wrap; gap: 6px; opacity: 0; transition: opacity .3s; }
+  .d-acts.on { opacity: 1; }
+  .d-btn { font-size: .78rem; font-weight: 600; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 5px 10px; background: var(--surface); }
+  .d-note { font-size: .76rem; padding: 7px 10px; border-radius: 10px; background: var(--warn-soft); color: var(--warn); }
+  @keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+  .demo-cap { text-align: center; color: var(--ink-3); font-size: .82rem; margin-top: 12px; }
+
+  /* benefits */
+  .benefits { display: grid; gap: 18px; padding: 24px 0 72px; }
+  .benefit { display: grid; gap: 14px; align-content: start; padding: 24px; border-radius: var(--r-l); background: var(--surface); border: 1px solid var(--line); }
+  .benefit h2 { font-size: 1.45rem; line-height: 1.1; font-weight: 700; }
+  .benefit p { color: var(--ink-2); max-width: 44ch; }
+  .vis { padding: 14px; border-radius: 14px; background: var(--ground); display: grid; gap: 8px; min-height: 128px; align-content: center; }
+  .vis .b { max-width: 88%; padding: 7px 11px; border-radius: 14px; font-size: .84rem; line-height: 1.35; }
+  .vis .b.u { justify-self: end; background: var(--accent); color: var(--accent-ink); border-bottom-right-radius: 4px; }
+  .vis .b.a { justify-self: start; background: var(--surface); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+  .vis .row { display: flex; justify-content: space-between; gap: 12px; font-size: .84rem; border-bottom: 1px dashed var(--line); padding-bottom: 6px; }
+  .vis .row:last-child { border-bottom: 0; padding-bottom: 0; }
+  .vis .row span { color: var(--ink-3); }
+  .vis .row b { font-variant-numeric: tabular-nums; }
+  .vis .acts { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  /* developers strip */
+  .dev { background: #12141a; color: #e9ebf1; }
+  @media (prefers-color-scheme: dark) { .dev { background: #171a21; border-block: 1px solid #2b303b; } }
+  .dev .wrap { display: grid; gap: 18px; padding: 36px 0; align-items: center; }
+  .dev .eyebrow { color: #8a91a3; }
+  .dev h2 { font-size: 1.35rem; font-weight: 600; max-width: 34ch; }
+  .dev p { color: #aab0be; max-width: 60ch; font-size: .95rem; }
+  .dev a.btn { background: #e9ebf1; color: #12141a; justify-self: start; }
+  .dev .stack { display: flex; gap: 8px; flex-wrap: wrap; font-family: var(--font-mono); font-size: .75rem; }
+  .dev .stack span { border: 1px solid #2b303b; border-radius: 6px; padding: 3px 8px; color: #aab0be; }
+  footer { padding: 22px 0 32px; color: var(--ink-3); font-size: .85rem; }
+
+  @media (min-width: 900px) {
+    .hero { grid-template-columns: 1.15fr .85fr; padding: 48px 0 88px; }
+    .benefits { grid-template-columns: repeat(3, 1fr); }
+    .dev .wrap { grid-template-columns: 1fr auto; }
+  }
+</style>
+</head>
+<body>
+<header class="wrap nav">
+  <a class="brand" href="/"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/static/lumen.svg#mark"/></svg>Lumen <span>Help</span></a>
+  <a class="btn ghost small" href="/help">Open help</a>
+</header>
+
+<main>
+  <section class="wrap hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Lumen — AI Photo Editor</p>
+      <h1>Subscription help that <em>actually knows</em> your account.</h1>
+      <p class="lede">Charged after cancelling? Paid but still locked out? New phone? Ask in your own words. Lumen Help reads your real Lumen Pro purchase, tells you what's true, and gives you the exact next step.</p>
+      <div class="cta">
+        <a class="btn" href="/help">Try it</a>
+        <small>Opens the help screen with a demo account.</small>
+      </div>
+      <div class="langs" aria-label="Languages">
+        <span>English</span><span>Srpski</span><span>Español</span><span>Deutsch</span><span>Português</span><span>Русский</span>
+      </div>
+    </div>
+
+    <figure class="demo" aria-label="Example conversation in Lumen Help" style="margin:0">
+      <div class="screen"><div class="screen-in">
+        <div class="s-head"><svg viewBox="0 0 32 32" aria-hidden="true"><use href="/static/lumen.svg#mark"/></svg><b id="dTitle">Lumen pomoć</b><span class="lang" id="dLang">sr</span></div>
+        <div class="s-body" id="dBody"></div>
+      </div></div>
+      <figcaption class="demo-cap">A real case: the card was declined, so Premium lapsed.</figcaption>
+    </figure>
+  </section>
+
+  <section class="wrap benefits" aria-label="What Lumen Help does">
+    <article class="benefit">
+      <h2>Answers in your language</h2>
+      <p>Write the way you'd text a friend, in Serbian, Spanish, German, Portuguese, Russian or English. The answer comes back in the language you wrote in.</p>
+      <div class="vis" aria-hidden="true">
+        <div class="b u">Me cobraron después de cancelar</div>
+        <div class="b a">Cancelaste el 23 oct. El último cobro fue antes, el 20 oct.</div>
+      </div>
+    </article>
+    <article class="benefit">
+      <h2>Tells you exactly what's true</h2>
+      <p>Status, dates and prices come straight from your purchase record — never guessed. If what you were told doesn't match it, Lumen Help says so plainly.</p>
+      <div class="vis" aria-hidden="true">
+        <span class="badge bad" style="justify-self:start">Ended — the payment didn't go through</span>
+        <div class="row"><span>Payment failed on</span><b>23 Oct 2026</b></div>
+        <div class="row"><span>Bought on</span><b>Google Play</b></div>
+      </div>
+    </article>
+    <article class="benefit">
+      <h2>Fixes what it safely can</h2>
+      <p>The right button for your store — manage, restore, update payment. When a courtesy extension makes sense, it asks the Lumen team for you and tells you it's a request, not a promise.</p>
+      <div class="vis" aria-hidden="true">
+        <div class="acts"><span class="d-btn">Update payment method ↗</span><span class="d-btn">Restore my purchase</span></div>
+        <div class="d-note">Requested — the Lumen team will review it.</div>
+      </div>
+    </article>
+  </section>
+
+  <section class="dev" aria-label="For developers">
+    <div class="wrap">
+      <div style="display:grid;gap:10px">
+        <p class="eyebrow">For developers</p>
+        <h2>Powered by Adapty + Case Desk.</h2>
+        <p>Facts come from your Adapty profiles, not from the model. Every reply is checked against them before it's sent, and every courtesy grant waits for your one-click approval.</p>
+        <div class="stack"><span>Adapty server-side API</span><span>deterministic state engine</span><span>reply validator</span><span>approval queue</span></div>
+      </div>
+      <a class="btn" href="/console">Open the developer console →</a>
+    </div>
+  </section>
+</main>
+<footer class="wrap">Lumen is a demo app. Lumen Help is Case Desk, white-labelled — built at the Adapty Hackathon Belgrade 2026.</footer>
+
+<script>
+(() => {
+  const body = document.getElementById("dBody"), title = document.getElementById("dTitle"), lang = document.getElementById("dLang");
+  const SCRIPTS = [
+    { lang: "sr", title: "Lumen pomoć", user: "Platila sam, a nemam Premium?", typing: "Proveravam vaš nalog…",
+      badge: ["bad", "Istekla — plaćanje nije prošlo"], rows: [["Plaćanje nije uspelo", "23. okt 2026."], ["Kupljeno na", "App Store"]],
+      reply: "Pretplata je istekla 23. oktobra jer App Store nije uspeo da naplati sa kartice. Promenite karticu i Premium se vraća.",
+      acts: ["Promeni način plaćanja ↗"], note: "Zahtev je poslat — Lumen tim će ga razmotriti." },
+    { lang: "es", title: "Ayuda de Lumen", user: "Me cobraron después de cancelar", typing: "Revisando tu cuenta…",
+      badge: ["info", "Cancelada — activa hasta fin de periodo"], rows: [["Cancelada el", "23 oct 2026"], ["Acceso hasta", "20 nov 2026"]],
+      reply: "Cancelaste el 23 de octubre; el último cobro fue el 20 de octubre, antes de cancelar. No habrá más cobros y Premium sigue activo hasta el 20 de noviembre.",
+      acts: ["Gestionar suscripción ↗"], note: null },
+    { lang: "en", title: "Lumen Help", user: "New phone, my Pro is gone", typing: "Checking your account…",
+      badge: ["ok", "Active — renews automatically"], rows: [["Plan", "Lumen Pro Annual"], ["Renews on", "14 Mar 2027"]],
+      reply: "Your Lumen Pro Annual is active — nothing was lost. On the new phone, sign in with the same Apple ID and tap Restore purchases.",
+      acts: ["Restore my purchase"], note: null },
+  ];
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const mk = (cls, html) => { const d = document.createElement("div"); d.className = cls; if (html != null) d.textContent = html; return d; };
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const show = async (n, ms) => { body.append(n); await wait(30); n.classList.add("on"); if (ms) await wait(ms); };
+  function card(s) {
+    const c = mk("d-card"); const b = mk("badge " + s.badge[0], s.badge[1]); b.style.justifySelf = "start";
+    const dl = document.createElement("dl"); s.rows.forEach(([k, v]) => { const w = document.createElement("div"); w.append(Object.assign(document.createElement("dt"), { textContent: k }), Object.assign(document.createElement("dd"), { textContent: v })); dl.append(w); });
+    c.append(b, dl); return c;
+  }
+  async function play(s) {
+    body.textContent = ""; title.textContent = s.title; lang.textContent = s.lang;
+    await show(mk("d-msg d-user", s.user), 700);
+    const ty = mk("d-typing"); ty.innerHTML = "<span><i></i><i></i><i></i></span>"; ty.append(document.createTextNode(s.typing));
+    await show(ty, 900);
+    await show(card(s), 1300);
+    ty.remove();
+    await show(mk("d-msg d-bot", s.reply), 600);
+    const a = mk("d-acts"); s.acts.forEach((x) => a.append(mk("d-btn", x))); await show(a, s.note ? 500 : 0);
+    if (s.note) await show(mk("d-note d-msg", s.note));
+  }
+  async function still(s) {
+    body.textContent = ""; title.textContent = s.title; lang.textContent = s.lang;
+    for (const n of [mk("d-msg d-user on", s.user), Object.assign(card(s), { className: "d-card on" }), mk("d-msg d-bot on", s.reply)]) body.append(n);
+    const a = mk("d-acts on"); s.acts.forEach((x) => a.append(mk("d-btn", x))); body.append(a);
+    if (s.note) body.append(mk("d-note d-msg on", s.note));
+  }
+  if (reduce) { still(SCRIPTS[0]); return; }
+  (async () => { for (let i = 0; ; i = (i + 1) % SCRIPTS.length) { await play(SCRIPTS[i]); await wait(4200); } })();
+})();
+</script>
+</body>
+</html>

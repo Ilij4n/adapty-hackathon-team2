@@ -44,6 +44,30 @@
       "scenario": "Pro Annual - AI Studio (App Store), cancelled, paid up for 251 more days"
     },
     {
+      "customer_user_id": "lumen_demo_00239",
+      "seed_user_id": "u00239",
+      "situation": "EXPIRED_BILLING_ERROR",
+      "why": "paid Weekly subscriber who lost premium after a billing error 12.8 days ago: the one user eligible for a goodwill grant",
+      "platform": "iOS",
+      "store_country": "US",
+      "locale": "en_US",
+      "product": "lumen.weekly",
+      "note": "trial 2026-10-12, paid 6.99 USD 2026-10-15, expired on billing error 2026-10-22; grant window closes 2026-11-05 (pinned demo clock)",
+      "display_name": "Ava (en_US, u00239)",
+      "scenario": "Weekly, payment failed after a paid renewal: grant eligible",
+      "price": {
+        "amount": 6.99,
+        "currency": "USD"
+      },
+      "expires_at": "2026-10-22T03:53:18+00:00",
+      "days_from_now_to_expiry": -12.8,
+      "sale_context": {
+        "acquisition_channel": "organic",
+        "placement": "onboarding",
+        "flow": "onb_weekly"
+      }
+    },
+    {
       "customer_user_id": "lumen_demo_02317",
       "seed_user_id": "u02317",
       "situation": "EXPIRED_BILLING_ERROR",

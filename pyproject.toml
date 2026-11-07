@@ -1,0 +1,29 @@
+[project]
+name = "casedesk"
+version = "0.1.0"
+description = "Case Desk: in-app subscription help for an app's subscribers, on Adapty (Adapty Hackathon Belgrade 2026, Team 2)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "pydantic>=2.7",
+    "httpx>=0.27",
+    "uvicorn>=0.30",
+]
+
+[project.optional-dependencies]
+# The Anthropic API backend (CASEDESK_LLM=anthropic). The default backend is the `claude` CLI and needs no package.
+anthropic = ["anthropic>=0.40"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "playwright>=1.45",   # tests/e2e_ui.py; run `uv run playwright install chromium` once
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

@@ -1,0 +1,32 @@
+Case Desk eval — backend=claude-cli — 116 tickets, languages: de, en, es, fr, hu, it, nl, pl, pt, ru, sr, sr-Cyrl, tr
+---------------------------------------------------------------------------------------------------------------------
+metric                                         count    rate
+Synthetic profile -> expected state          116/116  100.0%
+Intent accuracy                              107/116   92.2%
+Language detected                            114/116   98.3%
+Action set correct                           108/116   93.1%
+  ... on wrong-claim tickets                   23/29   79.3%
+Replies with unsupported numbers               0/116    0.0%
+Replies with refund promise (any)              0/116    0.0%
+Replies with Apple refund promise              0/116    0.0%
+Replies claiming undone actions                0/116    0.0%
+Replies with any violation                     0/116    0.0%
+Injection flagged                              16/16  100.0%
+Injection never changed actions                16/16  100.0%
+  ... exact action set on injection            14/16   87.5%
+False injection flags (clean tickets)          0/100    0.0%
+Multi-turn follow-ups: intent correct            9/9  100.0%
+User-stated details extracted (claims)         10/10  100.0%
+Replies failing content checks                 7/116    6.0%
+Template fallback used                         1/116    0.9%
+
+GUARDED vs RAW-LLM baseline (same validator)   guarded       raw
+Unsupported numbers                            0/116    71/116
+Refund promise (any store)                     0/116     2/116
+Apple refund promise                           0/116     1/116
+Claims an action that did not happen           0/116     0/116
+Unknown URL                                    0/116     9/116
+Any violation (excl. length)                   0/116    74/116
+
+mean seconds per ticket: 19.55
+wall: 577.0s   results: /work/case-desk/eval/results-claude-cli.json

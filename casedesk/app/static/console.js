@@ -1,9 +1,11 @@
-/* Case Desk developer console. Auth: X-Console-Token (sessionStorage) or the demo cookie set by /console. */
+/* Case Desk developer console. Auth: X-Console-Token (sessionStorage) or the demo cookie set by /console.
+   Layout: queue + cases on the left; one plain-English case card on the right. Everything technical
+   (policy kinds, validator, FactSheet, claims, audit log, module status) lives in one collapsed "Details". */
 (() => {
   "use strict";
   const $ = (s) => document.querySelector(s);
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
-  const S = { token: sessionStorage.getItem("casedesk_console") || "", selected: new URLSearchParams(location.search).get("case"), cases: [], approvals: [], filter: "all", sig: { list: "", detail: "" }, timer: null };
+  const S = { token: sessionStorage.getItem("casedesk_console") || "", selected: new URLSearchParams(location.search).get("case"), cases: [], approvals: [], filter: "all", sig: { list: "", detail: "" }, timer: null, names: {}, modules: {} };
 
   async function api(path, opts = {}) {
     const headers = { "Content-Type": "application/json" };
@@ -17,26 +19,78 @@
   const ago = (iso) => { const s = (Date.now() - new Date(iso)) / 1000; if (s < 60) return "just now"; if (s < 3600) return Math.floor(s / 60) + " min ago"; if (s < 86400) return Math.floor(s / 3600) + " h ago"; return fmtTime(iso); };
   function toast(text, ms = 3200) { const t = el("div", "toast", text); t.setAttribute("role", "status"); document.body.append(t); setTimeout(() => t.remove(), ms); }
 
+  // ------------------------------------------------------------ plain-English helpers
+  // Dates: FactSheet values are ISO dates ("2026-10-22") -> "22 Oct" (year only when it isn't this year's).
+  function day(iso, withTime) {
+    if (!iso) return "";
+    const d = new Date(/^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso + "T12:00:00" : iso);
+    if (isNaN(d)) return String(iso);
+    const o = { day: "numeric", month: "short" };
+    if (d.getFullYear() !== new Date().getFullYear()) o.year = "numeric";
+    if (withTime) { o.hour = "2-digit"; o.minute = "2-digit"; }
+    return d.toLocaleString("en-GB", o);
+  }
+  const on = (iso) => (iso ? " on " + day(iso) : "");
+  const until = (iso) => (iso ? " until " + day(iso) : "");
+  const storeOf = (f) => f.store_name ? "the " + f.store_name.replace(/^the /i, "") : "the store";
+  // state code -> one sentence, built only from facts the case carries
+  const STATE_TEXT = {
+    ACTIVE_RENEWING: (f) => "Premium is active and renews by itself" + on(f.renews_on),
+    CANCELLED_PAID_UP: (f) => "Cancelled, but premium stays on" + until(f.expires_on),
+    TRIAL_ACTIVE: (f) => "On a free trial" + until(f.trial_ends_on || f.expires_on),
+    TRIAL_CANCELLED: (f) => "Cancelled the free trial — no charge will follow",
+    GRACE_PERIOD: (f) => `${cap(storeOf(f))} couldn't take the payment — premium stays on for now` + until(f.grace_ends_on),
+    BILLING_RETRY: (f) => `${cap(storeOf(f))} couldn't take the payment${on(f.billing_issue_on)} and is retrying`,
+    EXPIRED_BILLING_ERROR: (f) => (f.ever_charged === "yes" ? "Paid, then " : "") + `${f.ever_charged === "yes" ? storeOf(f) : cap(storeOf(f))} couldn't take the renewal` + on(f.billing_issue_on || f.expires_on),
+    EXPIRED_CANCELLED: (f) => "Cancelled, and premium ended" + on(f.expires_on),
+    REFUNDED: (f) => "Got a refund" + on(f.refunded_on),
+    LIFETIME: () => "Has lifetime premium",
+    GRANTED_BY_DEVELOPER: (f) => "Has premium you gave" + until(f.granted_until || f.expires_on),
+    NO_PURCHASE: () => "Never bought anything on this account",
+    FAMILY_SHARED: () => "Gets premium through Family Sharing",
+  };
+  const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  function stateLine(state, facts) {
+    const fn = state && STATE_TEXT[state.code];
+    if (fn) return fn(facts || {});
+    return (state && state.label) || "Still looking at the account";
+  }
+  // action kind -> what Case Desk did, in plain words
+  const ACTION_TEXT = {
+    EXPLAIN_STATUS: (p) => p.claim_contradicted ? "Explained what really happened (the account says otherwise)" : "Explained what happened",
+    MANAGE_SUBSCRIPTION_LINK: () => "Sent the link to manage the subscription",
+    CANCEL_STEPS: () => "Showed how to cancel",
+    REFUND_PATH_APPLE: () => "Showed how to ask Apple for a refund",
+    REFUND_PATH_GOOGLE: () => "Showed how to ask Google Play for a refund",
+    RESTORE_PURCHASES_STEPS: () => "Showed how to restore purchases",
+    UPDATE_PAYMENT_METHOD: () => "Sent the link to update payment",
+    PROPOSE_GRANT: (p) => `Asked you for a ${p.days || 3}-day courtesy extension`,
+    ESCALATE_TO_HUMAN: (p) => "Handed it to a person — " + reasonText(p.reason),
+  };
+  const actionText = (a) => (ACTION_TEXT[a.kind] || (() => cap(String(a.kind).toLowerCase().replace(/_/g, " "))))(a.params || {});
+  const langName = (code) => { try { return new Intl.DisplayNames(["en"], { type: "language" }).of(code) || code; } catch { return code; } };
+
+  // "Ava (en_US, u00239)" -> "Ava"; only demo mode has names (GET /api/demo/users)
+  const nameOf = (cuid) => S.names[cuid] || "";
+  const shortId = (cuid) => { const t = String(cuid).split("_").pop(); return /^\d+$/.test(t) ? t : cuid; };
+  function whoEl(cuid, tag = "b") {
+    const w = el(tag, "who-name"); const n = nameOf(cuid);
+    if (n) { w.append(document.createTextNode(n + " "), el("span", "uid", "· " + shortId(cuid))); w.title = cuid; }
+    else w.append(el("span", "uid solo", cuid));
+    return w;
+  }
+  const callName = (cuid) => nameOf(cuid) || "this user";
+
   // "llm_error:..." entries mean the model was unreachable and the template answered; they are not rule breaks.
   const isLlmErr = (x) => /^llm_error\b/i.test(String(x));
   const realViolations = (v) => (v || []).filter((x) => !isLlmErr(x));
   const llmErrors = (v, field) => [...(field ? [field] : []), ...(v || []).filter(isLlmErr)].filter((x, i, a) => a.indexOf(x) === i);
-  const REASON = { user_requested_human: "asked for a person", privacy_request: "privacy / data request" };
+  const REASON = { user_requested_human: "they asked for a person", privacy_request: "privacy / data request" };
   const reasonText = (r) => REASON[r] || String(r || "escalated").replace(/_/g, " ");
   const FILTERS = [["all", "All", () => true], ["escalated", "Escalated", (c) => c.escalated],
-    ["privacy", "Privacy", (c) => c.privacy], ["waiting", "Approval waiting", (c) => c.pending_approval]];
+    ["privacy", "Privacy", (c) => c.privacy], ["waiting", "Waiting", (c) => c.pending_approval]];
   const auto = (n) => { n.dir = "auto"; return n; };
-  function badgeEl(b) { const s = el("span", "badge " + ((b && b.tone) || "info"), (b && b.label) || "—"); if (b && b.code) s.title = b.code; return s; }
-  function saleEl(sc) {
-    const w = el("span", "sale"); sc = sc || {};
-    w.append(el("span", "ch", (sc.acquisition_channel || "unknown channel").replace(/_/g, " ")));
-    if (sc.placement || sc.flow) {
-      w.append(el("span", "pl", [sc.placement, sc.flow].filter(Boolean).join(" / ")));
-      const si = el("span", "si", "stand-in"); si.title = "Placement and flow come from the seed CSV — a stand-in for Adapty paywall data."; w.append(si);
-    }
-    w.title = "Sale context: acquisition channel · placement / flow";
-    return w;
-  }
+  const dot = (tone) => el("span", "dot " + (tone || "info"));
 
   // ------------------------------------------------------------ list + queue
   function renderList() {
@@ -45,21 +99,31 @@
     $("#qCount").textContent = pend.length; $("#qEmpty").hidden = pend.length > 0;
     const q = $("#queue"); q.textContent = "";
     for (const a of pend) {
+      // the queue is the action column: the ONE Approve / Deny for each grant lives here
       const c = byCase[a.case_id] || {};
-      const li = el("li", "q-item");
-      const who = el("div", "who"); who.append(el("b", null, a.customer_user_id), el("span", "c-time", ago(a.created_at)));
-      const what = el("div", "what", `${a.days || 3} days of ${a.access_level_id} — ${(c.state_badge && c.state_badge.label) || "state unknown"}`);
-      if (a.status === "failed") what.append(el("div", "fail", "Adapty grant failed: " + ((a.result && a.result.error) || "error") + " — retry it."));
-      const row = el("div", "row");
-      const ok = el("button", "btn small approve", a.status === "failed" ? "Retry grant" : "Approve"); ok.onclick = () => decide(a.id, "approve", ok);
-      const no = el("button", "btn small deny", "Deny"); no.onclick = () => decide(a.id, "deny", no);
-      const open = el("button", "btn small ghost", "Open case"); open.onclick = () => select(a.case_id);
-      row.append(ok, no, open); li.append(who, what, row); q.append(li);
+      const who = nameOf(a.customer_user_id) || "them";
+      const what = `${a.days || 3} days of premium`;
+      const li = el("li", "q-item" + (a.status === "failed" ? " failed" : ""));
+      li.setAttribute("aria-current", String(a.case_id === S.selected));
+      const b = el("button", "q-open"); b.type = "button"; b.title = "Open the case";
+      const top = el("div", "row-top"); top.append(whoEl(a.customer_user_id), el("span", "c-time", ago(a.created_at)));
+      b.append(top, el("div", "line", `Wants ${what}`));
+      if (c.state_badge) { const s2 = el("div", "line soft"); s2.append(dot(c.state_badge.tone), el("span", "ell", c.state_badge.label)); b.append(s2); }
+      b.onclick = () => select(a.case_id);
+      li.append(b);
+      if (a.status === "failed") li.append(el("p", "fail", "Adapty couldn't give it: " + ((a.result && a.result.error) || "error")));
+      const row = el("div", "grant-row");
+      const ok = el("button", "btn approve", a.status === "failed" ? `Try again: give ${who} ${what}` : `Give ${who} ${what}`);
+      ok.type = "button"; ok.onclick = () => decide(a.id, "approve", ok);
+      const no = el("button", "btn deny", "Deny"); no.type = "button"; no.onclick = () => decide(a.id, "deny", no);
+      row.append(ok, no);
+      li.append(row, el("p", "hint", "Nothing is granted until you approve."));
+      q.append(li);
     }
     const fb = $("#filters"); fb.textContent = "";
     for (const [key, label, pred] of FILTERS) {
       const n = S.cases.filter(pred).length;
-      const b = el("button", "filt" + (key === "escalated" && n ? " hot" : "") + (key === "privacy" && n ? " priv" : ""), `${label} ${n}`);
+      const b = el("button", "filt" + (key === "escalated" && n ? " hot" : "") + (key === "privacy" && n ? " priv" : ""), n && key !== "all" ? `${label} ${n}` : label);
       b.type = "button"; b.setAttribute("aria-pressed", String(S.filter === key));
       b.onclick = () => { S.filter = key; S.sig.list = ""; renderList(); };
       fb.append(b);
@@ -71,16 +135,13 @@
     for (const c of shown) {
       const li = el("li"); const b = el("button", "c-item"); b.type = "button";
       b.setAttribute("aria-current", String(c.id === S.selected));
-      const top = el("div", "c-top"); top.append(el("b", null, c.customer_user_id), el("span", "c-time", ago(c.updated_at)));
-      const tags = el("div", "c-tags");
-      if (c.language) tags.append(el("span", "tag lang", c.language));
-      if (c.intent) tags.append(el("span", "tag intent", c.intent));
-      tags.append(badgeEl(c.state_badge));
-      if (c.pending_approval) tags.append(el("span", "tag wait", "approval waiting"));
-      if (c.privacy) tags.append(el("span", "tag priv", "privacy request"));
-      else if (c.escalated) tags.append(el("span", "tag esc", "escalated: " + (c.escalation_reasons || []).map(reasonText).join(", ")));
-      const sale = el("div", "c-tags"); sale.append(saleEl(c.sale_context));
-      b.append(top, auto(el("div", "c-msg", c.first_message || "…")), tags, sale);
+      const top = el("div", "row-top"); top.append(whoEl(c.customer_user_id), el("span", "c-time", ago(c.updated_at)));
+      const st = el("div", "line soft");
+      st.append(dot(c.state_badge && c.state_badge.tone), el("span", "ell", (c.state_badge && c.state_badge.label) || "—"));
+      if (c.pending_approval) st.append(el("span", "tag wait", "waiting"));
+      if (c.privacy) st.append(el("span", "tag priv", "privacy"));
+      else if (c.escalated) st.append(el("span", "tag esc", "needs a person"));
+      b.append(top, auto(el("div", "c-msg", c.first_message || "…")), st);
       b.onclick = () => select(c.id);
       li.append(b); list.append(li);
     }
@@ -92,26 +153,69 @@
     Object.entries(obj || {}).forEach(([k, v]) => { const tr = el("tr"); tr.append(el("th", null, k), el("td", null, typeof v === "string" ? v : JSON.stringify(v))); tb.append(tr); });
     t.append(tb); const w = el("div", "scroll-x"); w.append(t); return w;
   }
-  function panel(title, ...kids) { const p = el("section", "panel"); p.append(el("h3", null, title), ...kids); return p; }
+  function sub(title, ...kids) { const p = el("section", "sub"); p.append(el("h3", null, title), ...kids); return p; }
+  function saleEl(sc) {
+    const w = el("span", "sale"); sc = sc || {};
+    w.append(el("span", "ch", (sc.acquisition_channel || "unknown channel").replace(/_/g, " ")));
+    if (sc.placement || sc.flow) {
+      w.append(el("span", "pl", [sc.placement, sc.flow].filter(Boolean).join(" / ")));
+      const si = el("span", "si", "stand-in"); si.title = "Placement and flow come from the seed CSV — a stand-in for Adapty paywall data."; w.append(si);
+    }
+    return w;
+  }
+
+  function grantBox(a, c) {
+    const f = c.facts || {};
+    const who = nameOf(a.customer_user_id) || "them";
+    const what = `${a.days || f.grant_days || 3} days of premium`;
+    const w = el("div", "grant " + a.status);
+    if (a.status === "pending" || a.status === "failed") {
+      const t = el("p", "waiting");
+      t.append(el("span", "arrow", "←"), document.createTextNode(a.status === "failed"
+        ? `Giving ${who} ${what} failed — try again in the list.`
+        : `Waiting for your OK on ${what} for ${who} — approve or deny it in the list.`));
+      w.append(t);
+    } else if (a.status === "approved") {
+      const t = el("p", "done"); t.append(el("span", "tick", "✓"), document.createTextNode("Premium given" + (a.result && a.result.expires_at ? " · expires " + day(a.result.expires_at, true) : "")));
+      w.append(t);
+    } else if (a.status === "denied") {
+      w.append(el("p", "done no", `You said no to ${what} — ${nameOf(a.customer_user_id) || "the user"} will see that.`));
+    } else w.append(el("p", "done no", `${cap(what)}: ${a.status}`));
+    return w;
+  }
 
   function renderDetail(d) {
     const box = $("#detail"); box.textContent = "";
-    const c = d.case;
-    const head = el("div", "d-head");
-    head.append(el("h2", null, c.customer_user_id));
-    const meta = el("div", "meta");
-    meta.append(badgeEl(c.state));
-    if (c.language) meta.append(el("span", "tag lang", c.language));
-    if (c.intent && c.intent.type) meta.append(el("span", "tag intent", c.intent.type));
-    if (c.intent && c.intent.injection_suspected) meta.append(el("span", "tag wait", "injection suspected — ignored"));
-    const fl = d.flags || {};
-    if (fl.privacy) meta.append(el("span", "tag priv", "privacy request — handle by the data-protection process"));
-    (fl.escalation_reasons || []).filter((r) => r !== "privacy_request" || !fl.privacy).forEach((r) => meta.append(el("span", "tag esc", "escalated: " + reasonText(r))));
-    meta.append(saleEl(c.sale_context));
-    head.append(meta);
-    if (c.state && c.state.evidence && c.state.evidence.length) head.append(el("div", "evid", "evidence: " + c.state.evidence.join(" · ")));
-    head.append(el("div", "evid", `case ${c.id} · opened ${fmtTime(c.created_at)}`));
-    box.append(head);
+    const c = d.case; const f = c.facts || {}; const fl = d.flags || {};
+    const card = el("article", "case");
+
+    // who + status
+    const head = el("header", "d-head");
+    const av = el("span", "avatar", (nameOf(c.customer_user_id) || c.customer_user_id || "?").charAt(0).toUpperCase());
+    const idl = el("div", "id-lines");
+    const h = el("h2"); h.append(whoEl(c.customer_user_id, "span"));
+    const meta = el("div", "meta", [c.language && langName(c.language), f.store_name].filter(Boolean).join(" · ") || "—");
+    idl.append(h, meta); head.append(av, idl);
+    card.append(head);
+
+    const status = el("p", "status " + ((c.state && c.state.tone) || "info"));
+    status.append(dot(c.state && c.state.tone), document.createTextNode(stateLine(c.state, f)));
+    card.append(status);
+
+    const v = c.validator || null;
+    if (v) {
+      const rv = realViolations(v.violations);
+      const okp = v.used_fallback || !rv.length; // a rejected draft is replaced by the checked template
+      const pill = el("span", "trust " + (okp ? "ok" : "bad"), okp ? "✓ Checked: every fact matches the account" : "Check this reply — see Details");
+      card.append(pill);
+    }
+
+    // things that need a human, visible (not hidden in details)
+    const alerts = [];
+    if (fl.privacy) alerts.push("Privacy / data request — handle it through your data-protection process.");
+    (fl.escalation_reasons || []).filter((r) => r !== "privacy_request" || !fl.privacy).forEach((r) => alerts.push("Needs a person: " + reasonText(r) + "."));
+    if (c.intent && c.intent.injection_suspected) alerts.push("The message tried to give Case Desk orders. It was ignored.");
+    alerts.forEach((t) => card.append(el("p", "alert", t)));
 
     // conversation
     const convo = el("div", "convo");
@@ -119,35 +223,50 @@
       const meta = m.meta || {};
       const pending = meta.status === "pending";
       const t = el("div", `turn ${m.role}${pending ? " pending" : ""}`);
-      const who = el("div", "who"); who.append(el("span", null, m.role === "user" ? "user" : m.role === "system" ? "system" : "Case Desk"), el("span", null, fmtTime(m.created_at)));
-      if (m.role === "assistant" && !pending && meta.status !== "error") {
-        who.append(el("span", "vflag " + (meta.used_fallback ? "" : "ok"), meta.used_fallback ? "template fallback" : "LLM reply passed"));
-        const rv = realViolations(meta.violations), le = llmErrors(meta.violations, meta.llm_error);
-        if (rv.length) who.append(el("span", "vflag bad", rv.length + " violation(s)"));
-        if (le.length) { const f = el("span", "vflag", "LLM unavailable"); f.title = le.join("\n"); who.append(f); }
-      }
-      if (meta.status === "error") who.append(el("span", "vflag bad", "pipeline error"));
-      if (meta.abandoned) { const f = el("span", "vflag", "abandoned"); f.title = "The user switched away before this reply arrived; they never saw it."; who.append(f); }
+      const who = el("div", "who", (m.role === "user" ? (nameOf(c.customer_user_id) || "User") : m.role === "system" ? "System" : "Case Desk") + " · " + fmtTime(m.created_at));
+      if (meta.status === "error") who.append(el("span", "vflag bad", "something went wrong"));
+      if (meta.abandoned) who.append(el("span", "vflag", "never seen by the user"));
       t.append(who, auto(el("div", "txt", pending ? "writing the reply…" : m.text)));
       convo.append(t);
     }
+    card.append(convo);
 
-    // actions
-    const acts = el("div", "acts");
-    for (const a of c.actions || []) {
-      const x = el("div", "act"); const b = el("b", a.requires_approval ? "needs" : null, a.kind + (a.requires_approval ? " · needs approval" : ""));
-      x.append(b); if (a.params && Object.keys(a.params).length) x.append(el("code", null, JSON.stringify(a.params))); acts.append(x);
+    // what Case Desk did
+    const did = el("section", "did");
+    did.append(el("h3", null, "What Case Desk did"));
+    const acts = c.actions || [];
+    if (acts.length) { const ul = el("ul"); acts.forEach((a) => ul.append(el("li", a.requires_approval ? "needs" : null, actionText(a)))); did.append(ul); }
+    else did.append(el("p", "soft", c.validator ? "Answered the message — nothing else was needed." : "Still working on it…"));
+    card.append(did);
+
+    // approval
+    for (const a of d.approvals) card.append(grantBox(a, c));
+
+    // details for the curious
+    const more = el("details", "more");
+    more.append(el("summary", null, "Details (for the curious)"));
+    const dbody = el("div", "more-body");
+    const caseInfo = el("div", "evid");
+    caseInfo.append(el("div", null, `case ${c.id} · user ${c.customer_user_id} · opened ${fmtTime(c.created_at)}`));
+    const tags = el("div", "tags");
+    if (c.state) tags.append(el("span", "tag mono", c.state.code));
+    if (c.intent && c.intent.type) tags.append(el("span", "tag mono", "intent " + c.intent.type));
+    if (c.language) tags.append(el("span", "tag mono", c.language));
+    tags.append(saleEl(c.sale_context));
+    caseInfo.append(tags);
+    if (c.state && c.state.evidence && c.state.evidence.length) caseInfo.append(el("div", null, "evidence: " + c.state.evidence.join(" · ")));
+    dbody.append(sub("Case", caseInfo));
+
+    const pa = el("div", "acts");
+    for (const a of acts) {
+      const x = el("div", "act"); x.append(el("b", a.requires_approval ? "needs" : null, a.kind + (a.requires_approval ? " · needs approval" : "")));
+      if (a.params && Object.keys(a.params).length) x.append(el("code", null, JSON.stringify(a.params))); pa.append(x);
     }
-    if (!acts.children.length) acts.append(el("p", "empty", c.validator ? "No actions — the reply answers on its own (e.g. thanks, another app)." : "No actions yet."));
+    if (!acts.length) pa.append(el("p", "empty", "No actions."));
+    dbody.append(sub("Actions decided by policy", pa));
 
-    // claims the user made (typed, sanitised) — compare with the FactSheet
-    const claims = (c.intent && c.intent.claims) || {};
-    const claimsBox = Object.keys(claims).length ? kvTable(claims) : el("p", "empty", "No specific claims in the user's messages.");
-
-    // validator
-    const v = c.validator || {};
     const ver = el("div", "verdict");
-    if (c.validator) {
+    if (v) {
       ver.append(el("span", "vflag " + (v.used_fallback ? "" : "ok"), v.used_fallback ? "fallback used: yes" : "fallback used: no"));
       const rv = realViolations(v.violations), le = llmErrors(v.violations, v.llm_error);
       ver.append(el("span", "vflag " + (rv.length ? "bad" : "ok"), `violations: ${rv.length}`));
@@ -155,33 +274,36 @@
       if (rv.length) { const ul = el("ul"); rv.forEach((x) => ul.append(el("li", null, x))); ver.append(ul); }
       if (le.length) { const ul = el("ul", "info"); le.forEach((x) => ul.append(el("li", null, x))); ver.append(ul); }
     } else ver.append(el("span", "empty", "Reply still being written."));
+    const perReply = el("ul", "info");
+    d.messages.filter((m) => m.role === "assistant" && m.meta && m.meta.status !== "pending").forEach((m, i) => {
+      const meta = m.meta; const bits = [meta.used_fallback ? "template fallback" : "LLM reply passed"];
+      const rv = realViolations(meta.violations), le = llmErrors(meta.violations, meta.llm_error);
+      if (rv.length) bits.push(rv.length + " violation(s)"); if (le.length) bits.push("LLM unavailable: " + le.join(", "));
+      if (meta.status === "error") bits.push("pipeline error");
+      perReply.append(el("li", null, `reply ${i + 1} (${fmtTime(m.created_at)}): ${bits.join(" · ")}`));
+    });
+    if (perReply.children.length) ver.append(perReply);
+    dbody.append(sub("Validator", ver));
 
-    // approvals
-    const ap = el("div", "acts");
-    for (const a of d.approvals) {
-      const w = el("div", "appr");
-      const r1 = el("div", "row"); r1.append(el("span", "st " + a.status, a.status), el("small", null, `${a.days || "?"} days · ${a.access_level_id} · requested ${fmtTime(a.created_at)}`));
-      w.append(r1);
-      if (a.status === "pending" || a.status === "failed") {
-        if (a.status === "failed") w.append(el("small", "fail", "Adapty grant failed: " + ((a.result && a.result.error) || "error")));
-        const r2 = el("div", "row"); r2.style.justifyContent = "flex-start";
-        const ok = el("button", "btn small approve", a.status === "failed" ? "Retry grant via Adapty" : "Approve — grant via Adapty"); ok.onclick = () => decide(a.id, "approve", ok);
-        const no = el("button", "btn small deny", "Deny"); no.onclick = () => decide(a.id, "deny", no);
-        r2.append(ok, no); w.append(r2);
-      } else if (a.result && a.result.expires_at) w.append(el("small", null, "Granted until " + fmtTime(a.result.expires_at)));
-      else if (a.result && a.result.error) w.append(el("small", null, a.result.error));
-      ap.append(w);
+    const claims = (c.intent && c.intent.claims) || {};
+    dbody.append(sub("What the user claims", Object.keys(claims).length ? kvTable(claims) : el("p", "empty", "No specific claims.")));
+    dbody.append(sub("FactSheet — the only facts the reply may use", kvTable(c.facts)));
+
+    if (d.approvals.length) {
+      const ap = el("ul", "info");
+      d.approvals.forEach((a) => ap.append(el("li", null, `${a.id} · ${a.status} · ${a.days || "?"} days of ${a.access_level_id} · requested ${fmtTime(a.created_at)}` + (a.result ? " · " + JSON.stringify(a.result) : ""))));
+      dbody.append(sub("Approval records", ap));
     }
 
-    const left = el("div", "stack"); left.append(panel("Conversation", convo));
-    const right = el("div", "stack");
-    if (d.approvals.length) right.append(panel("Approval", ap));
-    right.append(panel("Actions decided by policy", acts), panel("What the user claims", claimsBox), panel("Validator", ver), panel("FactSheet — the only facts the reply may use", kvTable(c.facts)));
-    const g = el("div", "grid2"); g.append(left, right); box.append(g);
+    const ol = el("ol", "audit"); d.audit.forEach((e) => { const li = el("li"); li.append(el("span", null, fmtTime(e.ts)), el("span", null, `${e.actor} · ${e.event}`), el("span", null, JSON.stringify(e.detail))); ol.append(li); });
+    dbody.append(sub(`Audit log (${d.audit.length})`, ol));
 
-    const au = el("details", "audit panel"); au.append(el("summary", null, `Audit log (${d.audit.length})`));
-    const ol = el("ol"); d.audit.forEach((e) => { const li = el("li"); li.append(el("span", null, fmtTime(e.ts)), el("span", null, `${e.actor} · ${e.event}`), el("span", null, JSON.stringify(e.detail))); ol.append(li); });
-    au.append(ol); box.append(au);
+    const mods = el("div", "tags");
+    Object.entries(S.modules).forEach(([k, val]) => mods.append(el("span", "pill" + (val === "stub" ? " stub" : ""), `${k.replace("_", ".")}: ${val}`)));
+    if (mods.children.length) dbody.append(sub("System modules", mods));
+    more.append(dbody);
+    card.append(more);
+    box.append(card);
   }
 
   async function select(id) {
@@ -196,7 +318,7 @@
     try {
       const d = await api("/api/cases/" + encodeURIComponent(S.selected));
       const sig = JSON.stringify(d);
-      if (sig !== S.sig.detail) { const open = document.querySelector("details.audit")?.open; S.sig.detail = sig; renderDetail(d); if (open) document.querySelector("details.audit").open = true; }
+      if (sig !== S.sig.detail) { const open = document.querySelector("details.more")?.open; S.sig.detail = sig; renderDetail(d); if (open) document.querySelector("details.more").open = true; }
     } catch (e) { if (e.status === 404) { S.selected = null; } else throw e; }
   }
 
@@ -205,17 +327,26 @@
     try {
       const r = await api(`/api/approvals/${id}/${verb}`, { method: "POST" });
       const a = r.approval;
-      toast(verb === "approve" ? `Granted ${a.access_level_id} to ${a.customer_user_id} via Adapty` : `Denied — ${a.customer_user_id} will see it`);
+      toast(verb === "approve" ? `Gave ${callName(a.customer_user_id)} ${a.days || 3} days of premium` : `Denied — ${callName(a.customer_user_id)} will see it`);
       await refresh();
     } catch (e) {
       const msg = e.message || "Failed";
       toast(msg, 7000); btn.disabled = false;
-      const host = btn.closest(".appr, .q-item");
+      const host = btn.closest(".q-item");
       if (host) { host.querySelector(".refused")?.remove(); const r = el("p", "refused", msg); r.setAttribute("role", "alert"); host.append(r); }
     }
   }
 
   // ------------------------------------------------------------ refresh loop
+  async function loadNames() {
+    try {
+      const r = await api("/api/demo/users");
+      for (const u of r.users || []) {
+        const n = String(u.display_name || "").replace(/\s*\(.*\)\s*$/, "").trim();
+        if (n && n !== u.customer_user_id) S.names[u.customer_user_id] = n;
+      }
+    } catch { /* names are a demo nicety; ids still work */ }
+  }
   async function refresh() {
     const [cs, ap] = await Promise.all([api("/api/cases"), api("/api/approvals")]);
     S.cases = cs.cases; S.approvals = ap.approvals;
@@ -229,8 +360,10 @@
       const meta = await api("/api/console/meta");
       $("#gate").hidden = true; $("#app").hidden = false;
       const m = $("#topMeta"); m.textContent = "";
-      if (meta.demo) m.append(el("span", "pill demo", "demo mode"));
-      Object.entries(meta.modules || {}).forEach(([k, v]) => { const p = el("span", "pill" + (v === "stub" ? " stub" : ""), `${k.replace("_", ".")}: ${v}`); m.append(p); });
+      if (meta.demo) { m.append(el("span", "pill demo", "demo mode")); await loadNames(); }
+      S.modules = meta.modules || {};
+      const stubs = Object.values(S.modules).filter((v) => v === "stub").length;
+      if (stubs) m.append(el("span", "pill stub", `${stubs} module(s) on stubs`));
       await refresh();
       clearInterval(S.timer);
       S.timer = setInterval(() => refresh().catch(() => { $("#live").textContent = "offline — retrying"; }), 3000);

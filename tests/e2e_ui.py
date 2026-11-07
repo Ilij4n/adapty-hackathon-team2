@@ -232,13 +232,23 @@ def main() -> int:
             con.on("pageerror", lambda e: errors.append(str(e)))
             con.goto(url + "/console")
             expect(con.locator(".q-item")).to_have_count(1, timeout=10000)
-            con.locator(".q-item").get_by_role("button", name="Open case").click()
-            expect(con.locator(".d-head h2")).to_have_text(grant_user)
+            con.locator(".q-item .q-open").click()   # opening the case; Approve / Deny live only on this queue card
+            expect(con.locator(".d-head h2")).to_contain_text(grant_user.split("_")[-1])  # "Ava · 00239"
             expect(con.locator("#filters .filt")).to_have_count(4)
+            expect(con.get_by_role("heading", name="What Case Desk did")).to_be_visible()
+            # the technical panels sit in one collapsed "Details" disclosure
+            expect(con.get_by_role("heading", name="What the user claims")).to_be_hidden()
+            con.locator("details.more summary").click()
             expect(con.get_by_role("heading", name="What the user claims")).to_be_visible()
+            con.locator("details.more summary").click()
+            expect(con.locator(".q-item .hint")).to_have_text("Nothing is granted until you approve.")
+            expect(con.locator(".btn.approve")).to_have_count(1)   # one Approve per pending grant, none on the case card
+            expect(con.locator(".grant.pending .waiting")).to_be_visible()
             shot(con, "console-pending-1280")
-            con.locator(".q-item").get_by_role("button", name="Approve").click()
-            expect(con.locator(".appr .st")).to_have_text("approved", timeout=10000)
+            con.locator(".q-item .btn.approve").click()
+            expect(con.locator(".grant.approved .done")).to_contain_text("Premium given", timeout=10000)
+            expect(con.locator(".toast")).to_have_count(0, timeout=6000)  # don't photograph the toast over the result
+            con.evaluate("window.scrollTo(0, 0)")
             shot(con, "console-approved-1280")
             con.set_viewport_size({"width": 390, "height": 844})
             shot(con, "console-390")

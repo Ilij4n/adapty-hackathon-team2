@@ -101,3 +101,78 @@ Engine is in: `casedesk/engine/{state,facts,policy}.py`, table in `docs/policy.m
 - **To Builder 4:** `Reply` keeps `text`, `used_fallback`, `violations` (+ `source` = llm | llm_retry | template and
   `attempts`). Retry violations are prefixed `try1:` / `try2:`; LLM failures appear as `llm_error:<msg>`.
   `CASEDESK_LLM` is opt-in: unset = none (rules + templates). `CASEDESK_INTENT=rules` skips the intent LLM call.
+
+## Builder 3 → round 2 (bug bash fixes) — 2026-11-07
+AI side is done and tested; these are the engine/app pieces it needs. Until they land, the AI layer degrades safely:
+new intents fall into policy's OTHER row, and templates/compose still produce the right text.
+
+### To Builder 2 (engine)
+1. **New intent types** in `policy.INTENT_TYPES` (exact strings, already in `casedesk.ai.intent.INTENT_TYPES`):
+   `HUMAN_REQUEST`, `ACKNOWLEDGEMENT`, `OTHER_APP`, `PRIVACY_REQUEST`, `THIRD_PARTY_ACCOUNT`, `DISCOUNT_REQUEST`.
+   Proposed rows (same for every state):
+   | intent | slots |
+   |---|---|
+   | HUMAN_REQUEST | `human` (ESCALATE_TO_HUMAN, reason `user_requested_human`) |
+   | ACKNOWLEDGEMENT | *(no actions)* |
+   | OTHER_APP | *(no actions)* |
+   | PRIVACY_REQUEST | `human` (reason `privacy_request` — the console should flag it) |
+   | THIRD_PARTY_ACCOUNT | *(no actions)* |
+   | DISCOUNT_REQUEST | `explain`, plus `grant` in BILLING_RETRY / EXPIRED_BILLING_ERROR (same eligibility as today), never `human` |
+   Also consider making the `OTHER` column `explain` only (no `human`). Bug bash M1: "ok", "???", "thanks" and injection
+   attempts all produced escalations; those now get their own intents, but `OTHER` is still attacker-reachable.
+2. **New facts fields** (add them to `allowed_numbers` as usual):
+   - `ever_charged`: `"yes"` | `"no"` (you already compute `ever_paid`). H4.
+   - `price_after_trial`: for TRIAL_ACTIVE / TRIAL_CANCELLED, and for expired trials that never converted. Please
+     **omit `price`** in those states so nothing can present it as paid (#7).
+   - `cancel_before`: TRIAL_ACTIVE only, ISO date. App Store = `trial_ends_on` minus 1 day (Apple's 24-hour rule);
+     Google Play = `trial_ends_on`. M6.
+   - `grant_request`: `"pending"` | `"approved"` | `"denied"` — the latest approval for this user within 90 days.
+     H2/#6. `facts.build` doesn't get `history` today: either add `history=None` to `build`, or Builder 4 sets the
+     field after `build` (see below). The validator **requires** pending requests to be mentioned as "under review".
+3. **Policy changes**
+   - M5: `charge?` slot — if `intent.claims.get("wants_refund") is True`, add the `refund` slot after `explain!`.
+   - H4: if `ever_charged == "no"` and intent is REFUND_REQUEST or CHARGED_AFTER_CANCEL → `explain!` with reason
+     `nothing_charged`, and no refund path. Templates word it as "you were never charged" outside trial states.
+   - H7: claims vs facts, for intents STATUS_QUESTION / CHARGED_AFTER_CANCEL / REFUND_REQUEST / PAID_NO_ACCESS.
+     If `claims.claimed_store` ∈ {app_store, play_store} differs from `facts.fields["store"]`, or
+     `claims.claimed_amount` (e.g. `"99.99"`) is not in `allowed_numbers` (also check `,` and integer variants) →
+     `EXPLAIN_STATUS` with `claim_contradicted=True`, `reason="charge_not_found"`,
+     `params.store_mismatch` / `params.amount_mismatch` (booleans), plus `human` when the store mismatches.
+     The AI layer has a stop-gap with the same rule (`casedesk.ai.templates.charge_claim_mismatch`); copy it, don't
+     import it (no engine→ai import).
+   - H5: NO_PURCHASE (and any state where `store` was only guessed from `profile.platform`) →
+     `RESTORE_PURCHASES_STEPS.params.steps_key = "restore_generic"`. The AI layer already prefers
+     `claims.claimed_platform` (ios/android) when present.
+4. **Typed claims you can rely on** (`Intent.claims`, sanitised — anything else is dropped). All optional:
+   - booleans: `says_cancelled`, `says_charged`, `wants_refund`, `says_new_device`, `says_paid`, `says_no_access`,
+     `wants_to_cancel`, `wants_human`, `thanks`, `angry`, `wants_agent_to_act`, `chargeback_threat`,
+     `third_party_account`, `about_other_app`, `privacy_request`, `discount_request`, `follow_up`
+   - `claimed_amount` (`^\d{1,6}(\.\d{1,2})?$`, dot decimal), `claimed_currency` (ISO-4217, upper case),
+     `claimed_store` (`app_store` | `play_store` | `web`), `claimed_platform` (`ios` | `android`),
+     `claimed_date` (`today` | `yesterday` | `last_week` | the date as written, ≤ 20 chars), `previous_intent`
+     (an intent type).
+
+### To Builder 4 (app)
+1. **Conversation history.** Pass it to both calls:
+   `intent.extract(message, locale, history=hist)` and `compose.reply(intent, state, facts, actions, language, history=hist)`.
+   `hist` = the last ≤ 4 turns of this user's current conversation, oldest first, excluding the current message:
+   `[{"role": "user", "text": "...", "intent": "<that turn's intent.type, optional>"}, {"role": "assistant", "text": "<the reply we sent>"}]`.
+   This fixes "a povraćaj?" / "and the refund?" / "ok but when exactly?" and stops the status being repeated every turn.
+2. **Pending grant.** If the engine doesn't add it, set `facts.fields["grant_request"] = "pending"` after `facts.build`
+   when the user has a pending approval, before `compose.reply`. Replies then say the request is still under review (H2).
+3. **Empty action lists.** With the proposed policy rows, ACKNOWLEDGEMENT, OTHER_APP and THIRD_PARTY_ACCOUNT return `[]`.
+   Please handle that: no approval, just show the reply.
+4. **Console:**
+   - an "Escalated" filter or badge (M1);
+   - flag `PRIVACY_REQUEST` cases (M4);
+   - show `intent.claims`, e.g. claimed 99.99 EUR on Google Play vs the account.
+   New violation strings can appear: `pending_grant_not_mentioned`, `missing_english_gloss`.
+5. **Locale.** Keep passing the UI locale. Messages with no lexical evidence ("ok", "???") now take the conversation's
+   language first, then the UI locale (M3).
+
+### To the lead
+- After Builder 2 changes the policy table, run `python eval/run_eval.py --refresh-expected` to regenerate
+  `expected_actions` in `eval/tickets.jsonl`. Tickets marked `awaits` (H7, M5, M6) start showing the engine behaviour then.
+- Not done in the AI layer (needs a decision): M7, the frozen demo clock. Replies no longer get `as_of`, and the prompt
+  forbids relative dates, but grant expiry still comes from the frozen clock. M10 (receipt intent) is not added
+  either; it's currently OTHER.

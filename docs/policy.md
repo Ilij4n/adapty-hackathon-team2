@@ -51,7 +51,7 @@ Store links only exist for app_store / play_store: cancel / manage / payment / r
 | intent | state | reason |
 |---|---|---|
 | CHARGED_AFTER_CANCEL | ACTIVE_RENEWING, TRIAL_ACTIVE, GRACE_PERIOD, BILLING_RETRY | `not_cancelled` (auto-renew is still on) |
-| CHARGED_AFTER_CANCEL | CANCELLED_PAID_UP, EXPIRED_CANCELLED | `charged_before_cancel` (last charge on/before `cancelled_on`) or `no_cancellation_recorded` |
+| CHARGED_AFTER_CANCEL | CANCELLED_PAID_UP, EXPIRED_CANCELLED | `charged_before_cancel` (last charge on/before `cancelled_on`), `no_cancellation_recorded`, or `no_charge_on_account` (free trial cancelled before it converted: never charged) |
 | CHARGED_AFTER_CANCEL | TRIAL_CANCELLED | `nothing_charged` |
 | CHARGED_AFTER_CANCEL | EXPIRED_BILLING_ERROR | `renewal_charge_failed` |
 | CHARGED_AFTER_CANCEL | REFUNDED / LIFETIME / FAMILY_SHARED | `already_refunded` / `one_time_purchase` / `organizer_pays` |

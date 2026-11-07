@@ -260,7 +260,11 @@ def decide(state: CaseState, intent: IntentLike | str, facts: FactSheet, history
         elif slot == "explain!":
             reason = _contradiction_reason(state.code, itype)
             if itype == "CHARGED_AFTER_CANCEL" and state.code in ("CANCELLED_PAID_UP", "EXPIRED_CANCELLED"):
-                reason = "charged_before_cancel" if charge_after_cancel(state) is False else "no_cancellation_recorded"
+                if state.primary is not None and last_charge_at(state.primary) is None:
+                    reason = "no_charge_on_account"   # a free trial cancelled before it converted: never charged
+                else:
+                    reason = ("charged_before_cancel" if charge_after_cancel(state) is False
+                              else "no_cancellation_recorded")
             out.append(Action(kind="EXPLAIN_STATUS", params={"state": state.code, "claim_contradicted": True,
                                                              "reason": reason}))
         elif slot in _STORE_SLOTS:

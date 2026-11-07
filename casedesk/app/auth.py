@@ -26,11 +26,16 @@ def sign(customer_user_id: str, secret: str | None = None) -> str:
     return hmac.new(key, customer_user_id.encode(), hashlib.sha256).hexdigest()
 
 
+def valid_user_id(customer_user_id: str | None) -> bool:
+    """Printable ASCII only: it travels to Adapty in an HTTP header (non-ASCII or CR/LF cannot be sent)."""
+    return bool(customer_user_id) and all(" " <= ch <= "~" for ch in customer_user_id)
+
+
 def verify(customer_user_id: str, signature: str | None) -> bool:
-    if not customer_user_id:
+    if not valid_user_id(customer_user_id):
         return False
     key = _secret()
-    if signature and key:
+    if signature and key and signature.isascii():  # compare_digest raises TypeError on non-ASCII str
         if hmac.compare_digest(sign(customer_user_id, key.decode()), signature.strip().lower()):
             return True
     # Demo mode: the profile picker sends no signature; accepted only for demo users (checked by the caller).

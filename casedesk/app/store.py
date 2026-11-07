@@ -164,6 +164,17 @@ class Store:
                 (aid, case_id, customer_user_id, access_level_id, days, expires_at, "pending", now_iso()))
         return aid
 
+    def create_approval_once(self, case_id: str, customer_user_id: str, access_level_id: str, days: int | None,
+                             expires_at: str | None) -> tuple[str, bool]:
+        """(approval id, created?): the user's pending approval if there is one, else a new one. Atomic, so two
+        concurrent chats from one user cannot both create a pending grant."""
+        with self._lock:
+            rows = self._all("SELECT id FROM approvals WHERE customer_user_id=? AND status='pending' "
+                             "ORDER BY created_at DESC LIMIT 1", (customer_user_id,))
+            if rows:
+                return rows[0]["id"], False
+            return self.create_approval(case_id, customer_user_id, access_level_id, days, expires_at), True
+
     def get_approval(self, aid: str) -> dict | None:
         rows = self._all("SELECT * FROM approvals WHERE id=?", (aid,))
         return self._decode_appr(rows[0]) if rows else None

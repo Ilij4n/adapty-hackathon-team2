@@ -160,7 +160,15 @@ def build(profile: Profile, state: CaseState, now: datetime) -> FactSheet:
 
     if s is not None:
         if s.price is not None and s.price.amount > 0:
-            f["price"] = format_price(s.price.amount, s.price.currency)
+            price = format_price(s.price.amount, s.price.currency)
+            if is_trial(s) and last_charge_at(s) is None:
+                # Never charged (free trial that did not convert): the catalog price is what the trial WOULD cost,
+                # never an amount already paid (lead decision 5). TRIAL_ACTIVE keeps `price` for "then X".
+                f["price_after_trial"] = price
+                if state.code == "TRIAL_ACTIVE":
+                    f["price"] = price
+            else:
+                f["price"] = price
         if (d := _iso(s.purchased_at or s.starts_at)):
             f["purchased_on"] = d
         if (d := _iso(s.starts_at)):

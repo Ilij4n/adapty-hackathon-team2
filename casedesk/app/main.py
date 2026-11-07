@@ -22,7 +22,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from fastapi import Depends, FastAPI, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, HTTPException, Path as PathParam, Query, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -96,6 +97,17 @@ DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 DEMO_NAMES = ["Milica", "Sofía", "Jordan", "Liam", "Ava", "Noah", "Emma", "Mia", "Ethan", "Aarav", "Lena", "Pedro"]
 
 
+ORPHAN_AFTER_S = 20.0   # a pending reply with no worker in this process, older than this, was lost in a restart
+
+
+def _age_s(iso: str | None) -> float:
+    try:
+        t = datetime.fromisoformat(str(iso))
+    except (TypeError, ValueError):
+        return float("inf")
+    return (datetime.now(timezone.utc) - (t if t.tzinfo else t.replace(tzinfo=timezone.utc))).total_seconds()
+
+
 def now_utc() -> datetime:
     """The engine's clock: the Adapty client's get_now() (honours CASEDESK_NOW for the seeded snapshot)."""
     mod = deps.get("adapty_client")
@@ -142,6 +154,10 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
     @asynccontextmanager
     async def lifespan(_app: FastAPI):
         S()
+        try:
+            now_utc()
+        except ValueError as e:
+            raise RuntimeError(f"CASEDESK_NOW is not an ISO date-time: {os.environ.get('CASEDESK_NOW')!r}") from e
         log.info("Case Desk up: demo=%s db=%s console_token=%s signing_secret=%s adapty_key=%s modules=%s",
                  auth.demo_mode(), S().path, auth.mask(auth.console_token()),
                  auth.mask(os.environ.get("APP_SIGNING_SECRET")), auth.mask(os.environ.get("ADAPTY_SECRET_KEY")),
@@ -153,6 +169,15 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
     app.state.adapty = adapty
     app.state.limiter = RateLimiter(int(os.environ.get("CASEDESK_CHAT_RATE", "8")))
     app.state.tasks = {}
+
+    @app.exception_handler(RequestValidationError)
+    async def invalid_request(_request: Request, exc: RequestValidationError):
+        # Never echo the input back: a lone surrogate in it cannot be encoded (-> 500), and a 50k body would be
+        # sent straight back. Location + message are enough for a client developer.
+        errs = [{"loc": list(e.get("loc", ())), "msg": e.get("msg", ""), "type": e.get("type", "")}
+                for e in exc.errors()]
+        return JSONResponse({"detail": errs}, status_code=422)
+
     inline_wait = float(os.environ.get("CASEDESK_INLINE_WAIT", "2.5"))
 
     def S() -> Store:
@@ -189,12 +214,19 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
         return out
 
     def check_user(cuid: str, signature: str | None) -> None:
+        if not auth.valid_user_id(cuid):
+            raise HTTPException(status_code=401, detail="Signature missing or invalid for this user.")
         if not auth.verify(cuid, signature):
             S().audit("anonymous", "auth_rejected", detail={"customer_user_id": cuid[:64]})
             raise HTTPException(status_code=401, detail="Signature missing or invalid for this user.")
 
     async def load_profile(cuid: str) -> Profile:
-        p = await A().get_profile(cuid)
+        try:
+            p = await A().get_profile(cuid)
+        except Exception as e:  # noqa: BLE001 — Adapty 5xx/429/401/network after retries
+            log.warning("get_profile failed for %s: %s", cuid[:64], type(e).__name__)
+            raise HTTPException(status_code=503, detail="We can't reach your account details right now — "
+                                                        "please try again in a minute.") from e
         if p is None:
             return Profile(profile_id="unknown", customer_user_id=cuid)
         return p
@@ -241,14 +273,12 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
         approval_id = None
         for a in actions:
             if a.kind == "PROPOSE_GRANT":
-                existing = [x for x in st.user_approvals(cuid) if x["status"] == "pending"]
-                if existing:
-                    approval_id = existing[-1]["id"]
-                else:
-                    p = dict(a.params or {})
-                    approval_id = st.create_approval(case_id, cuid, str(p.get("access_level_id") or "premium"),
-                                                     int(p["days"]) if p.get("days") is not None else None,
-                                                     str(p["expires_at"]) if p.get("expires_at") else None)
+                p = dict(a.params or {})
+                approval_id, created = st.create_approval_once(
+                    case_id, cuid, str(p.get("access_level_id") or "premium"),
+                    int(p["days"]) if p.get("days") is not None else None,
+                    str(p["expires_at"]) if p.get("expires_at") else None)
+                if created:
                     st.audit("system", "approval_requested", case_id,
                              {"approval_id": approval_id, "params": dump(p)})
                 pending = True
@@ -325,12 +355,20 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
                 "approvals": approvals_view(cuid)}
 
     @app.get("/api/chat/{message_id}")
-    async def chat_poll(message_id: int, customer_user_id: str = Query(...), signature: str | None = None):
+    async def chat_poll(message_id: int = PathParam(..., ge=1, le=2**63 - 1),
+                        customer_user_id: str = Query(...), signature: str | None = None):
         check_user(customer_user_id, signature)
         m = S().get_message(message_id)
         case = S().get_case(m["case_id"]) if m else None
         if not m or m["role"] != "assistant" or not case or case["customer_user_id"] != customer_user_id:
             raise HTTPException(status_code=404, detail="No such message.")
+        if (m.get("meta") or {}).get("status") == "pending" and message_id not in app.state.tasks \
+                and _age_s(m.get("created_at")) > ORPHAN_AFTER_S:
+            # Its worker died with the previous server process: answer instead of leaving the user polling forever.
+            text = ("Sorry — I couldn't finish checking that. Your account status above is correct; "
+                    "please send your message again.")
+            S().update_message(message_id, text, {"status": "error", "error": "interrupted"})
+            m = S().get_message(message_id)
         return msg_view(m)
 
     @app.get("/api/status")

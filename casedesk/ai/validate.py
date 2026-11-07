@@ -181,6 +181,19 @@ _REFUND_PROMISE = [
     r"(мы|я) (обязательно )?(верн[её]м|верну|возвратим|возмест)\w*", r"(мы|я) (уже )?(вернули|вернул|вернула|возместили|оформили возврат|сделали возврат|одобрили возврат)",
     r"возврат\w* (средств |денег )?(уже )?(оформлен|одобрен|выполнен|произвед[её]н|отправлен|будет)",
     r"деньги (будут |уже )?(возвращ|верн[уё]т)", r"вы получите (возврат|деньги|свои деньги)",
+    # hu
+    r"\b(visszaterit|visszautal|visszafizet)(juk|em|ettuk|ettem|tuk)\b", r"\bvisszakapja (a |az )?(penzet|osszeget)",
+    r"\bvisszaterites(t)? (elinditottuk|jovahagytuk|megtortent|folyamatban)",
+    # tr
+    r"\biade (edecegiz|ettik|ettim|edilecek|edildi|yapacagiz|yaptik)", r"\biadeniz (yap[iı]ld[iı]|onaylandi|gerceklestirildi|isleme alindi|tamamlandi)",
+    r"\bparan[iı]z[iı] (iade|geri) (edecegiz|ettik|odeyecegiz|verecegiz)", r"\bgeri (odeyecegiz|odedik)",
+    # pl
+    r"\bzwrocimy\b", r"\bzwrocilismy\b", r"\bzwrot (zostal|zostanie|jest) (zatwierdzony|zlecony|wykonany|zrealizowany|przetworzony)",
+    r"\botrzymasz zwrot", r"\bdokonalismy zwrotu",
+    # nl
+    r"\bwe (zullen|gaan) (je|u|jou) .{0,20}terugbetalen", r"\bwe betalen (je|u) .{0,20}terug", r"\bwe hebben (je|u) .{0,20}terugbetaald",
+    r"\b(je|uw) terugbetaling is (verwerkt|goedgekeurd|uitgevoerd|onderweg)", r"\b(je|u) krijgt (je|uw) geld terug",
+    r"\brestitutie (is|wordt) (verwerkt|goedgekeurd|uitgevoerd)",
 ]
 _REFUND_PROMISE_RE = [re.compile(p, re.I) for p in _REFUND_PROMISE]
 # Passive "the refund was/has been processed" statements: in the REFUNDED state these restate a fact, so only the
@@ -197,6 +210,7 @@ _DONE = {
     "granted": [
         r"\b(i|we)('ve| have)? (just |now |already )?(granted|given|unlocked|activated|reactivated|re-enabled|extended|added|turned on|switched on|enabled)\b.{0,40}\b(premium|access|pro|subscription|days|extension|account)",
         r"\b(premium|access|pro|subscription)\b.{0,20}\b(has been|is now|was just|have been) (granted|unlocked|activated|reactivated|re-enabled|extended|added|turned back on)",
+        r"\b(extension|courtesy|extra days|free days|grant|request)\b.{0,20}\b(has been|is now|was just|have been|was) (granted|approved|activated|applied|added|accepted)",
         r"\byou (now )?have (premium|pro|access|full access)\b.{0,15}\b(again|back)\b", r"\byou('re| are) all set\b",
         r"\b(i|we)('ve| have)? \w+ (you |it )?(and|&) (also )?(have )?(granted|given|unlocked|activated|reactivated|extended|enabled)\b.{0,30}\b(premium|access|pro|subscription|days)",
         r"\b(unlocked|activated|reactivated|enabled) (your |the )?(premium|pro|lumen premium|full access)\b(?! (once|when|if|after))",
@@ -212,6 +226,8 @@ _DONE = {
         r"\b(ti |le |vi )?(abbiamo|ho) (attivato|concesso|sbloccato|esteso|prolungato|riattivato|regalato|aggiunto)",
         r"(мы|я) (уже )?(активировал|выдал|предоставил|разблокировал|продлил|включил|подключил)\w*",
         r"(премиум|доступ|подписк)\w* (уже |снова )?(активирован|предоставлен|продл[её]н|разблокирован|включ[её]н)",
+        r"\b(aktivaltuk|aktivaltam|feloldottuk|meghosszabbitottuk)\b", r"\b(aktif ettik|aktif ettim|uzattik|tanimladik)\b",
+        r"\b(aktywowalismy|przedluzylismy|odblokowalismy|przyznalismy)\b", r"\bwe hebben .{0,20}(geactiveerd|verlengd|ontgrendeld|toegekend)",
     ],
     "restored": [
         r"\b(i|we)('ve| have)? (just |now |already )?(restored|recovered|moved|transferred|synced|fixed)\b.{0,30}\b(purchase|premium|access|subscription|account)",
@@ -232,6 +248,8 @@ _DONE = {
         r"\b(he|hemos) cancelado (tu|su|la)\b", r"\b(ich|wir) (habe|haben) .{0,20}(gekundigt|storniert|beendet)",
         r"\b(cancelamos|cancelei) (a sua|sua|a tua|tua|a assinatura)", r"\b(nous (vous )?avons|je vous ai|j'ai) (resilie|annule) (votre|ton|l'abonnement)",
         r"\b(abbiamo|ho) (annullato|disdetto|cancellato) (il tuo|il suo|tuo|l'abbonamento)", r"(мы|я) (уже )?(отменил|отключил)\w* (вашу |твою |ваш )?(подписк|продлен|автопродлен)",
+        r"\blemondtuk (az )?elofizet", r"\b(aboneliginizi|aboneligini) iptal (ettim|ettik)", r"\banulowalismy\b.{0,15}subskrypcj",
+        r"\bwe hebben (je|uw) abonnement (opgezegd|geannuleerd)",
     ],
     "payment_updated": [
         r"\b(i|we)('ve| have)? (just |now |already )?(updated|changed|fixed|replaced)\b.{0,15}\b(your )?(card|payment method|billing)",
@@ -259,7 +277,7 @@ _ESCALATED = [
 ]
 _GRANT_TOPIC = [
     r"\b(courtesy|goodwill|complimentary|free|extra|bonus|additional) (days?|extension|access|premium|period|time)\b", r"\bextension of (your )?access\b",
-    r"\b(besplatn|dodatn|gratis)\w* (dan|dana|pristup|produzenj|premijum|premium)", r"\bprodu(z|ž)enj\w* pristupa\b",
+    r"\b(besplat|dodatn|gratis)\w* (dan|dana|pristup|produzenj|premijum|premium)", r"\bprodu(z|ž)enj\w* pristupa\b",
     r"\b(dias?|acceso|extension|periodo) (gratis|adicional\w*|extra|de cortesia|de regalo)", r"\b(acesso|dias?|extensao|periodo) (gratis|gratuito|adiciona\w*|extra|de cortesia)",
     r"\b(kostenlos|zusatzlich|gratis|extra)\w* (tage?|zugang|verlangerung|premium)", r"\bkulanz",
     r"\b(jours?|acces|prolongation|periode) (gratuit|supplementaire|offert|de courtoisie|bonus)\w*", r"\bgeste commercial",
@@ -268,7 +286,7 @@ _GRANT_TOPIC = [
 ]
 _GRANT_PROMISED = [
     r"\byou('ll| will) (get|receive|have|be given)\b.{0,30}\b(free|extra|bonus|additional|courtesy|complimentary)\b",
-    r"\b(dobicete|dobices|imacete|imaces)\b.{0,30}\b(besplatn|dodatn|gratis)", r"\b(recibiras|tendras|recibira|tendra)\b.{0,30}\b(gratis|extra|adicional|cortesia)",
+    r"\b(dobicete|dobices|imacete|imaces)\b.{0,30}\b(besplat|dodatn|gratis)", r"\b(recibiras|tendras|recibira|tendra)\b.{0,30}\b(gratis|extra|adicional|cortesia)",
     r"\b(sie erhalten|du erhaltst|du bekommst|sie bekommen)\b.{0,30}\b(kostenlos|gratis|zusatzlich|extra)",
     r"\b(voce (vai )?(receber|ganhar|tera)|recebera|ganhara)\b.{0,30}\b(gratis|extra|adiciona|cortesia)",
     r"\bvous (allez )?(recevr|aur|beneficier|obten)\w*\b.{0,30}\b(gratuit|supplementaire|offert|bonus)",
@@ -282,6 +300,8 @@ _GRANT_REQUEST_WORDS = [
     r"\bdemand", r"examin", r"valid", r"approb",
     r"richiest", r"chiesto", r"valut", r"approva", r"esamin",
     r"запрос", r"заявк", r"рассмотр", r"одобр", r"провер",
+    r"kerelem", r"keres", r"jovahagy", r"talep", r"inceleme", r"onay", r"wniosek", r"prosb", r"rozpatr", r"zatwierdz",
+    r"verzoek", r"aanvraag", r"beoordeel", r"goedkeur",
 ]
 
 
@@ -308,7 +328,16 @@ def refund_promised(text: str) -> bool:
     return _any(_REFUND_PROMISE_RE, _haystack(text))
 
 
-def check(text: str, facts: Any, actions: Iterable[Any] | None, state: Any = None) -> list[str]:
+def pending_grant(facts: Any) -> bool:
+    """A courtesy-extension request for this user is open (fact from the engine/app)."""
+    f = _fields(facts)
+    return (f.get("grant_request", "").lower() == "pending"
+            or f.get("pending_grant", "").lower() in ("yes", "true", "pending", "1"))
+
+
+def check(text: str, facts: Any, actions: Iterable[Any] | None, state: Any = None, gloss: str | None = None) -> list[str]:
+    """`gloss` = the writer's own English back-translation; the promise / claimed-action patterns also run on it, which
+    covers languages the patterns do not (hu, tr, pl, nl have some; hi, ja, … none)."""
     actions = list(actions or [])
     kinds = _kinds(actions)
     fields = _fields(facts)
@@ -327,6 +356,8 @@ def check(text: str, facts: Any, actions: Iterable[Any] | None, state: Any = Non
     violations += url_v
 
     hay = _haystack(stripped)
+    if gloss:
+        hay += "\n" + _haystack(_URL_RE.sub(" ", gloss))
     # (b) refund promises (never allowed; App Store tagged because Apple alone decides)
     refund_res = _REFUND_ACTIVE_RE if _code(state) == "REFUNDED" else _REFUND_PROMISE_RE
     if _any(refund_res, hay):
@@ -339,7 +370,8 @@ def check(text: str, facts: Any, actions: Iterable[Any] | None, state: Any = Non
         # Describing an earlier developer grant is a status fact, not a new action: only flag first-person claims.
         grant_done = bool(re.search(r"\b(i|we)('ve| have)? (just |now )?(granted|given|unlocked|activated|extended)", hay))
     if grant_done:
-        violations.append("grant_stated_as_done" if "PROPOSE_GRANT" in kinds else "claimed_action:granted")
+        violations.append("grant_stated_as_done" if ("PROPOSE_GRANT" in kinds or pending_grant(facts))
+                          else "claimed_action:granted")
     for what in ("restored", "cancelled", "payment_updated"):
         if _any(_DONE_RE[what], hay):
             violations.append(f"claimed_action:{what}")
@@ -347,11 +379,12 @@ def check(text: str, facts: Any, actions: Iterable[Any] | None, state: Any = Non
         violations.append("claimed_action:escalated")
 
     # (e) grants: requested, never granted or promised
-    if "PROPOSE_GRANT" in kinds:
+    pending = pending_grant(facts)
+    if "PROPOSE_GRANT" in kinds or pending:
         if _any(_GRANT_PROMISED_RE, hay) and "grant_stated_as_done" not in violations:
             violations.append("grant_stated_as_done")
         if not _any(_GRANT_REQUEST_RE, hay):
-            violations.append("grant_not_framed_as_request")
+            violations.append("grant_not_framed_as_request" if "PROPOSE_GRANT" in kinds else "pending_grant_not_mentioned")
     elif _any(_GRANT_TOPIC_RE, hay) or _any(_GRANT_PROMISED_RE, hay):
         violations.append("grant_mentioned_without_action")
 

@@ -421,35 +421,35 @@ ES = {
 # German
 # =====================================================================================================================
 DE = {
-    "ack": {"charged_after_cancel": ["Du hast recht: Du hast die Verlängerung am {cancelled_on} ausgeschaltet, und am {last_charged_on} wurde trotzdem abgebucht.", "Du hast recht: Nach dem Ausschalten der Verlängerung wurde trotzdem abgebucht."]},
+    "ack": {"charged_after_cancel": ["Sie haben recht: Sie haben die Verlängerung am {cancelled_on} ausgeschaltet, und am {last_charged_on} wurde trotzdem abgebucht.", "Sie haben recht: Nach dem Ausschalten der Verlängerung wurde trotzdem abgebucht."]},
     "status": {
         "ACTIVE_RENEWING": [
-            "Dein Abo {product_name} ({store_name}) ist aktiv und verlängert sich am {renews_on} für {price}.",
-            "Dein Abo {product_name} ({store_name}) ist aktiv und verlängert sich am {renews_on}.",
-            "Dein Abo {product_name} ist aktiv und verlängert sich automatisch.",
-            "Dein Abo ist aktiv und verlängert sich automatisch.",
+            "Ihr Abo {product_name} ({store_name}) ist aktiv und verlängert sich am {renews_on} für {price}.",
+            "Ihr Abo {product_name} ({store_name}) ist aktiv und verlängert sich am {renews_on}.",
+            "Ihr Abo {product_name} ist aktiv und verlängert sich automatisch.",
+            "Ihr Abo ist aktiv und verlängert sich automatisch.",
         ],
         "CANCELLED_PAID_UP": [
-            "Dein Abo {product_name} ist gekündigt und verlängert sich nicht – du hast vollen Zugang bis zum {expires_on}.",
-            "Dein Abo {product_name} ist gekündigt und verlängert sich nicht.",
-            "Dein Abo ist gekündigt und verlängert sich nicht.",
+            "Ihr Abo {product_name} ist gekündigt und verlängert sich nicht – Sie haben vollen Zugang bis zum {expires_on}.",
+            "Ihr Abo {product_name} ist gekündigt und verlängert sich nicht.",
+            "Ihr Abo ist gekündigt und verlängert sich nicht.",
         ],
         "TRIAL_ACTIVE": [
-            "Du nutzt gerade die kostenlose Testphase von {product_name}. Am {trial_ends_on} wird daraus ein bezahltes Abo für {price}, wenn du nicht vorher kündigst.",
-            "Du nutzt gerade die kostenlose Testphase von {product_name}. Am {trial_ends_on} wird daraus ein bezahltes Abo, wenn du nicht vorher kündigst.",
-            "Du nutzt gerade die kostenlose Testphase von {product_name}; ohne Kündigung wird daraus ein bezahltes Abo.",
-            "Du nutzt gerade eine kostenlose Testphase; ohne Kündigung wird daraus ein bezahltes Abo.",
+            "Sie nutzen gerade die kostenlose Testphase von {product_name}. Am {trial_ends_on} wird daraus ein bezahltes Abo für {price}, wenn Sie nicht vorher kündigen.",
+            "Sie nutzen gerade die kostenlose Testphase von {product_name}. Am {trial_ends_on} wird daraus ein bezahltes Abo, wenn Sie nicht vorher kündigen.",
+            "Sie nutzen gerade die kostenlose Testphase von {product_name}; ohne Kündigung wird daraus ein bezahltes Abo.",
+            "Sie nutzen gerade eine kostenlose Testphase; ohne Kündigung wird daraus ein bezahltes Abo.",
         ],
         "TRIAL_CANCELLED": [
-            "Deine kostenlose Testphase von {product_name} ist gekündigt, dir wird also nichts berechnet. Du kannst sie bis zum {trial_ends_on} weiter nutzen.",
-            "Deine kostenlose Testphase von {product_name} ist gekündigt, dir wird also nichts berechnet. Du kannst sie bis zum {expires_on} weiter nutzen.",
-            "Deine kostenlose Testphase von {product_name} ist gekündigt, dir wird also nichts berechnet.",
-            "Deine kostenlose Testphase ist gekündigt, dir wird also nichts berechnet.",
+            "Ihre kostenlose Testphase von {product_name} ist gekündigt, Ihnen wird also nichts berechnet. Sie können sie bis zum {trial_ends_on} weiter nutzen.",
+            "Ihre kostenlose Testphase von {product_name} ist gekündigt, Ihnen wird also nichts berechnet. Sie können sie bis zum {expires_on} weiter nutzen.",
+            "Ihre kostenlose Testphase von {product_name} ist gekündigt, Ihnen wird also nichts berechnet.",
+            "Ihre kostenlose Testphase ist gekündigt, Ihnen wird also nichts berechnet.",
         ],
         "GRACE_PERIOD": [
-            "{store_name} konnte die Zahlung für {product_name} nicht einziehen (erster Fehlversuch am {billing_issue_on}). Solange es erneut versucht wird, behältst du den Zugang – bis zum {grace_ends_on}.",
-            "{store_name} konnte die Zahlung für {product_name} nicht einziehen. Solange es erneut versucht wird, behältst du vorerst den Zugang.",
-            "Der Store konnte deine letzte Zahlung nicht einziehen. Solange es erneut versucht wird, behältst du vorerst den Zugang.",
+            "{store_name} konnte die Zahlung für {product_name} nicht einziehen (erster Fehlversuch am {billing_issue_on}). Solange es erneut versucht wird, behalten Sie den Zugang – bis zum {grace_ends_on}.",
+            "{store_name} konnte die Zahlung für {product_name} nicht einziehen. Solange es erneut versucht wird, behalten Sie vorerst den Zugang.",
+            "Der Store konnte Ihre letzte Zahlung nicht einziehen. Solange es erneut versucht wird, behalten Sie vorerst den Zugang.",
         ],
         "BILLING_RETRY": [
             "{store_name} konnte die Verlängerung von {product_name} nicht abbuchen (seit {billing_issue_on}), daher ist Premium pausiert, während der Store es erneut versucht.",
@@ -457,14 +457,14 @@ DE = {
             "Der Store konnte die Verlängerung nicht abbuchen, daher ist Premium pausiert, während er es erneut versucht.",
         ],
         "EXPIRED_BILLING_ERROR": [
-            "Dein Abo {product_name} ist am {expires_on} abgelaufen, weil {store_name} die Verlängerung nicht abbuchen konnte.",
-            "Dein Abo {product_name} ist abgelaufen, weil der Store die Verlängerung nicht abbuchen konnte.",
-            "Dein Abo ist abgelaufen, weil der Store die Verlängerung nicht abbuchen konnte.",
+            "Ihr Abo {product_name} ist am {expires_on} abgelaufen, weil {store_name} die Verlängerung nicht abbuchen konnte.",
+            "Ihr Abo {product_name} ist abgelaufen, weil der Store die Verlängerung nicht abbuchen konnte.",
+            "Ihr Abo ist abgelaufen, weil der Store die Verlängerung nicht abbuchen konnte.",
         ],
         "EXPIRED_CANCELLED": [
-            "Dein Abo {product_name} wurde gekündigt und ist am {expires_on} abgelaufen – es ist nicht mehr aktiv und verlängert sich nicht.",
-            "Dein Abo {product_name} wurde gekündigt und ist abgelaufen, es verlängert sich also nicht.",
-            "Dein Abo wurde gekündigt und ist abgelaufen, es verlängert sich also nicht.",
+            "Ihr Abo {product_name} wurde gekündigt und ist am {expires_on} abgelaufen – es ist nicht mehr aktiv und verlängert sich nicht.",
+            "Ihr Abo {product_name} wurde gekündigt und ist abgelaufen, es verlängert sich also nicht.",
+            "Ihr Abo wurde gekündigt und ist abgelaufen, es verlängert sich also nicht.",
         ],
         "REFUNDED": [
             "Der Kauf von {product_name} wurde am {refunded_on} erstattet, deshalb ist dieses Abo nicht mehr aktiv.",
@@ -472,81 +472,81 @@ DE = {
             "Dieser Kauf wurde erstattet, deshalb ist das Abo nicht mehr aktiv.",
         ],
         "LIFETIME": [
-            "Du hast lebenslangen Zugang zu {product_name}: Es ist ein Einmalkauf, also gibt es keine Verlängerung und keine weiteren Abbuchungen.",
-            "Du hast lebenslangen Zugang: Es ist ein Einmalkauf, also gibt es keine Verlängerung und keine weiteren Abbuchungen.",
+            "Sie haben lebenslangen Zugang zu {product_name}: Es ist ein Einmalkauf, also gibt es keine Verlängerung und keine weiteren Abbuchungen.",
+            "Sie haben lebenslangen Zugang: Es ist ein Einmalkauf, also gibt es keine Verlängerung und keine weiteren Abbuchungen.",
         ],
         "GRANTED_BY_DEVELOPER": [
-            "Dein Zugang zu {product_name} ist ein Geschenk des App-Teams und gilt bis zum {granted_until}. Es ist kein bezahltes Abo, dir wird also nichts berechnet.",
-            "Dein Zugang zu {product_name} ist ein Geschenk des App-Teams und gilt bis zum {expires_on}. Es ist kein bezahltes Abo, dir wird also nichts berechnet.",
-            "Dein Zugang ist ein Geschenk des App-Teams. Es ist kein bezahltes Abo, dir wird also nichts berechnet.",
+            "Ihr Zugang zu {product_name} ist ein Geschenk des App-Teams und gilt bis zum {granted_until}. Es ist kein bezahltes Abo, Ihnen wird also nichts berechnet.",
+            "Ihr Zugang zu {product_name} ist ein Geschenk des App-Teams und gilt bis zum {expires_on}. Es ist kein bezahltes Abo, Ihnen wird also nichts berechnet.",
+            "Ihr Zugang ist ein Geschenk des App-Teams. Es ist kein bezahltes Abo, Ihnen wird also nichts berechnet.",
         ],
         "NO_PURCHASE": [
-            "Ich finde auf diesem Konto keinen Kauf. Wenn du mit einer anderen Apple-ID oder einem anderen Google-Konto bezahlt hast, ist der Kauf mit diesem Konto verknüpft.",
+            "Ich finde auf diesem Konto keinen Kauf. Wenn Sie mit einer anderen Apple-ID oder einem anderen Google-Konto bezahlt haben, ist der Kauf mit diesem Konto verknüpft.",
         ],
         "FAMILY_SHARED": [
-            "Dein Zugang zu {product_name} kommt über die Familienfreigabe – Abo und Abrechnung gehören zum Konto des Familienorganisators, nicht zu deinem.",
-            "Dein Zugang kommt über die Familienfreigabe – Abo und Abrechnung gehören zum Konto des Familienorganisators, nicht zu deinem.",
+            "Ihr Zugang zu {product_name} kommt über die Familienfreigabe – Abo und Abrechnung gehören zum Konto des Familienorganisators, nicht zu Ihrem.",
+            "Ihr Zugang kommt über die Familienfreigabe – Abo und Abrechnung gehören zum Konto des Familienorganisators, nicht zu Ihrem.",
         ],
     },
     "contra": {
         "not_cancelled": ["Ich sehe keine Kündigung für dieses Abo – es ist weiterhin auf Verlängerung eingestellt."],
-        "nothing_charged": ["Dafür wurde dir nichts berechnet – du bist in der kostenlosen Testphase."],
-        "renewal_charge_failed": ["Die Abbuchung für die Verlängerung ist fehlgeschlagen, ein neuer Zeitraum wurde dir also nicht berechnet."],
+        "nothing_charged": ["Dafür wurde Ihnen nichts berechnet – Sie sind in der kostenlosen Testphase."],
+        "renewal_charge_failed": ["Die Abbuchung für die Verlängerung ist fehlgeschlagen, ein neuer Zeitraum wurde Ihnen also nicht berechnet."],
         "already_refunded": ["Dieser Kauf wurde bereits erstattet."],
         "one_time_purchase": ["Lebenslanger Zugang ist ein Einmalkauf, es gibt keine wiederkehrenden Abbuchungen."],
         "no_charge_on_account": ["Ich sehe auf diesem Konto keine Abo-Abbuchung."],
-        "organizer_pays": ["Abbuchungen der Familienfreigabe gehen an den Familienorganisator, nicht an dein Konto."],
+        "organizer_pays": ["Abbuchungen der Familienfreigabe gehen an den Familienorganisator, nicht an Ihr Konto."],
         "refund_ended_access": ["Der Zugang ist beendet, weil der Kauf erstattet wurde."],
-        "period_ended": ["Dein bezahlter Zeitraum ist abgelaufen, deshalb ist Premium jetzt gesperrt."],
+        "period_ended": ["Ihr bezahlter Zeitraum ist abgelaufen, deshalb ist Premium jetzt gesperrt."],
         "no_purchase_on_account": ["Ich sehe auf diesem Konto noch keinen Kauf."],
         "organizer_must_request": ["Nur der Familienorganisator, der bezahlt hat, kann beim Store eine Erstattung anfragen."],
-        "payment_ok": ["Bei deinem Abo gibt es gerade kein Zahlungsproblem."],
-        "has_access": ["Dein Konto hat gerade Premium-Zugang."],
-        "claim_does_not_match": ["Auf deinem Konto sieht es etwas anders aus."],
+        "payment_ok": ["Bei Ihrem Abo gibt es gerade kein Zahlungsproblem."],
+        "has_access": ["Ihr Konto hat gerade Premium-Zugang."],
+        "claim_does_not_match": ["Auf Ihrem Konto sieht es etwas anders aus."],
         "charged_before_cancel": [
-            "Die letzte Abbuchung war am {last_charged_on}, gekündigt hast du am {cancelled_on}, also nach dieser Abbuchung – nach der Kündigung wurde nichts mehr abgebucht.",
-            "Die letzte Abbuchung war vor deiner Kündigung – danach wurde nichts mehr abgebucht.",
+            "Die letzte Abbuchung war am {last_charged_on}, gekündigt haben Sie am {cancelled_on}, also nach dieser Abbuchung – nach der Kündigung wurde nichts mehr abgebucht.",
+            "Die letzte Abbuchung war vor Ihrer Kündigung – danach wurde nichts mehr abgebucht.",
         ],
-        "no_cancellation_recorded": ["Auf diesem Konto sehe ich keine Abbuchung nach deiner Kündigung."],
+        "no_cancellation_recorded": ["Auf diesem Konto sehe ich keine Abbuchung nach Ihrer Kündigung."],
     },
     "action": {
-        "MANAGE_SUBSCRIPTION_LINK": ["Deine Abo-Seite ist {manage_url} – dort kannst du es ansehen und ändern.",
-                                     "Du kannst dein Abo in den Abo-Einstellungen deines Store-Kontos verwalten."],
+        "MANAGE_SUBSCRIPTION_LINK": ["Ihre Abo-Seite ist {manage_url} – dort können Sie es ansehen und ändern.",
+                                     "Sie können Ihr Abo in den Abo-Einstellungen Ihres Store-Kontos verwalten."],
         "CANCEL_STEPS:app_store": [
-            "So kündigst du: Öffne die Einstellungen auf dem iPhone, tippe auf deinen Namen, dann auf Abonnements, wähle {product_name} und tippe auf Abo kündigen ({manage_url}).",
-            "So kündigst du: Öffne die Einstellungen auf dem iPhone, tippe auf deinen Namen, dann auf Abonnements, wähle das Abo und tippe auf Abo kündigen.",
+            "So kündigen Sie: Öffnen Sie die Einstellungen auf dem iPhone, tippen Sie auf Ihren Namen, dann auf Abonnements, wählen Sie {product_name} und tippen Sie auf Abo kündigen ({manage_url}).",
+            "So kündigen Sie: Öffnen Sie die Einstellungen auf dem iPhone, tippen Sie auf Ihren Namen, dann auf Abonnements, wählen Sie das Abo und tippen Sie auf Abo kündigen.",
         ],
         "CANCEL_STEPS:play_store": [
-            "So kündigst du: Öffne Google Play, tippe auf dein Profilbild, dann Zahlungen & Abos > Abos, wähle {product_name} und tippe auf Kündigen ({manage_url}).",
-            "So kündigst du: Öffne Google Play, tippe auf dein Profilbild, dann Zahlungen & Abos > Abos, wähle das Abo und tippe auf Kündigen.",
+            "So kündigen Sie: Öffnen Sie Google Play, tippen Sie auf Ihr Profilbild, dann Zahlungen & Abos > Abos, wählen Sie {product_name} und tippen Sie auf Kündigen ({manage_url}).",
+            "So kündigen Sie: Öffnen Sie Google Play, tippen Sie auf Ihr Profilbild, dann Zahlungen & Abos > Abos, wählen Sie das Abo und tippen Sie auf Kündigen.",
         ],
-        "CANCEL_STEPS": ["Zum Kündigen schalte die Verlängerung auf der Abo-Seite des Stores aus, in dem du abgeschlossen hast."],
+        "CANCEL_STEPS": ["Zum Kündigen schalten Sie die Verlängerung auf der Abo-Seite des Stores aus, in dem Sie abgeschlossen haben."],
         "REFUND_PATH_APPLE": [
-            "Über Erstattungen für App-Store-Käufe entscheidet Apple, nicht wir – du kannst sie unter {refund_url} beantragen.",
-            "Über Erstattungen für App-Store-Käufe entscheidet Apple, nicht wir – du kannst sie unter reportaproblem.apple.com beantragen.",
+            "Über Erstattungen für App-Store-Käufe entscheidet Apple, nicht wir – Sie können sie unter {refund_url} beantragen.",
+            "Über Erstattungen für App-Store-Käufe entscheidet Apple, nicht wir – Sie können sie unter reportaproblem.apple.com beantragen.",
         ],
         "REFUND_PATH_GOOGLE": [
-            "Du kannst eine Erstattung über Google Play unter {refund_url} beantragen; Google prüft die Anfrage.",
-            "Du kannst eine Erstattung im Bestellverlauf von Google Play beantragen; Google prüft die Anfrage.",
+            "Sie können eine Erstattung über Google Play unter {refund_url} beantragen; Google prüft die Anfrage.",
+            "Sie können eine Erstattung im Bestellverlauf von Google Play beantragen; Google prüft die Anfrage.",
         ],
-        "RESTORE_PURCHASES_STEPS:app_store": ["Melde dich auf dem neuen Gerät mit derselben Apple-ID an, mit der du gekauft hast, öffne die App und tippe in ihren Einstellungen auf Käufe wiederherstellen."],
-        "RESTORE_PURCHASES_STEPS:play_store": ["Melde dich auf dem neuen Gerät mit demselben Google-Konto an, mit dem du gekauft hast, öffne die App und tippe in ihren Einstellungen auf Käufe wiederherstellen."],
-        "RESTORE_PURCHASES_STEPS": ["Melde dich mit demselben Store-Konto an, mit dem du gekauft hast, öffne die App und tippe in ihren Einstellungen auf Käufe wiederherstellen."],
+        "RESTORE_PURCHASES_STEPS:app_store": ["Melden Sie sich auf dem neuen Gerät mit derselben Apple-ID an, mit der Sie gekauft haben, öffnen Sie die App und tippen Sie in ihren Einstellungen auf Käufe wiederherstellen."],
+        "RESTORE_PURCHASES_STEPS:play_store": ["Melden Sie sich auf dem neuen Gerät mit demselben Google-Konto an, mit dem Sie gekauft haben, öffnen Sie die App und tippen Sie in ihren Einstellungen auf Käufe wiederherstellen."],
+        "RESTORE_PURCHASES_STEPS": ["Melden Sie sich mit demselben Store-Konto an, mit dem Sie gekauft haben (Apple-ID oder Google-Konto), öffnen Sie die App und tippen Sie in ihren Einstellungen auf Käufe wiederherstellen."],
         "UPDATE_PAYMENT_METHOD:app_store": [
-            "Bitte aktualisiere deine Zahlungsmethode in deinem Apple-Konto: {payment_url} (oder Einstellungen > dein Name > Zahlung & Versand). Danach versucht der Store die Abbuchung erneut.",
-            "Bitte aktualisiere deine Zahlungsmethode unter Einstellungen > dein Name > Zahlung & Versand. Danach versucht der Store die Abbuchung erneut.",
+            "Bitte aktualisieren Sie Ihre Zahlungsmethode in Ihrem Apple-Konto: {payment_url} (oder Einstellungen > Ihr Name > Zahlung & Versand). Danach versucht der Store die Abbuchung erneut.",
+            "Bitte aktualisieren Sie Ihre Zahlungsmethode unter Einstellungen > Ihr Name > Zahlung & Versand. Danach versucht der Store die Abbuchung erneut.",
         ],
         "UPDATE_PAYMENT_METHOD:play_store": [
-            "Bitte aktualisiere deine Zahlungsmethode in Google Play: {payment_url}. Danach versucht der Store die Abbuchung erneut.",
-            "Bitte aktualisiere deine Zahlungsmethode in Google Play > Zahlungen & Abos. Danach versucht der Store die Abbuchung erneut.",
+            "Bitte aktualisieren Sie Ihre Zahlungsmethode in Google Play: {payment_url}. Danach versucht der Store die Abbuchung erneut.",
+            "Bitte aktualisieren Sie Ihre Zahlungsmethode in Google Play > Zahlungen & Abos. Danach versucht der Store die Abbuchung erneut.",
         ],
-        "UPDATE_PAYMENT_METHOD": ["Bitte aktualisiere deine Zahlungsmethode in dem Store, in dem du abgeschlossen hast."],
+        "UPDATE_PAYMENT_METHOD": ["Bitte aktualisieren Sie Ihre Zahlungsmethode in dem Store, in dem Sie abgeschlossen haben."],
         "PROPOSE_GRANT": [
-            "Ich habe das Team gebeten, eine Verlängerung deines Zugangs um {grant_days} Tage aus Kulanz zu prüfen. Sie ist noch nicht aktiv – sie startet nur, wenn das Team zustimmt.",
-            "Ich habe das Team gebeten, eine kurze Verlängerung deines Zugangs aus Kulanz zu prüfen. Sie ist noch nicht aktiv – sie startet nur, wenn das Team zustimmt.",
+            "Ich habe das Team gebeten, eine Verlängerung Ihres Zugangs um {grant_days} Tage aus Kulanz zu prüfen. Sie ist noch nicht aktiv – sie startet nur, wenn das Team zustimmt.",
+            "Ich habe das Team gebeten, eine kurze Verlängerung Ihres Zugangs aus Kulanz zu prüfen. Sie ist noch nicht aktiv – sie startet nur, wenn das Team zustimmt.",
         ],
-        "ESCALATE_TO_HUMAN": ["Ich habe deinen Fall an unser Support-Team weitergegeben, eine Person meldet sich hier bei dir."],
-        "ESCALATE_TO_HUMAN:no_store": ["Dieser Kauf lief nicht über den App Store oder Google Play, deshalb habe ich deinen Fall an unser Support-Team weitergegeben – eine Person meldet sich hier bei dir."],
+        "ESCALATE_TO_HUMAN": ["Ich habe Ihren Fall an unser Support-Team weitergegeben, eine Person meldet sich hier bei Ihnen."],
+        "ESCALATE_TO_HUMAN:no_store": ["Dieser Kauf lief nicht über den App Store oder Google Play, deshalb habe ich Ihren Fall an unser Support-Team weitergegeben – eine Person meldet sich hier bei Ihnen."],
     },
 }
 
@@ -816,7 +816,250 @@ RU = {
     },
 }
 
+# =====================================================================================================================
+# Round 2 additions (bug bash): new intents, pending grant, never-charged trials, charge not on the account, …
+# Merged into the language dicts below. "intent" lines lead the reply; "extra" lines are added by condition.
+# =====================================================================================================================
+ROUND2: dict[str, dict] = {
+    "en": {
+        "intent": {
+            "HUMAN_REQUEST:escalated": ["Of course — I've passed your conversation to our support team, and a person will reply to you here."],
+            "HUMAN_REQUEST": ["I'm the app's automated help; tell me what happened and I'll check your account right away."],
+            "ACKNOWLEDGEMENT:thanks": ["You're welcome! If anything else comes up with your subscription, just write here."],
+            "ACKNOWLEDGEMENT": ["How can I help? I can explain your subscription, help you cancel, get premium back on a new device, or show you how to request a refund."],
+            "OTHER_APP": ["I can only help with your {app_name} subscription. For another app, please contact that app's support — your store's subscription list shows who is charging you.",
+                          "I can only help with this app's subscription. For another app, please contact that app's support."],
+            "PRIVACY_REQUEST:escalated": ["Thank you — I've passed your data request to the {app_name} team; they will handle it and confirm with you. Deleting your data doesn't cancel a store subscription; that is done in your store account.",
+                                          "Thank you — I've passed your data request to the app team; they will handle it and confirm with you. Deleting your data doesn't cancel a store subscription."],
+            "PRIVACY_REQUEST": ["Data requests are handled by the {app_name} team. Deleting your data doesn't cancel a store subscription; that is done in your store account.",
+                                "Data requests are handled by the app team. Deleting your data doesn't cancel a store subscription."],
+            "THIRD_PARTY_ACCOUNT": ["I can only see the account this message comes from, so I can't share anything about someone else's subscription. They can write to us from the app on their own account."],
+            "DISCOUNT_REQUEST": ["I can't offer discounts or change prices myself — prices are set in the store."],
+        },
+        "extra": {
+            "pending_grant": ["Your request for a courtesy extension is still with the team for review — it isn't active yet, and you'll see it in the app once it's approved."],
+            "cannot_act": ["I can't cancel it for you — a subscription can only be cancelled from your own Apple ID or Google account."],
+            "chargeback": ["A refund request through the store is usually faster than a chargeback, and a chargeback can lead the store to lock your account."],
+            "angry": ["I'm sorry this has been so frustrating."],
+        },
+        "contra": {
+            "charge_not_found": ["I don't see a charge like that on your {app_name} account. It may have been made with another Apple ID or Google account, or by another app — your store's purchase history shows who charged you.",
+                                 "I don't see a charge like that on this account. It may have been made with another Apple ID or Google account, or by another app — your store's purchase history shows who charged you."],
+            "never_charged": ["You were never charged: the free trial ended without a payment."],
+        },
+        "status": {
+            "EXPIRED_BILLING_ERROR:never_charged": ["Your free trial of {product_name} ended on {expires_on} without a payment — {store_name} couldn't charge your payment method, so nothing was charged.",
+                                                    "Your free trial ended without a payment, so nothing was charged."],
+            "EXPIRED_CANCELLED:never_charged": ["Your free trial of {product_name} was cancelled and ended on {expires_on}, so you were never charged.",
+                                                "Your free trial was cancelled and has ended, so you were never charged."],
+        },
+        "trial_first": [
+            "You're on the free trial of {product_name}. On {trial_ends_on} it becomes a paid subscription at {price_after_trial} unless you cancel before {cancel_before}.",
+            "You're on the free trial of {product_name}. On {trial_ends_on} it becomes a paid subscription at {price_after_trial} unless you cancel before then.",
+            "You're on the free trial of {product_name}. On {trial_ends_on} it becomes a paid subscription unless you cancel before {cancel_before}.",
+        ],
+    },
+    "sr": {
+        "intent": {
+            "HUMAN_REQUEST:escalated": ["Naravno — prosledili smo razgovor našem timu podrške i neko iz tima će vam odgovoriti ovde."],
+            "HUMAN_REQUEST": ["Ja sam automatska pomoć aplikacije; napišite mi šta se desilo i odmah ću proveriti vaš nalog."],
+            "ACKNOWLEDGEMENT:thanks": ["Nema na čemu! Ako vam bude trebalo još nešto oko pretplate, samo pišite ovde."],
+            "ACKNOWLEDGEMENT": ["Kako mogu da pomognem? Mogu da objasnim vašu pretplatu, pomognem oko otkazivanja, pomognem da vratite premium na novom uređaju ili pokažem kako da zatražite povraćaj novca."],
+            "OTHER_APP": ["Mogu da pomognem samo oko pretplate na {app_name}. Za drugu aplikaciju obratite se njenoj podršci — u listi pretplata u prodavnici vidite ko vam naplaćuje.",
+                          "Mogu da pomognem samo oko pretplate na ovu aplikaciju. Za drugu aplikaciju obratite se njenoj podršci."],
+            "PRIVACY_REQUEST:escalated": ["Hvala — vaš zahtev u vezi sa podacima prosledili smo timu aplikacije {app_name}; oni će ga obraditi i javiti vam se. Brisanje podataka ne otkazuje pretplatu u prodavnici; to se radi na vašem nalogu prodavnice.",
+                                          "Hvala — vaš zahtev u vezi sa podacima prosledili smo timu aplikacije; oni će ga obraditi i javiti vam se. Brisanje podataka ne otkazuje pretplatu u prodavnici."],
+            "PRIVACY_REQUEST": ["Zahteve u vezi sa podacima obrađuje tim aplikacije {app_name}. Brisanje podataka ne otkazuje pretplatu u prodavnici; to se radi na vašem nalogu prodavnice.",
+                                "Zahteve u vezi sa podacima obrađuje tim aplikacije. Brisanje podataka ne otkazuje pretplatu u prodavnici."],
+            "THIRD_PARTY_ACCOUNT": ["Vidim samo nalog sa kog je stigla ova poruka, pa ne mogu da delim podatke o tuđoj pretplati. Ta osoba nam može pisati iz aplikacije sa svog naloga."],
+            "DISCOUNT_REQUEST": ["Ne mogu da ponudim popust ni besplatan period — cene određuje prodavnica."],
+        },
+        "extra": {
+            "pending_grant": ["Vaš zahtev za produženje pristupa kao gest dobre volje tim još razmatra — još nije aktivno, a videćete ga u aplikaciji kada bude odobreno."],
+            "cannot_act": ["Ne mogu da otkažem umesto vas — pretplata se može otkazati samo sa vašeg Apple ID-ja ili Google naloga."],
+            "chargeback": ["Zahtev za povraćaj preko prodavnice je obično brži od reklamacije u banci, a reklamacija može dovesti do toga da prodavnica zaključa vaš nalog."],
+            "angry": ["Žao mi je što je ovo toliko frustrirajuće."],
+        },
+        "contra": {
+            "charge_not_found": ["Na vašem nalogu za {app_name} ne vidim takvu naplatu. Možda je napravljena drugim Apple ID-jem ili Google nalogom, ili je to druga aplikacija — u istoriji kupovina u prodavnici vidite ko vam je naplatio.",
+                                 "Na ovom nalogu ne vidim takvu naplatu. Možda je napravljena drugim Apple ID-jem ili Google nalogom, ili je to druga aplikacija — u istoriji kupovina u prodavnici vidite ko vam je naplatio."],
+            "never_charged": ["Nikada vam ništa nije naplaćeno: besplatni probni period je istekao bez plaćanja."],
+        },
+        "status": {
+            "EXPIRED_BILLING_ERROR:never_charged": ["Vaš besplatni probni period za {product_name} istekao je {expires_on} bez plaćanja — {store_name} nije uspeo da naplati, pa vam ništa nije naplaćeno.",
+                                                    "Vaš besplatni probni period je istekao bez plaćanja, pa vam ništa nije naplaćeno."],
+            "EXPIRED_CANCELLED:never_charged": ["Vaš besplatni probni period za {product_name} je otkazan i istekao je {expires_on}, tako da vam nikada ništa nije naplaćeno.",
+                                                "Vaš besplatni probni period je otkazan i istekao je, tako da vam nikada ništa nije naplaćeno."],
+        },
+        "trial_first": [
+            "Koristite besplatni probni period za {product_name}. {trial_ends_on} prelazi u plaćenu pretplatu po ceni od {price_after_trial}, osim ako je ne otkažete pre {cancel_before}.",
+            "Koristite besplatni probni period za {product_name}. Ako ga ne otkažete ranije, {trial_ends_on} prelazi u plaćenu pretplatu po ceni od {price_after_trial}.",
+            "Koristite besplatni probni period za {product_name}. {trial_ends_on} prelazi u plaćenu pretplatu, osim ako je ne otkažete pre {cancel_before}.",
+        ],
+    },
+    "es": {
+        "intent": {
+            "HUMAN_REQUEST:escalated": ["Claro: he pasado tu conversación a nuestro equipo de soporte y una persona te responderá aquí."],
+            "HUMAN_REQUEST": ["Soy la ayuda automática de la app; cuéntame qué pasó y reviso tu cuenta enseguida."],
+            "ACKNOWLEDGEMENT:thanks": ["¡De nada! Si necesitas algo más con tu suscripción, escribe aquí."],
+            "ACKNOWLEDGEMENT": ["¿En qué te ayudo? Puedo explicarte tu suscripción, ayudarte a cancelarla, recuperar premium en un dispositivo nuevo o mostrarte cómo pedir un reembolso."],
+            "OTHER_APP": ["Solo puedo ayudarte con tu suscripción de {app_name}. Para otra app, contacta con su soporte; la lista de suscripciones de tu tienda muestra quién te cobra.",
+                          "Solo puedo ayudarte con la suscripción de esta app. Para otra app, contacta con su soporte."],
+            "PRIVACY_REQUEST:escalated": ["Gracias: he pasado tu solicitud sobre tus datos al equipo de {app_name}, que la gestionará y te lo confirmará. Borrar tus datos no cancela una suscripción de la tienda; eso se hace en tu cuenta de la tienda.",
+                                          "Gracias: he pasado tu solicitud sobre tus datos al equipo de la app, que la gestionará y te lo confirmará. Borrar tus datos no cancela una suscripción de la tienda."],
+            "PRIVACY_REQUEST": ["Las solicitudes sobre datos las gestiona el equipo de {app_name}. Borrar tus datos no cancela una suscripción de la tienda; eso se hace en tu cuenta de la tienda.",
+                                "Las solicitudes sobre datos las gestiona el equipo de la app. Borrar tus datos no cancela una suscripción de la tienda."],
+            "THIRD_PARTY_ACCOUNT": ["Solo puedo ver la cuenta desde la que llega este mensaje, así que no puedo compartir nada sobre la suscripción de otra persona. Esa persona puede escribirnos desde la app con su propia cuenta."],
+            "DISCOUNT_REQUEST": ["No puedo ofrecer descuentos ni tiempo gratis: los precios los fija la tienda."],
+        },
+        "extra": {
+            "pending_grant": ["Tu solicitud de extensión de cortesía sigue en revisión por el equipo: aún no está activa y la verás en la app cuando la aprueben."],
+            "cannot_act": ["No puedo cancelarla por ti: una suscripción solo se puede cancelar desde tu propio Apple ID o cuenta de Google."],
+            "chargeback": ["Pedir el reembolso a la tienda suele ser más rápido que un contracargo, y un contracargo puede hacer que la tienda bloquee tu cuenta."],
+            "angry": ["Siento mucho que esto haya sido tan frustrante."],
+        },
+        "contra": {
+            "charge_not_found": ["No veo un cobro así en tu cuenta de {app_name}. Puede que se hiciera con otro Apple ID u otra cuenta de Google, o que sea de otra app; el historial de compras de tu tienda muestra quién te cobró.",
+                                 "No veo un cobro así en esta cuenta. Puede que se hiciera con otro Apple ID u otra cuenta de Google, o que sea de otra app; el historial de compras de tu tienda muestra quién te cobró."],
+            "never_charged": ["Nunca se te cobró nada: la prueba gratuita terminó sin ningún pago."],
+        },
+        "status": {
+            "EXPIRED_BILLING_ERROR:never_charged": ["Tu prueba gratuita de {product_name} terminó el {expires_on} sin ningún pago: {store_name} no pudo cobrar, así que no se te cobró nada.",
+                                                    "Tu prueba gratuita terminó sin ningún pago, así que no se te cobró nada."],
+            "EXPIRED_CANCELLED:never_charged": ["Tu prueba gratuita de {product_name} se canceló y terminó el {expires_on}, así que nunca se te cobró.",
+                                                "Tu prueba gratuita se canceló y ya terminó, así que nunca se te cobró."],
+        },
+        "trial_first": [
+            "Estás en la prueba gratuita de {product_name}. El {trial_ends_on} pasará a ser una suscripción de pago por {price_after_trial}, salvo que la canceles antes del {cancel_before}.",
+            "Estás en la prueba gratuita de {product_name}. El {trial_ends_on} pasará a ser una suscripción de pago por {price_after_trial}, salvo que la canceles antes.",
+            "Estás en la prueba gratuita de {product_name}. El {trial_ends_on} pasará a ser una suscripción de pago, salvo que la canceles antes del {cancel_before}.",
+        ],
+    },
+    "de": {
+        "intent": {
+            "HUMAN_REQUEST:escalated": ["Selbstverständlich – ich habe Ihr Gespräch an unser Support-Team weitergegeben, eine Person meldet sich hier bei Ihnen."],
+            "HUMAN_REQUEST": ["Ich bin die automatische Hilfe der App; schreiben Sie mir, was passiert ist, dann prüfe ich Ihr Konto sofort."],
+            "ACKNOWLEDGEMENT:thanks": ["Gern geschehen! Wenn Sie noch etwas zu Ihrem Abo brauchen, schreiben Sie einfach hier."],
+            "ACKNOWLEDGEMENT": ["Wie kann ich helfen? Ich kann Ihnen Ihr Abo erklären, beim Kündigen helfen, Premium auf ein neues Gerät zurückholen oder zeigen, wie Sie eine Erstattung beantragen."],
+            "OTHER_APP": ["Ich kann nur bei Ihrem {app_name}-Abo helfen. Bei einer anderen App wenden Sie sich bitte an deren Support – in der Abo-Liste Ihres Stores sehen Sie, wer abbucht.",
+                          "Ich kann nur beim Abo dieser App helfen. Bei einer anderen App wenden Sie sich bitte an deren Support."],
+            "PRIVACY_REQUEST:escalated": ["Danke – ich habe Ihre Datenanfrage an das {app_name}-Team weitergegeben; es bearbeitet sie und bestätigt sie Ihnen. Das Löschen Ihrer Daten kündigt kein Store-Abo; das geht in Ihrem Store-Konto.",
+                                          "Danke – ich habe Ihre Datenanfrage an das App-Team weitergegeben; es bearbeitet sie und bestätigt sie Ihnen. Das Löschen Ihrer Daten kündigt kein Store-Abo."],
+            "PRIVACY_REQUEST": ["Datenanfragen bearbeitet das {app_name}-Team. Das Löschen Ihrer Daten kündigt kein Store-Abo; das geht in Ihrem Store-Konto.",
+                                "Datenanfragen bearbeitet das App-Team. Das Löschen Ihrer Daten kündigt kein Store-Abo."],
+            "THIRD_PARTY_ACCOUNT": ["Ich sehe nur das Konto, von dem diese Nachricht kommt, und kann daher nichts über das Abo einer anderen Person sagen. Diese Person kann uns aus der App mit ihrem eigenen Konto schreiben."],
+            "DISCOUNT_REQUEST": ["Rabatte oder Gratiszeit kann ich selbst nicht anbieten – die Preise legt der Store fest."],
+        },
+        "extra": {
+            "pending_grant": ["Ihre Anfrage für eine Verlängerung aus Kulanz liegt noch beim Team zur Prüfung – sie ist noch nicht aktiv, und Sie sehen sie in der App, sobald sie genehmigt ist."],
+            "cannot_act": ["Ich kann das Abo nicht für Sie kündigen – ein Abo lässt sich nur über Ihre eigene Apple-ID oder Ihr Google-Konto kündigen."],
+            "chargeback": ["Eine Erstattungsanfrage beim Store ist meist schneller als eine Rückbuchung über die Bank, und eine Rückbuchung kann dazu führen, dass der Store Ihr Konto sperrt."],
+            "angry": ["Es tut mir leid, dass das so ärgerlich war."],
+        },
+        "contra": {
+            "charge_not_found": ["Eine solche Abbuchung sehe ich auf Ihrem {app_name}-Konto nicht. Sie könnte über eine andere Apple-ID oder ein anderes Google-Konto oder von einer anderen App stammen – im Kaufverlauf Ihres Stores sehen Sie, wer abgebucht hat.",
+                                 "Eine solche Abbuchung sehe ich auf diesem Konto nicht. Sie könnte über eine andere Apple-ID oder ein anderes Google-Konto oder von einer anderen App stammen – im Kaufverlauf Ihres Stores sehen Sie, wer abgebucht hat."],
+            "never_charged": ["Ihnen wurde nie etwas berechnet: Die kostenlose Testphase ist ohne Zahlung abgelaufen."],
+        },
+        "status": {
+            "EXPIRED_BILLING_ERROR:never_charged": ["Ihre kostenlose Testphase von {product_name} ist am {expires_on} ohne Zahlung abgelaufen – {store_name} konnte nicht abbuchen, Ihnen wurde also nichts berechnet.",
+                                                    "Ihre kostenlose Testphase ist ohne Zahlung abgelaufen, Ihnen wurde also nichts berechnet."],
+            "EXPIRED_CANCELLED:never_charged": ["Ihre kostenlose Testphase von {product_name} wurde gekündigt und ist am {expires_on} abgelaufen, Ihnen wurde also nie etwas berechnet.",
+                                                "Ihre kostenlose Testphase wurde gekündigt und ist abgelaufen, Ihnen wurde also nie etwas berechnet."],
+        },
+        "trial_first": [
+            "Sie nutzen gerade die kostenlose Testphase von {product_name}. Am {trial_ends_on} wird daraus ein bezahltes Abo für {price_after_trial}, wenn Sie nicht vor dem {cancel_before} kündigen.",
+            "Sie nutzen gerade die kostenlose Testphase von {product_name}. Am {trial_ends_on} wird daraus ein bezahltes Abo für {price_after_trial}, wenn Sie nicht vorher kündigen.",
+            "Sie nutzen gerade die kostenlose Testphase von {product_name}. Am {trial_ends_on} wird daraus ein bezahltes Abo, wenn Sie nicht vor dem {cancel_before} kündigen.",
+        ],
+    },
+    "pt": {
+        "intent": {
+            "HUMAN_REQUEST:escalated": ["Claro — passei sua conversa para a nossa equipe de suporte, e uma pessoa vai responder aqui."],
+            "HUMAN_REQUEST": ["Sou a ajuda automática do app; me conte o que aconteceu e eu verifico sua conta na hora."],
+            "ACKNOWLEDGEMENT:thanks": ["De nada! Se precisar de mais alguma coisa com sua assinatura, é só escrever aqui."],
+            "ACKNOWLEDGEMENT": ["Como posso ajudar? Posso explicar sua assinatura, ajudar a cancelar, recuperar o premium em um aparelho novo ou mostrar como pedir reembolso."],
+            "OTHER_APP": ["Só posso ajudar com sua assinatura do {app_name}. Para outro app, fale com o suporte dele — a lista de assinaturas da sua loja mostra quem está cobrando você.",
+                          "Só posso ajudar com a assinatura deste app. Para outro app, fale com o suporte dele."],
+            "PRIVACY_REQUEST:escalated": ["Obrigado — passei seu pedido sobre dados para a equipe do {app_name}, que vai tratá-lo e confirmar com você. Apagar seus dados não cancela uma assinatura da loja; isso é feito na sua conta da loja.",
+                                          "Obrigado — passei seu pedido sobre dados para a equipe do app, que vai tratá-lo e confirmar com você. Apagar seus dados não cancela uma assinatura da loja."],
+            "PRIVACY_REQUEST": ["Pedidos sobre dados são tratados pela equipe do {app_name}. Apagar seus dados não cancela uma assinatura da loja; isso é feito na sua conta da loja.",
+                                "Pedidos sobre dados são tratados pela equipe do app. Apagar seus dados não cancela uma assinatura da loja."],
+            "THIRD_PARTY_ACCOUNT": ["Só consigo ver a conta de onde vem esta mensagem, então não posso compartilhar nada sobre a assinatura de outra pessoa. Essa pessoa pode nos escrever pelo app na própria conta."],
+            "DISCOUNT_REQUEST": ["Não consigo oferecer descontos nem tempo grátis — os preços são definidos pela loja."],
+        },
+        "extra": {
+            "pending_grant": ["Seu pedido de extensão de cortesia ainda está em análise pela equipe — ainda não está ativo, e você verá no app quando for aprovado."],
+            "cannot_act": ["Não consigo cancelar por você — a assinatura só pode ser cancelada no seu próprio ID Apple ou conta Google."],
+            "chargeback": ["Pedir reembolso pela loja costuma ser mais rápido que contestar no banco, e uma contestação pode fazer a loja bloquear sua conta."],
+            "angry": ["Sinto muito que isso esteja sendo tão frustrante."],
+        },
+        "contra": {
+            "charge_not_found": ["Não vejo uma cobrança assim na sua conta do {app_name}. Ela pode ter sido feita com outro ID Apple ou outra conta Google, ou por outro app — o histórico de compras da sua loja mostra quem cobrou.",
+                                 "Não vejo uma cobrança assim nesta conta. Ela pode ter sido feita com outro ID Apple ou outra conta Google, ou por outro app — o histórico de compras da sua loja mostra quem cobrou."],
+            "never_charged": ["Você nunca foi cobrado: o teste grátis terminou sem nenhum pagamento."],
+        },
+        "status": {
+            "EXPIRED_BILLING_ERROR:never_charged": ["Seu teste grátis de {product_name} terminou em {expires_on} sem pagamento — {store_name} não conseguiu cobrar, então nada foi cobrado.",
+                                                    "Seu teste grátis terminou sem pagamento, então nada foi cobrado."],
+            "EXPIRED_CANCELLED:never_charged": ["Seu teste grátis de {product_name} foi cancelado e terminou em {expires_on}, então você nunca foi cobrado.",
+                                                "Seu teste grátis foi cancelado e já terminou, então você nunca foi cobrado."],
+        },
+        "trial_first": [
+            "Você está no teste grátis de {product_name}. Em {trial_ends_on} ele vira uma assinatura paga por {price_after_trial}, a menos que você cancele antes de {cancel_before}.",
+            "Você está no teste grátis de {product_name}. Em {trial_ends_on} ele vira uma assinatura paga por {price_after_trial}, a menos que você cancele antes.",
+            "Você está no teste grátis de {product_name}. Em {trial_ends_on} ele vira uma assinatura paga, a menos que você cancele antes de {cancel_before}.",
+        ],
+    },
+    "ru": {
+        "intent": {
+            "HUMAN_REQUEST:escalated": ["Конечно — мы передали ваш разговор команде поддержки, и сотрудник ответит вам здесь."],
+            "HUMAN_REQUEST": ["Я автоматическая помощь приложения; напишите, что случилось, и я сразу проверю ваш аккаунт."],
+            "ACKNOWLEDGEMENT:thanks": ["Пожалуйста! Если появятся ещё вопросы о подписке, просто напишите сюда."],
+            "ACKNOWLEDGEMENT": ["Чем помочь? Я могу объяснить вашу подписку, помочь её отменить, вернуть премиум на новом устройстве или показать, как запросить возврат."],
+            "OTHER_APP": ["Я могу помочь только с подпиской {app_name}. По другому приложению обратитесь в его поддержку — в списке подписок вашего магазина видно, кто списывает деньги.",
+                          "Я могу помочь только с подпиской этого приложения. По другому приложению обратитесь в его поддержку."],
+            "PRIVACY_REQUEST:escalated": ["Спасибо — мы передали ваш запрос о данных команде {app_name}; они его обработают и подтвердят вам. Удаление данных не отменяет подписку в магазине — это делается в вашем аккаунте магазина.",
+                                          "Спасибо — мы передали ваш запрос о данных команде приложения; они его обработают и подтвердят вам. Удаление данных не отменяет подписку в магазине."],
+            "PRIVACY_REQUEST": ["Запросы о данных обрабатывает команда {app_name}. Удаление данных не отменяет подписку в магазине — это делается в вашем аккаунте магазина.",
+                                "Запросы о данных обрабатывает команда приложения. Удаление данных не отменяет подписку в магазине."],
+            "THIRD_PARTY_ACCOUNT": ["Я вижу только аккаунт, с которого пришло это сообщение, поэтому не могу рассказать о чужой подписке. Этот человек может написать нам из приложения со своего аккаунта."],
+            "DISCOUNT_REQUEST": ["Я не могу предложить скидку или бесплатное время — цены устанавливает магазин."],
+        },
+        "extra": {
+            "pending_grant": ["Ваш запрос на продление доступа в качестве жеста доброй воли ещё у команды на рассмотрении — пока он не действует, а после одобрения вы увидите это в приложении."],
+            "cannot_act": ["Я не могу отменить подписку за вас — это можно сделать только в вашем Apple ID или аккаунте Google."],
+            "chargeback": ["Запрос на возврат через магазин обычно быстрее, чем оспаривание платежа в банке, а такое оспаривание может привести к блокировке вашего аккаунта в магазине."],
+            "angry": ["Мне очень жаль, что это доставило столько неудобств."],
+        },
+        "contra": {
+            "charge_not_found": ["Я не вижу такого списания в вашем аккаунте {app_name}. Возможно, оно было сделано с другого Apple ID или аккаунта Google либо другим приложением — в истории покупок магазина видно, кто списал деньги.",
+                                 "Я не вижу такого списания в этом аккаунте. Возможно, оно было сделано с другого Apple ID или аккаунта Google либо другим приложением — в истории покупок магазина видно, кто списал деньги."],
+            "never_charged": ["С вас никогда ничего не списывалось: бесплатный пробный период закончился без оплаты."],
+        },
+        "status": {
+            "EXPIRED_BILLING_ERROR:never_charged": ["Ваш бесплатный пробный период {product_name} закончился {expires_on} без оплаты — {store_name} не удалось списать деньги, поэтому ничего не списано.",
+                                                    "Ваш бесплатный пробный период закончился без оплаты, поэтому ничего не списано."],
+            "EXPIRED_CANCELLED:never_charged": ["Ваш бесплатный пробный период {product_name} был отменён и закончился {expires_on}, поэтому с вас ничего не списывалось.",
+                                                "Ваш бесплатный пробный период был отменён и закончился, поэтому с вас ничего не списывалось."],
+        },
+        "trial_first": [
+            "У вас бесплатный пробный период {product_name}. {trial_ends_on} он перейдёт в платную подписку за {price_after_trial}, если не отменить его до {cancel_before}.",
+            "У вас бесплатный пробный период {product_name}. Если не отменить его раньше, {trial_ends_on} он перейдёт в платную подписку за {price_after_trial}.",
+            "У вас бесплатный пробный период {product_name}. {trial_ends_on} он перейдёт в платную подписку, если не отменить его до {cancel_before}.",
+        ],
+    },
+}
+
 TEMPLATES: dict[str, dict] = {"en": EN, "sr": SR, "es": ES, "de": DE, "pt": PT, "ru": RU}
+for _lang, _add in ROUND2.items():
+    _T = TEMPLATES[_lang]
+    _T["intent"] = _add["intent"]
+    _T["extra"] = _add["extra"]
+    _T["contra"].update(_add["contra"])
+    _T["status"].update(_add["status"])
+    _T["status"]["TRIAL_ACTIVE"] = _add["trial_first"] + _T["status"]["TRIAL_ACTIVE"]
+
 
 # =====================================================================================================================
 # Serbian Latin -> Cyrillic (fixed text only; placeholders and brand names are protected)
@@ -919,9 +1162,56 @@ def localize_fields(fields: dict[str, str], lang: str) -> dict[str, str]:
     return out
 
 
+# Intents whose reply is about something other than the subscription status: no status recap.
+_NO_STATUS_INTENTS = {"ACKNOWLEDGEMENT", "OTHER_APP", "PRIVACY_REQUEST", "THIRD_PARTY_ACCOUNT", "HUMAN_REQUEST"}
+# Intents where only the intent line (and a grant proposal) is said, whatever generic actions policy attached.
+_LEAD_ONLY_INTENTS = {"ACKNOWLEDGEMENT", "OTHER_APP", "THIRD_PARTY_ACCOUNT"}
+# Intents that still want the status even right after it was given.
+_STATUS_AGAIN_INTENTS = {"STATUS_QUESTION", "PAID_NO_ACCESS"}
+_TRIAL_STATES = {"TRIAL_ACTIVE", "TRIAL_CANCELLED"}
+
+
+def _pending_grant(raw: dict[str, str]) -> bool:
+    return (raw.get("grant_request", "").lower() == "pending"
+            or raw.get("pending_grant", "").lower() in ("yes", "true", "pending", "1"))
+
+
+def _last_assistant(history: Iterable[Any] | None) -> str | None:
+    for h in reversed(list(history or [])):
+        if isinstance(h, dict) and str(h.get("role")) == "assistant" and (h.get("text") or h.get("content")):
+            return str(h.get("text") or h.get("content"))
+    return None
+
+
+_CHARGE_TOPICS = {"STATUS_QUESTION", "CHARGED_AFTER_CANCEL", "REFUND_REQUEST", "PAID_NO_ACCESS"}
+
+
+def charge_claim_mismatch(claims: dict | None, facts: Any, intent_type: str | None = None) -> bool:
+    """Deterministic stop-gap until the engine emits EXPLAIN_STATUS reason `charge_not_found`: the user names a store
+    or an amount for a charge that does not match this account (store differs, or the amount is not any number in
+    the FactSheet). Only typed claims are compared — never free text."""
+    claims = claims or {}
+    if intent_type not in _CHARGE_TOPICS or not (claims.get("claimed_store") or claims.get("claimed_amount")):
+        return False
+    raw = facts.get("fields", {}) if isinstance(facts, dict) else getattr(facts, "fields", {})
+    allowed = facts.get("allowed_numbers", set()) if isinstance(facts, dict) else getattr(facts, "allowed_numbers", set())
+    store = (raw or {}).get("store")
+    cs = claims.get("claimed_store")
+    if cs in ("app_store", "play_store") and store in ("app_store", "play_store") and cs != store:
+        return True
+    amt = claims.get("claimed_amount")
+    if amt and (raw or {}).get("price"):
+        variants = {amt, amt.replace(".", ","), amt.split(".")[0] if amt.endswith(".00") else amt}
+        if not variants & {str(x) for x in (allowed or set())}:
+            return True
+    return False
+
+
 def render(state: Any, actions: Iterable[Any] | None, facts: Any, language: str | None = "en",
-           intent_type: str | None = None) -> str:
-    """Deterministic reply. `state` may be a CaseState or a state code string; `facts` a FactSheet or dict."""
+           intent_type: str | None = None, claims: dict | None = None, history: Iterable[Any] | None = None) -> str:
+    """Deterministic reply. `state` may be a CaseState or a state code string; `facts` a FactSheet or dict.
+    `claims` = sanitised intent claims (booleans/enums only); `history` = earlier turns (used to avoid repeating
+    the status that was just given)."""
     code = str(getattr(state, "code", state) or "NO_PURCHASE")
     raw = facts.get("fields", {}) if isinstance(facts, dict) else getattr(facts, "fields", {})
     raw = {k: str(v) for k, v in (raw or {}).items() if v not in (None, "")}
@@ -931,47 +1221,103 @@ def render(state: Any, actions: Iterable[Any] | None, facts: Any, language: str 
     actions = list(actions or [])
     kinds = [_kind(a) for a in actions]
     store = raw.get("store") or ""
+    claims = claims or {}
+    itype = intent_type or ""
+    prev = _last_assistant(history)
+    escalated = "ESCALATE_TO_HUMAN" in kinds
+    never_charged = raw.get("ever_charged", "").lower() == "no"
 
     parts: list[str] = []
+    if claims.get("angry"):
+        parts.append(_pick(T["extra"]["angry"], fields, cyr) or "")
+
+    # 1. intent lead line
+    lead_key = itype
+    if itype in ("HUMAN_REQUEST", "PRIVACY_REQUEST") and escalated:
+        lead_key = f"{itype}:escalated"
+    elif itype == "ACKNOWLEDGEMENT" and claims.get("thanks"):
+        lead_key = "ACKNOWLEDGEMENT:thanks"
+    lead = _pick(T["intent"].get(lead_key), fields, cyr)
+    if lead:
+        parts.append(lead)
+
+    # 2. correction / acknowledgement of the user's claim
     explain = next((a for a in actions if _kind(a) == "EXPLAIN_STATUS"), None)
     contradicted = explain is not None and bool(_params(explain).get("claim_contradicted"))
-    if contradicted:
-        reason = _params(explain).get("reason") or "claim_does_not_match"
+    reason = (_params(explain).get("reason") if explain is not None else None) or "claim_does_not_match"
+    if (reason == "charge_not_found" or charge_claim_mismatch(claims, facts, itype)) and itype not in _LEAD_ONLY_INTENTS:
+        s = _pick(T["contra"]["charge_not_found"], fields, cyr)
+        if s:
+            parts.append(s)
+        contradicted = True
+    elif contradicted and itype not in _LEAD_ONLY_INTENTS:
+        if reason == "nothing_charged" and code not in _TRIAL_STATES:
+            reason = "never_charged"
         if (code, reason) not in _REDUNDANT_CONTRA:
             s = _pick(T["contra"].get(reason) or T["contra"]["claim_does_not_match"], fields, cyr)
             if s:
                 parts.append(s)
-    elif (intent_type == "CHARGED_AFTER_CANCEL" and raw.get("cancelled_on") and raw.get("last_charged_on")
+    elif (itype == "CHARGED_AFTER_CANCEL" and raw.get("cancelled_on") and raw.get("last_charged_on")
           and raw["last_charged_on"] > raw["cancelled_on"]):
         s = _pick(T["ack"]["charged_after_cancel"], fields, cyr)
         if s:
             parts.append(s)
-    if explain is not None or not actions:
-        s = _pick(T["status"].get(code) or T["status"]["NO_PURCHASE"], fields, cyr)
-        if s:
-            parts.append(s)
 
+    # 3. status — not for off-topic intents, and not again right after it was given
+    status_key = f"{code}:never_charged" if never_charged and f"{code}:never_charged" in T["status"] else code
+    status = _pick(T["status"].get(status_key) or T["status"]["NO_PURCHASE"], fields, cyr)
+    skip_status = (itype in _NO_STATUS_INTENTS
+                   or (prev is not None and itype not in _STATUS_AGAIN_INTENTS and not contradicted)
+                   or (prev is not None and status is not None and status in prev and itype != "STATUS_QUESTION"))
+    if status and (explain is not None or not actions) and not skip_status:
+        parts.append(status)
+
+    # 4. one sentence per decided action
     seen: set[str] = set()
     for a in actions:
         k = _kind(a)
         if k == "EXPLAIN_STATUS":
             continue
+        if itype in _LEAD_ONLY_INTENTS and k != "PROPOSE_GRANT":
+            continue
+        if k == "ESCALATE_TO_HUMAN" and lead_key.endswith(":escalated"):
+            continue  # the lead line already says it
         if k == "MANAGE_SUBSCRIPTION_LINK" and "CANCEL_STEPS" in kinds:
             continue  # the cancel sentence carries the link
         key = k
         if k == "ESCALATE_TO_HUMAN" and str(_params(a).get("reason", "")).startswith("no_store_self_service"):
             key = "ESCALATE_TO_HUMAN:no_store"
+        elif k == "RESTORE_PURCHASES_STEPS":
+            hint = {"ios": "app_store", "android": "play_store"}.get(str(claims.get("claimed_platform", "")))
+            if _params(a).get("steps_key") == "restore_generic" and not hint:
+                key = k
+            elif hint:
+                key = f"{k}:{hint}"
+            elif f"{k}:{store}" in T["action"]:
+                key = f"{k}:{store}"
         elif f"{k}:{store}" in T["action"]:
             key = f"{k}:{store}"
         if key in seen or (key.startswith("ESCALATE_TO_HUMAN") and any(x.startswith("ESCALATE_TO_HUMAN") for x in seen)):
             continue
         seen.add(key)
+        if k == "CANCEL_STEPS" and claims.get("wants_agent_to_act"):
+            parts.append(_pick(T["extra"]["cannot_act"], fields, cyr) or "")
         s = _pick(T["action"].get(key) or T["action"].get(k), fields, cyr)
         if s:
             parts.append(s)
-    return " ".join(parts).strip()
+
+    # 5. standing facts the user must not lose track of
+    if _pending_grant(raw) and "PROPOSE_GRANT" not in kinds:
+        parts.append(_pick(T["extra"]["pending_grant"], fields, cyr) or "")
+    if claims.get("chargeback_threat"):
+        parts.append(_pick(T["extra"]["chargeback"], fields, cyr) or "")
+
+    parts = [p for p in parts if p]
+    if not parts or parts == [_pick(T["extra"]["angry"], fields, cyr)]:
+        parts.append(status or "")
+    return " ".join(p for p in parts if p).strip()
 
 
 def all_keys() -> dict[str, list[str]]:
     """Every template key per section (tests use it to check that all languages are complete)."""
-    return {sec: sorted(EN[sec]) for sec in ("ack", "status", "contra", "action")}
+    return {sec: sorted(EN[sec]) for sec in ("ack", "status", "contra", "action", "intent", "extra")}

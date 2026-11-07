@@ -2,6 +2,7 @@
 
     python tests/e2e_ui.py                 # starts its own demo server on a free port
     python tests/e2e_ui.py --url http://localhost:8137   # against a running demo server
+    python tests/e2e_ui.py --variant 2 --shots /tmp/v2   # a design variant (/help?v=2, /console?v=2)
 
 Flow: load / ; open /help, pick the grant-eligible demo user, send a message, see the status card and the reply;
 open /console, approve the pending grant; back in /help the status card shows the grant.
@@ -27,6 +28,14 @@ from playwright.sync_api import expect, sync_playwright
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 SHOTS = ROOT / "docs" / "screens"
+VARIANT = ""  # --variant N: every /help and /console URL gets ?v=N
+
+
+def pg(url: str, path: str, **params: str) -> str:
+    """URL of /help or /console (with the design variant, when one is being tested)."""
+    if VARIANT:
+        params = {"v": VARIANT, **params}
+    return url + path + ("?" + urllib.parse.urlencode(params) if params else "")
 CHROME = (glob.glob("/home/agent/.cache/ms-playwright/chromium_headless_shell-1234/*/chrome-headless-shell") or [None])[0]
 
 
@@ -78,7 +87,7 @@ def bugbash_checks(browser, url: str, users: list[dict], errors: list[str]) -> N
     page.on("pageerror", lambda e: errors.append(str(e)))
 
     # 01: switching users while a reply is still being polled must not leak into the new user's conversation
-    page.goto(f"{url}/help?demo_user={a}")
+    page.goto(pg(url, "/help", demo_user=a))
     expect(page.locator("#statusCard")).to_be_visible()
     page.route("**/api/chat/*", lambda r: (time.sleep(1.5), r.continue_()))
     page.fill("#msg", "question from the first user")
@@ -114,7 +123,7 @@ def bugbash_checks(browser, url: str, users: list[dict], errors: list[str]) -> N
     # 03: Serbian written in Cyrillic -> the chrome switches to Cyrillic too
     sr = next((u["customer_user_id"] for u in users if str(u.get("locale", "")).startswith("sr")), None)
     if sr:
-        page.goto(f"{url}/help?demo_user={sr}")
+        page.goto(pg(url, "/help", demo_user=sr))
         expect(page.locator("#statusCard")).to_be_visible()
         page.fill("#msg", "Здраво, платио сам а немам премијум")
         page.keyboard.press("Enter")
@@ -129,7 +138,7 @@ def bugbash_checks(browser, url: str, users: list[dict], errors: list[str]) -> N
         q = urllib.parse.urlencode({"customer_user_id": u["customer_user_id"], "signature": u["signature"]})
         st = json.loads(urllib.request.urlopen(f"{url}/api/status?{q}").read())
         if st["state_badge"]["code"] == "NO_PURCHASE":
-            page.goto(f"{url}/help?demo_user={u['customer_user_id']}")
+            page.goto(pg(url, "/help", demo_user=u["customer_user_id"]))
             expect(page.locator("#statusCard")).to_be_visible()
             page.wait_for_timeout(300)
             assert "Bought on" not in page.locator("#facts").inner_text()
@@ -138,7 +147,7 @@ def bugbash_checks(browser, url: str, users: list[dict], errors: list[str]) -> N
     # XSS: user text is rendered as text in the console; nothing executes
     dialogs: list[str] = []
     page.on("dialog", lambda d: (dialogs.append(d.message), d.dismiss()))
-    page.goto(f"{url}/help?demo_user={a}")
+    page.goto(pg(url, "/help", demo_user=a))
     expect(page.locator("#statusCard")).to_be_visible()
     payload = '<img src=x onerror=alert(1)><script>alert(2)</script>'
     page.fill("#msg", payload)
@@ -147,7 +156,7 @@ def bugbash_checks(browser, url: str, users: list[dict], errors: list[str]) -> N
     con = browser.new_context(viewport={"width": 360, "height": 800}).new_page()
     con.on("pageerror", lambda e: errors.append(str(e)))
     con.on("dialog", lambda d: (dialogs.append(d.message), d.dismiss()))
-    con.goto(url + "/console")
+    con.goto(pg(url, "/console"))
     expect(con.locator(".c-item").first).to_be_visible(timeout=10000)
     con.locator(".c-item").first.click()
     expect(con.locator(".turn.user .txt").last).to_have_text(payload, timeout=10000)
@@ -155,7 +164,7 @@ def bugbash_checks(browser, url: str, users: list[dict], errors: list[str]) -> N
     assert not dialogs, dialogs
     # 09/10: the console fits a 360px phone and its header does not cover the case it scrolls to
     shot(con, "console-detail-360")
-    assert con.evaluate("getComputedStyle(document.querySelector('.top')).position") != "sticky"
+    assert con.evaluate("(t => !t || getComputedStyle(t).position !== 'sticky')(document.querySelector('.top'))")
 
 
 def main() -> int:
@@ -163,7 +172,13 @@ def main() -> int:
     ap.add_argument("--url")
     ap.add_argument("--dark", action="store_true", help="also take dark-mode screenshots")
     ap.add_argument("--stubs", action="store_true", help="server uses the app's stub engine/ai/adapty (CASEDESK_STUBS=all)")
+    ap.add_argument("--variant", default="", help="test design variant N (/help?v=N, /console?v=N)")
+    ap.add_argument("--shots", help="screenshot folder (default docs/screens)")
     args = ap.parse_args()
+    global VARIANT, SHOTS
+    VARIANT = args.variant
+    if args.shots:
+        SHOTS = Path(args.shots)
     proc = None
     url = args.url
     if not url:
@@ -184,7 +199,7 @@ def main() -> int:
                     expect(page.get_by_role("heading", level=1)).to_contain_text("actually knows")
                     page.wait_for_timeout(3500 if w == 1280 else 3000)
                     shot(page, f"landing-{w}{sfx}")
-                    page.goto(url + "/help")
+                    page.goto(pg(url, "/help"))
                     expect(page.locator("#statusCard")).to_be_visible()
                     shot(page, f"help-start-{w}{sfx}")
                     assert not errors, errors
@@ -210,11 +225,11 @@ def main() -> int:
             errors: list[str] = []
             page.on("pageerror", lambda e: errors.append(str(e)))
             if grant_user in ids:
-                page.goto(url + "/help?demo_user=" + grant_user)
+                page.goto(pg(url, "/help", demo_user=grant_user))
             else:  # not in the picker: open it the way a host app would, with a signed uid
                 os.environ.setdefault("CASEDESK_DEMO", "1")
                 from casedesk.app.auth import sign
-                page.goto(f"{url}/help?" + urllib.parse.urlencode({"uid": grant_user, "sig": sign(grant_user)}))
+                page.goto(pg(url, "/help", uid=grant_user, sig=sign(grant_user)))
             expect(page.locator("#stateBadge")).to_have_class("badge bad")
             page.locator(".chip").nth(1).click()   # "I paid but have no premium", in the user's language
             bot = page.locator(".msg.bot").last
@@ -230,17 +245,20 @@ def main() -> int:
 
             con = browser.new_context(viewport={"width": 1280, "height": 900}).new_page()
             con.on("pageerror", lambda e: errors.append(str(e)))
-            con.goto(url + "/console")
+            con.goto(pg(url, "/console"))
             expect(con.locator(".q-item")).to_have_count(1, timeout=10000)
             con.locator(".q-item .q-open").click()   # opening the case; Approve / Deny live only on this queue card
             expect(con.locator(".d-head h2")).to_contain_text(grant_user.split("_")[-1])  # "Ava · 00239"
             expect(con.locator("#filters .filt")).to_have_count(4)
             expect(con.get_by_role("heading", name="What Case Desk did")).to_be_visible()
-            # the technical panels sit in one collapsed "Details" disclosure
-            expect(con.get_by_role("heading", name="What the user claims")).to_be_hidden()
-            con.locator("details.more summary").click()
-            expect(con.get_by_role("heading", name="What the user claims")).to_be_visible()
-            con.locator("details.more summary").click()
+            # the technical panels sit in one collapsed "Details" disclosure (a variant may show them openly)
+            if con.locator("details.more").count():
+                expect(con.get_by_role("heading", name="What the user claims")).to_be_hidden()
+                con.locator("details.more summary").click()
+                expect(con.get_by_role("heading", name="What the user claims")).to_be_visible()
+                con.locator("details.more summary").click()
+            else:
+                expect(con.get_by_role("heading", name="What the user claims")).to_be_attached()
             expect(con.locator(".q-item .hint")).to_have_text("Nothing is granted until you approve.")
             expect(con.locator(".btn.approve")).to_have_count(1)   # one Approve per pending grant, none on the case card
             expect(con.locator(".grant.pending .waiting")).to_be_visible()
@@ -258,7 +276,7 @@ def main() -> int:
             shot(page, "help-granted-390")
 
             wide = browser.new_context(viewport={"width": 1280, "height": 860}).new_page()
-            wide.goto(url + "/help?demo_user=" + users[0]["customer_user_id"])
+            wide.goto(pg(url, "/help", demo_user=users[0]["customer_user_id"]))
             expect(wide.locator("#statusCard")).to_be_visible()
             wide.fill("#msg", "Naplatili ste mi pretplatu posle otkazivanja! Zašto?")
             wide.click("#send")

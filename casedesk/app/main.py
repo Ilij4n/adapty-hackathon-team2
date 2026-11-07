@@ -669,13 +669,19 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
     async def landing():
         return FileResponse(STATIC / "index.html")
 
+    def page(name: str, v: str | None) -> Path:
+        """/help?v=N and /console?v=N serve design variant N (static/vN/) when it exists; else the default page."""
+        if v and v.isdigit() and len(v) <= 2 and (STATIC / f"v{v}" / name).is_file():
+            return STATIC / f"v{v}" / name
+        return STATIC / name
+
     @app.get("/help", include_in_schema=False)
-    async def help_page():
-        return FileResponse(STATIC / "help.html")
+    async def help_page(v: str | None = None):
+        return FileResponse(page("help.html", v))
 
     @app.get("/console", include_in_schema=False)
-    async def console_page(request: Request):
-        resp = FileResponse(STATIC / "console.html")
+    async def console_page(request: Request, v: str | None = None):
+        resp = FileResponse(page("console.html", v))
         if auth.console_token() and auth.console_autocookie_allowed(request.client.host if request.client else None):
             # Demo convenience only: the console is pre-authorised on this browser.
             resp.set_cookie("casedesk_console", auth.console_token(), httponly=True, samesite="strict")

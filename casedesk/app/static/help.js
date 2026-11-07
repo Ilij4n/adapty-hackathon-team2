@@ -1,4 +1,6 @@
-/* Lumen Help widget. Identity: ?uid=&sig= from the host app (signed by its backend); demo mode: profile picker. */
+/* Lumen Help widget. Identity: ?uid=&sig= from the host app (signed by its backend); demo mode: profile picker.
+   Design variants (/help?v=N) load static/vN/help.view.js first; it may set window.CaseDeskHelpView = (h) => ({...})
+   to replace how the status card, typing row, reply actions and demo profiles are drawn (see V below). */
 (() => {
   "use strict";
   const I = window.CD_I18N, SL = window.CD_STATE_LABELS;
@@ -29,6 +31,7 @@
     const chips = $("#chips"); chips.textContent = ""; chips.setAttribute("aria-label", tr.suggestions || "Suggestions");
     tr.chips.forEach((c) => { const b = el("button", "chip", c); b.type = "button"; b.onclick = () => send(c); chips.append(b); });
     if (S.lastStatus) renderStatus(S.lastStatus);
+    if (V.onLang) V.onLang(S.lang, tr);
   }
 
   // ------------------------------------------------------------ status card
@@ -62,6 +65,9 @@
     const key = JSON.stringify([S.lang, st.state_badge, st.facts]);
     if (!card.hidden && card.dataset.key === key) return;
     card.dataset.key = key; card.hidden = false;
+    V.paintStatus(st, card);
+  }
+  function paintStatus(st) {
     const b = $("#stateBadge"); const code = st.state_badge.code;
     b.className = "badge " + (st.state_badge.tone || "info");
     b.textContent = (SL[S.lang] && SL[S.lang][code]) || st.state_badge.label;
@@ -126,7 +132,7 @@
     li.textContent = "";
     if (r.reply_status === "error") li.classList.add("error");
     const b = el("div", "bubble", r.reply || t().errGeneric); b.dir = "auto"; li.append(b);
-    renderActions(li, r.actions, facts || {}, r.pending_approval);
+    V.renderActions(li, r.actions, facts || {}, r.pending_approval);
     scrollDown();
   }
 
@@ -149,7 +155,7 @@
     S.busy = true; $("#send").disabled = true; $("#msg").value = ""; autosize();
     $("#intro").hidden = true;
     addMsg("user", text);
-    const typing = addTyping(); statusLoading();
+    const typing = V.addTyping(); statusLoading();
     try {
       const d = await api("/api/chat", { method: "POST", body: JSON.stringify({ customer_user_id: user, signature: sig, message: text, locale: S.locale || navigator.language, case_id: S.caseId }) });
       if (stale()) { // switched users while this POST was in flight
@@ -236,6 +242,7 @@
     document.querySelectorAll(".profile").forEach((p) => { const on = p.dataset.uid === S.user; p.setAttribute("aria-checked", String(on)); p.tabIndex = on ? 0 : -1; });
     $("#demoSelect").value = S.user;
     applyLang(S.locale);
+    if (V.onUser) V.onUser(u);
     const gen = S.gen;
     try {
       const st = await api(`/api/status?${authQ()}`);
@@ -243,6 +250,11 @@
       renderStatus(st); noteApprovals(st.approvals, true);
       if (Object.values(S.approvals).includes("pending")) watchApprovals();
     } catch (e) { if (S.gen === gen) addMsg("bot error", e.status === 401 ? t().errAuth : t().errGeneric); }
+  }
+  function fillProfile(b, u) {
+    const av = el("span", "av", initials(u.display_name)); av.setAttribute("aria-hidden", "true");
+    const shown = String(u.display_name).replace(/[-_]/g, "").toLowerCase().includes(String(u.locale).replace(/[-_]/g, "").toLowerCase());
+    b.append(av, el("b", null, shown ? u.display_name : `${u.display_name} · ${u.locale}`), el("small", null, u.scenario));
   }
   function initials(name) { return (String(name).replace(/\(.*?\)/g, "").match(/\p{L}/gu) || ["?"])[0].toUpperCase(); }
 
@@ -260,9 +272,7 @@
     const box = $("#profiles"), sel = $("#demoSelect");
     users.forEach((u) => {
       const b = el("button", "profile"); b.type = "button"; b.dataset.uid = u.customer_user_id; b.setAttribute("role", "radio"); b.setAttribute("aria-checked", "false");
-      const av = el("span", "av", initials(u.display_name)); av.setAttribute("aria-hidden", "true");
-      const shown = String(u.display_name).replace(/[-_]/g, "").toLowerCase().includes(String(u.locale).replace(/[-_]/g, "").toLowerCase());
-      b.append(av, el("b", null, shown ? u.display_name : `${u.display_name} · ${u.locale}`), el("small", null, u.scenario));
+      V.fillProfile(b, u);
       b.tabIndex = -1; b.onclick = () => selectUser(u); box.append(b);
       // the narrow-screen select: short first name + id, so the five "Jake"s stay tell-apart-able when truncated
       const short = String(u.display_name).replace(/\s*\(.*?\)\s*/g, "") || u.customer_user_id;
@@ -282,6 +292,12 @@
     const want = qs.get("demo_user");
     selectUser(users.find((u) => u.customer_user_id === want) || users[0]);
   }
+
+  // ------------------------------------------------------------ design variants
+  const H = { S, t, SL, $, el, fmtDate, cardRows, initials, linkBtn, stepsBtn, safeUrl, scrollDown, ICON_OUT,
+    defaults: { paintStatus, addTyping, renderActions, fillProfile } };
+  const V = Object.assign({ paintStatus, addTyping, renderActions, fillProfile },
+    typeof window.CaseDeskHelpView === "function" ? window.CaseDeskHelpView(H) : {});
 
   // ------------------------------------------------------------ composer
   const ta = $("#msg");

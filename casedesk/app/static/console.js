@@ -38,8 +38,8 @@
     ACTIVE_RENEWING: (f) => "Premium is active and renews by itself" + on(f.renews_on),
     CANCELLED_PAID_UP: (f) => "Cancelled, but premium stays on" + until(f.expires_on),
     TRIAL_ACTIVE: (f) => "On a free trial" + until(f.trial_ends_on || f.expires_on),
-    TRIAL_CANCELLED: (f) => "Cancelled the free trial — no charge will follow",
-    GRACE_PERIOD: (f) => `${cap(storeOf(f))} couldn't take the payment — premium stays on for now` + until(f.grace_ends_on),
+    TRIAL_CANCELLED: (f) => "Cancelled the free trial, so no charge will follow",
+    GRACE_PERIOD: (f) => `${cap(storeOf(f))} couldn't take the payment. Premium stays on for now` + until(f.grace_ends_on),
     BILLING_RETRY: (f) => `${cap(storeOf(f))} couldn't take the payment${on(f.billing_issue_on)} and is retrying`,
     EXPIRED_BILLING_ERROR: (f) => (f.ever_charged === "yes" ? "Paid, then " : "") + `${f.ever_charged === "yes" ? storeOf(f) : cap(storeOf(f))} couldn't take the renewal` + on(f.billing_issue_on || f.expires_on),
     EXPIRED_CANCELLED: (f) => "Cancelled, and premium ended" + on(f.expires_on),
@@ -65,7 +65,7 @@
     RESTORE_PURCHASES_STEPS: () => "Showed how to restore purchases",
     UPDATE_PAYMENT_METHOD: () => "Sent the link to update payment",
     PROPOSE_GRANT: (p) => `Asked you for a ${p.days || 3}-day courtesy extension`,
-    ESCALATE_TO_HUMAN: (p) => "Handed it to a person — " + reasonText(p.reason),
+    ESCALATE_TO_HUMAN: (p) => "Handed it to a person: " + reasonText(p.reason),
   };
   const actionText = (a) => (ACTION_TEXT[a.kind] || (() => cap(String(a.kind).toLowerCase().replace(/_/g, " "))))(a.params || {});
   const langName = (code) => { try { return new Intl.DisplayNames(["en"], { type: "language" }).of(code) || code; } catch { return code; } };
@@ -137,7 +137,7 @@
       b.setAttribute("aria-current", String(c.id === S.selected));
       const top = el("div", "row-top"); top.append(whoEl(c.customer_user_id), el("span", "c-time", ago(c.updated_at)));
       const st = el("div", "line soft");
-      st.append(dot(c.state_badge && c.state_badge.tone), el("span", "ell", (c.state_badge && c.state_badge.label) || "—"));
+      st.append(dot(c.state_badge && c.state_badge.tone), el("span", "ell", (c.state_badge && c.state_badge.label) || "No status yet"));
       if (c.pending_approval) st.append(el("span", "tag wait", "waiting"));
       if (c.privacy) st.append(el("span", "tag priv", "privacy"));
       else if (c.escalated) st.append(el("span", "tag esc", "needs a person"));
@@ -159,7 +159,7 @@
     w.append(el("span", "ch", (sc.acquisition_channel || "unknown channel").replace(/_/g, " ")));
     if (sc.placement || sc.flow) {
       w.append(el("span", "pl", [sc.placement, sc.flow].filter(Boolean).join(" / ")));
-      const si = el("span", "si", "stand-in"); si.title = "Placement and flow come from the seed CSV — a stand-in for Adapty paywall data."; w.append(si);
+      const si = el("span", "si", "stand-in"); si.title = "Placement and flow come from the seed CSV, a stand-in for Adapty paywall data."; w.append(si);
     }
     return w;
   }
@@ -172,14 +172,14 @@
     if (a.status === "pending" || a.status === "failed") {
       const t = el("p", "waiting");
       t.append(el("span", "arrow", "←"), document.createTextNode(a.status === "failed"
-        ? `Giving ${who} ${what} failed — try again in the list.`
-        : `Waiting for your OK on ${what} for ${who} — approve or deny it in the list.`));
+        ? `Giving ${who} ${what} failed. Try again in the list.`
+        : `Waiting for your OK on ${what} for ${who}. Approve or deny it in the list.`));
       w.append(t);
     } else if (a.status === "approved") {
       const t = el("p", "done"); t.append(el("span", "tick", "✓"), document.createTextNode("Premium given" + (a.result && a.result.expires_at ? " · expires " + day(a.result.expires_at, true) : "")));
       w.append(t);
     } else if (a.status === "denied") {
-      w.append(el("p", "done no", `You said no to ${what} — ${nameOf(a.customer_user_id) || "the user"} will see that.`));
+      w.append(el("p", "done no", `You said no to ${what}. ${cap(nameOf(a.customer_user_id) || "the user")} will see that.`));
     } else w.append(el("p", "done no", `${cap(what)}: ${a.status}`));
     return w;
   }
@@ -194,7 +194,7 @@
     const av = el("span", "avatar", (nameOf(c.customer_user_id) || c.customer_user_id || "?").charAt(0).toUpperCase());
     const idl = el("div", "id-lines");
     const h = el("h2"); h.append(whoEl(c.customer_user_id, "span"));
-    const meta = el("div", "meta", [c.language && langName(c.language), f.store_name].filter(Boolean).join(" · ") || "—");
+    const meta = el("div", "meta", [c.language && langName(c.language), f.store_name].filter(Boolean).join(" · ") || "Language unknown");
     idl.append(h, meta); head.append(av, idl);
     card.append(head);
 
@@ -206,13 +206,13 @@
     if (v) {
       const rv = realViolations(v.violations);
       const okp = v.used_fallback || !rv.length; // a rejected draft is replaced by the checked template
-      const pill = el("span", "trust " + (okp ? "ok" : "bad"), okp ? "✓ Checked: every fact matches the account" : "Check this reply — see Details");
+      const pill = el("span", "trust " + (okp ? "ok" : "bad"), okp ? "✓ Checked: every fact matches the account" : "Check this reply: see Details");
       card.append(pill);
     }
 
     // things that need a human, visible (not hidden in details)
     const alerts = [];
-    if (fl.privacy) alerts.push("Privacy / data request — handle it through your data-protection process.");
+    if (fl.privacy) alerts.push("Privacy or data request. Handle it through your data-protection process.");
     (fl.escalation_reasons || []).filter((r) => r !== "privacy_request" || !fl.privacy).forEach((r) => alerts.push("Needs a person: " + reasonText(r) + "."));
     if (c.intent && c.intent.injection_suspected) alerts.push("The message tried to give Case Desk orders. It was ignored.");
     alerts.forEach((t) => card.append(el("p", "alert", t)));
@@ -236,7 +236,7 @@
     did.append(el("h3", null, "What Case Desk did"));
     const acts = c.actions || [];
     if (acts.length) { const ul = el("ul"); acts.forEach((a) => ul.append(el("li", a.requires_approval ? "needs" : null, actionText(a)))); did.append(ul); }
-    else did.append(el("p", "soft", c.validator ? "Answered the message — nothing else was needed." : "Still working on it…"));
+    else did.append(el("p", "soft", c.validator ? "Answered the message. Nothing else was needed." : "Still working on it…"));
     card.append(did);
 
     // approval
@@ -270,7 +270,7 @@
       ver.append(el("span", "vflag " + (v.used_fallback ? "" : "ok"), v.used_fallback ? "fallback used: yes" : "fallback used: no"));
       const rv = realViolations(v.violations), le = llmErrors(v.violations, v.llm_error);
       ver.append(el("span", "vflag " + (rv.length ? "bad" : "ok"), `violations: ${rv.length}`));
-      if (le.length) ver.append(el("span", "vflag", "LLM unavailable — template answered"));
+      if (le.length) ver.append(el("span", "vflag", "LLM unavailable, template answered"));
       if (rv.length) { const ul = el("ul"); rv.forEach((x) => ul.append(el("li", null, x))); ver.append(ul); }
       if (le.length) { const ul = el("ul", "info"); le.forEach((x) => ul.append(el("li", null, x))); ver.append(ul); }
     } else ver.append(el("span", "empty", "Reply still being written."));
@@ -287,7 +287,7 @@
 
     const claims = (c.intent && c.intent.claims) || {};
     dbody.append(sub("What the user claims", Object.keys(claims).length ? kvTable(claims) : el("p", "empty", "No specific claims.")));
-    dbody.append(sub("FactSheet — the only facts the reply may use", kvTable(c.facts)));
+    dbody.append(sub("FactSheet: the only facts the reply may use", kvTable(c.facts)));
 
     if (d.approvals.length) {
       const ap = el("ul", "info");
@@ -308,17 +308,25 @@
 
   async function select(id) {
     S.selected = id; S.sig.detail = "";
-    history.replaceState(null, "", "?case=" + encodeURIComponent(id));
-    renderList();
+    const u = new URL(location.href); u.searchParams.set("case", id); // keeps ?v= (the design variant)
+    history.replaceState(null, "", u);
+    V.renderList();
     await refreshDetail();
-    if (matchMedia("(max-width: 979px)").matches) $("#detail").scrollIntoView({ behavior: "smooth", block: "start" });
+    if (matchMedia(V.narrowQuery).matches) $("#detail").scrollIntoView({ behavior: "smooth", block: "start" });
   }
   async function refreshDetail() {
     if (!S.selected) return;
     try {
       const d = await api("/api/cases/" + encodeURIComponent(S.selected));
       const sig = JSON.stringify(d);
-      if (sig !== S.sig.detail) { const open = document.querySelector("details.more")?.open; S.sig.detail = sig; renderDetail(d); if (open) document.querySelector("details.more").open = true; }
+      if (sig !== S.sig.detail) {
+        // re-rendering the same case keeps whichever disclosures the reader opened
+        const same = S.sig.detailId === S.selected;
+        const open = [...document.querySelectorAll("#detail details")].map((x) => x.open);
+        S.sig.detail = sig; S.sig.detailId = S.selected;
+        V.renderDetail(d);
+        if (same) document.querySelectorAll("#detail details").forEach((x, i) => { if (open[i]) x.open = true; });
+      }
     } catch (e) { if (e.status === 404) { S.selected = null; } else throw e; }
   }
 
@@ -327,15 +335,25 @@
     try {
       const r = await api(`/api/approvals/${id}/${verb}`, { method: "POST" });
       const a = r.approval;
-      toast(verb === "approve" ? `Gave ${callName(a.customer_user_id)} ${a.days || 3} days of premium` : `Denied — ${callName(a.customer_user_id)} will see it`);
+      V.toast(verb === "approve" ? `Gave ${callName(a.customer_user_id)} ${a.days || 3} days of premium` : `Denied. ${cap(callName(a.customer_user_id))} will see it`);
       await refresh();
     } catch (e) {
       const msg = e.message || "Failed";
-      toast(msg, 7000); btn.disabled = false;
-      const host = btn.closest(".q-item");
+      V.toast(msg, 7000); btn.disabled = false;
+      const host = btn.closest(".q-item, [data-approval-host]");
       if (host) { host.querySelector(".refused")?.remove(); const r = el("p", "refused", msg); r.setAttribute("role", "alert"); host.append(r); }
     }
   }
+
+  // ------------------------------------------------------------ top bar
+  function renderMeta(meta) {
+    const m = $("#topMeta"); if (!m) return;
+    m.textContent = "";
+    if (meta.demo) m.append(el("span", "pill demo", "demo mode"));
+    const stubs = Object.values(S.modules).filter((v) => v === "stub").length;
+    if (stubs) m.append(el("span", "pill stub", `${stubs} module(s) on stubs`));
+  }
+  function live(text) { const n = $("#live"); if (n) n.textContent = text; }
 
   // ------------------------------------------------------------ refresh loop
   async function loadNames() {
@@ -353,30 +371,42 @@
     // seeded demo cases carry a display name (GET /api/cases, demo only); the picker's names win
     for (const c of S.cases) if (c.display_name && !S.names[c.customer_user_id]) S.names[c.customer_user_id] = c.display_name;
     const sig = JSON.stringify([S.cases, S.approvals, S.selected]);
-    if (sig !== S.sig.list) { S.sig.list = sig; renderList(); }
+    if (sig !== S.sig.list) { S.sig.list = sig; V.renderList(); }
     await refreshDetail();
-    $("#live").textContent = "updated " + new Date().toLocaleTimeString();
+    V.live("updated " + new Date().toLocaleTimeString(), "ok");
   }
   async function start() {
     try {
       const meta = await api("/api/console/meta");
       $("#gate").hidden = true; $("#app").hidden = false;
-      const m = $("#topMeta"); m.textContent = "";
-      if (meta.demo) { m.append(el("span", "pill demo", "demo mode")); await loadNames(); }
-      S.modules = meta.modules || {};
-      const stubs = Object.values(S.modules).filter((v) => v === "stub").length;
-      if (stubs) m.append(el("span", "pill stub", `${stubs} module(s) on stubs`));
+      S.meta = meta; S.modules = meta.modules || {};
+      if (meta.demo) await loadNames();
+      V.renderMeta(meta);
       await refresh();
       clearInterval(S.timer);
-      S.timer = setInterval(() => refresh().catch(() => { $("#live").textContent = "offline — retrying"; }), 3000);
+      S.timer = setInterval(() => refresh().catch(() => V.live("offline, retrying", "bad")), 3000);
     } catch (e) {
       if (e.status === 401) { $("#gate").hidden = false; $("#app").hidden = true; if (S.token) $("#gateErr").hidden = false; $("#tok").focus(); }
-      else { $("#live").textContent = "can't reach the server"; setTimeout(start, 3000); }
+      else { V.live("can't reach the server", "bad"); setTimeout(start, 3000); }
     }
   }
+
+  // ------------------------------------------------------------ design variants
+  // /console?v=N loads static/vN/console.view.js before this file. It may set
+  //   window.CaseDeskConsoleView = (h) => ({ renderList, renderDetail, renderMeta, live, toast, narrowQuery })
+  // and receives every helper below in h: a variant changes how the console looks, never what it does.
+  const H = {
+    S, $, el, api, toast, fmtTime, ago, day, stateLine, actionText, langName, nameOf, shortId, whoEl, callName,
+    realViolations, llmErrors, reasonText, FILTERS, auto, dot, cap, kvTable, sub, saleEl, grantBox, select, decide,
+    rerenderList: () => { S.sig.list = ""; V.renderList(); },
+    defaults: { renderList, renderDetail, renderMeta, live, toast },
+  };
+  const V = Object.assign({ renderList, renderDetail, renderMeta, live, toast, narrowQuery: "(max-width: 979px)" },
+    typeof window.CaseDeskConsoleView === "function" ? window.CaseDeskConsoleView(H) : {});
+
   // the header wraps on narrower desktops; the sticky case list sits just below whatever height it has
   const topEl = document.querySelector(".top");
-  new ResizeObserver(() => document.documentElement.style.setProperty("--top-h", topEl.offsetHeight + "px")).observe(topEl);
+  if (topEl) new ResizeObserver(() => document.documentElement.style.setProperty("--top-h", topEl.offsetHeight + "px")).observe(topEl);
   $("#gateForm").addEventListener("submit", (e) => {
     e.preventDefault(); S.token = $("#tok").value.trim(); sessionStorage.setItem("casedesk_console", S.token); start();
   });

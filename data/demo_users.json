@@ -1,0 +1,285 @@
+{
+  "meta": {
+    "source": "adapty-seed-data-hack: data/lumen_dataset.json.gz v1 + data/offline/*.csv.gz",
+    "replay_end": "2026-11-03T00:12:04+00:00",
+    "now": "2026-11-04T00:12:04+00:00",
+    "users": 5000,
+    "cuid_format": "lumen_demo_<i:05d>"
+  },
+  "population": {
+    "NO_PURCHASE": 3607,
+    "ACTIVE_RENEWING": 539,
+    "EXPIRED_CANCELLED": 516,
+    "CANCELLED_PAID_UP": 125,
+    "LIFETIME": 63,
+    "REFUNDED": 58,
+    "EXPIRED_BILLING_ERROR": 50,
+    "EXPIRED_NO_RENEWAL_SENT": 18,
+    "TRIAL_ACTIVE": 15,
+    "TRIAL_CANCELLED": 9
+  },
+  "users": [
+    {
+      "customer_user_id": "lumen_demo_00009",
+      "seed_user_id": "u00009",
+      "situation": "CANCELLED_PAID_UP",
+      "why": "Serbian iOS annual (Pro Annual), cancelled but paid up",
+      "platform": "iOS",
+      "store_country": "RS",
+      "locale": "sr_RS",
+      "product": "lumen.pro_annual",
+      "price": {
+        "amount": 66.99,
+        "currency": "EUR"
+      },
+      "expires_at": "2027-07-13T00:50:37+00:00",
+      "days_from_now_to_expiry": 251.0,
+      "sale_context": {
+        "acquisition_channel": "apple_search_ads",
+        "placement": "ai_limit_reached",
+        "flow": "ai_limit"
+      },
+      "note": "bought 2026-07-13, auto-renew off 2026-09-23, paid up until 2027-07-13 = 251.0 days after now (252.0 after replay end)",
+      "display_name": "Marko (sr_RS, u00009)",
+      "scenario": "Pro Annual - AI Studio (App Store), cancelled, paid up for 251 more days"
+    },
+    {
+      "customer_user_id": "lumen_demo_02317",
+      "seed_user_id": "u02317",
+      "situation": "EXPIRED_BILLING_ERROR",
+      "why": "es_MX Android, expired on a billing error (grant-eligible)",
+      "platform": "Android",
+      "store_country": "MX",
+      "locale": "es_MX",
+      "product": "lumen_weekly",
+      "price": {
+        "amount": 75.99,
+        "currency": "MXN"
+      },
+      "expires_at": "2026-10-23T16:05:24+00:00",
+      "days_from_now_to_expiry": -11.3,
+      "sale_context": {
+        "acquisition_channel": "tiktok_ads",
+        "placement": "onboarding",
+        "flow": "onb_trial",
+        "ab_test": "Onboarding: annual trial vs weekly first"
+      },
+      "note": "expired 11.3 days before now (within 14); trial that failed to convert, never paid",
+      "display_name": "Lucía (es_MX, u02317)",
+      "scenario": "Premium Weekly (3-day trial) (Google Play), payment failed, access expired 11 days ago"
+    },
+    {
+      "customer_user_id": "lumen_demo_00027",
+      "seed_user_id": "u00027",
+      "situation": "REFUNDED",
+      "why": "refunded (App Store)",
+      "platform": "iOS",
+      "store_country": "US",
+      "locale": "en_US",
+      "product": "lumen.weekly",
+      "price": {
+        "amount": 6.99,
+        "currency": "USD"
+      },
+      "expires_at": "2026-09-01T20:26:46+00:00",
+      "days_from_now_to_expiry": -63.2,
+      "sale_context": {
+        "acquisition_channel": "tiktok_ads",
+        "placement": "onboarding",
+        "flow": "onb_trial",
+        "ab_test": "Onboarding: annual trial vs weekly first"
+      },
+      "note": "",
+      "display_name": "Jake (en_US, u00027)",
+      "scenario": "Premium Weekly (3-day trial) (App Store), refunded"
+    },
+    {
+      "customer_user_id": "lumen_demo_00199",
+      "seed_user_id": "u00199",
+      "situation": "REFUNDED",
+      "why": "refunded (Google Play)",
+      "platform": "Android",
+      "store_country": "AU",
+      "locale": "en_AU",
+      "product": "lumen_weekly",
+      "price": {
+        "amount": 10.99,
+        "currency": "AUD"
+      },
+      "expires_at": "2026-09-24T22:27:23+00:00",
+      "days_from_now_to_expiry": -40.1,
+      "sale_context": {
+        "acquisition_channel": "google_uac",
+        "placement": "main",
+        "flow": "main"
+      },
+      "note": "",
+      "display_name": "Chloe (en_AU, u00199)",
+      "scenario": "Premium Weekly (3-day trial) (Google Play), refunded"
+    },
+    {
+      "customer_user_id": "lumen_demo_00054",
+      "seed_user_id": "u00054",
+      "situation": "LIFETIME",
+      "why": "lifetime purchase",
+      "platform": "iOS",
+      "store_country": "US",
+      "locale": "en_US",
+      "product": "lumen.lifetime",
+      "price": {
+        "amount": 99.99,
+        "currency": "USD"
+      },
+      "expires_at": null,
+      "days_from_now_to_expiry": null,
+      "sale_context": {
+        "acquisition_channel": "meta_ads",
+        "placement": "main",
+        "flow": "main_lifetime",
+        "ab_test": "Main: 3 plans vs lifetime anchor (NA)"
+      },
+      "note": "",
+      "display_name": "Jake (en_US, u00054)",
+      "scenario": "Premium Lifetime (App Store)"
+    },
+    {
+      "customer_user_id": "lumen_demo_00014",
+      "seed_user_id": "u00014",
+      "situation": "ACTIVE_RENEWING",
+      "why": "active, auto-renewing",
+      "platform": "iOS",
+      "store_country": "US",
+      "locale": "en_US",
+      "product": "lumen.annual",
+      "price": {
+        "amount": 49.99,
+        "currency": "USD"
+      },
+      "expires_at": "2027-11-01T02:39:53+00:00",
+      "days_from_now_to_expiry": 362.1,
+      "sale_context": {
+        "acquisition_channel": "apple_search_ads",
+        "placement": "settings_upgrade",
+        "flow": "settings",
+        "ab_test": "Settings: upgrade vs lifetime anchor"
+      },
+      "note": "",
+      "display_name": "Jake (en_US, u00014)",
+      "scenario": "Premium Annual (App Store), active, renews automatically"
+    },
+    {
+      "customer_user_id": "lumen_demo_00344",
+      "seed_user_id": "u00344",
+      "situation": "TRIAL_ACTIVE",
+      "why": "free trial, will convert",
+      "platform": "iOS",
+      "store_country": "CA",
+      "locale": "en_CA",
+      "product": "lumen.annual_trial",
+      "price": {
+        "amount": 68.99,
+        "currency": "CAD"
+      },
+      "expires_at": "2026-11-06T18:34:49+00:00",
+      "days_from_now_to_expiry": 2.8,
+      "sale_context": {
+        "acquisition_channel": "google_uac",
+        "placement": "onboarding",
+        "flow": "onb_trial",
+        "ab_test": "Onboarding: annual trial vs weekly first"
+      },
+      "note": "",
+      "display_name": "Emma (en_CA, u00344)",
+      "scenario": "Premium Annual (7-day trial) (App Store), free trial ending in 2 days, will convert"
+    },
+    {
+      "customer_user_id": "lumen_demo_00836",
+      "seed_user_id": "u00836",
+      "situation": "TRIAL_CANCELLED",
+      "why": "free trial, auto-renew off",
+      "platform": "iOS",
+      "store_country": "US",
+      "locale": "en_US",
+      "product": "lumen.annual_trial",
+      "price": {
+        "amount": 49.99,
+        "currency": "USD"
+      },
+      "expires_at": "2026-11-07T07:21:50+00:00",
+      "days_from_now_to_expiry": 3.3,
+      "sale_context": {
+        "acquisition_channel": "tiktok_ads",
+        "placement": "onboarding",
+        "flow": "onb_trial",
+        "ab_test": "Onboarding: annual trial vs weekly first"
+      },
+      "note": "",
+      "display_name": "Jake (en_US, u00836)",
+      "scenario": "Premium Annual (7-day trial) (App Store), free trial, cancelled"
+    },
+    {
+      "customer_user_id": "lumen_demo_00017",
+      "seed_user_id": "u00017",
+      "situation": "EXPIRED_CANCELLED",
+      "why": "expired after voluntary cancel",
+      "platform": "iOS",
+      "store_country": "US",
+      "locale": "en_US",
+      "product": "lumen.annual_trial",
+      "price": {
+        "amount": 49.99,
+        "currency": "USD"
+      },
+      "expires_at": "2026-09-01T07:17:15+00:00",
+      "days_from_now_to_expiry": -63.7,
+      "sale_context": {
+        "acquisition_channel": "meta_ads",
+        "placement": "onboarding",
+        "flow": "onb_trial",
+        "ab_test": "Onboarding: annual trial vs weekly first"
+      },
+      "note": "",
+      "display_name": "Jake (en_US, u00017)",
+      "scenario": "Premium Annual (7-day trial) (App Store), cancelled, expired 63 days ago"
+    },
+    {
+      "customer_user_id": "lumen_demo_00001",
+      "seed_user_id": "u00001",
+      "situation": "NO_PURCHASE",
+      "why": "never purchased",
+      "platform": "Android",
+      "store_country": "IN",
+      "locale": "hi_IN",
+      "product": null,
+      "price": null,
+      "expires_at": null,
+      "days_from_now_to_expiry": null,
+      "sale_context": {
+        "acquisition_channel": "google_uac",
+        "placement": "main",
+        "flow": "main"
+      },
+      "note": "",
+      "display_name": "Aarav (hi_IN, u00001)",
+      "scenario": "No purchase (Google Play)"
+    }
+  ],
+  "es_MX_android_expired_billing_error_days_since_expiry": [
+    [
+      11.3,
+      "lumen_demo_02317"
+    ],
+    [
+      18.2,
+      "lumen_demo_03193"
+    ],
+    [
+      24.3,
+      "lumen_demo_01947"
+    ],
+    [
+      51.0,
+      "lumen_demo_04321"
+    ]
+  ]
+}

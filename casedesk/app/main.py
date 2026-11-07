@@ -525,6 +525,16 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
                 or claims.get("privacy_request") is True,
                 "claims": claims, "llm_error": llm_error}
 
+    def seeded_name(cuid: str) -> str | None:
+        """Demo only: a display name for users of the seeded demo cases (casedesk.seed), for the console."""
+        if not auth.demo_mode():
+            return None
+        try:
+            from casedesk.seed import display_name
+        except Exception:  # noqa: BLE001 — names are a nicety
+            return None
+        return display_name(cuid)
+
     @app.get("/api/cases", dependencies=[console])
     async def list_cases():
         st = S()
@@ -540,7 +550,8 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
                         "first_message": first[:160], "messages": len(msgs),
                         "pending_approval": c["id"] in pending,
                         "used_fallback": (c.get("validator") or {}).get("used_fallback"),
-                        **case_flags(c)})
+                        **case_flags(c),
+                        **({"display_name": n} if (n := seeded_name(c["customer_user_id"])) else {})})
         return {"cases": out}
 
     @app.get("/api/cases/{case_id}", dependencies=[console])

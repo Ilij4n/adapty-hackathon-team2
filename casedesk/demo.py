@@ -6,6 +6,7 @@ except the LLM). Listens on 0.0.0.0, port from --port / env PORT / CASEDESK_PORT
     python -m casedesk.demo                      # LLM backend from CASEDESK_LLM (unset: claude CLI if installed)
     python -m casedesk.demo --llm fake --port 8137
     python -m casedesk.demo --external-mock      # mock Adapty as its own HTTP server on port+1 (inspectable)
+    python -m casedesk.demo --fresh --seed       # clean DB, then scripted demo cases in the console (no LLM calls)
 
 Env defaults it sets when unset: CASEDESK_DEMO=1, CASEDESK_NOW=<seed snapshot time from data/demo_users.json>,
 CASEDESK_DB=./var/casedesk.db, CONSOLE_TOKEN=demo-console (the /console page is pre-authorised in demo mode).
@@ -51,6 +52,8 @@ def main() -> None:
     ap.add_argument("--external-mock", action="store_true", help="serve the mock Adapty API on port+1 instead of in-process")
     ap.add_argument("--open", action="store_true", help="open a browser on /help")
     ap.add_argument("--fresh", action="store_true", help="start from a clean demo: delete the case database (the mock Adapty data always reloads on start)")
+    ap.add_argument("--seed", action="store_true", help="seed the console with scripted demo cases (casedesk.seed; "
+                                                         "no LLM calls), after --fresh and before serving")
     a = ap.parse_args()
 
     os.environ.setdefault("CASEDESK_DEMO", "1")
@@ -67,6 +70,9 @@ def main() -> None:
         os.environ.setdefault("CASEDESK_NOW", now)
     if a.llm:
         os.environ["CASEDESK_LLM"] = a.llm
+    if a.seed:
+        from casedesk import seed
+        seed.main(["--db", os.environ["CASEDESK_DB"]])
 
     import uvicorn
 

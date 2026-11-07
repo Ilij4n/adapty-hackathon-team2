@@ -32,7 +32,7 @@
   }
   const on = (iso) => (iso ? " on " + day(iso) : "");
   const until = (iso) => (iso ? " until " + day(iso) : "");
-  const storeOf = (f) => f.store_name ? "the " + f.store_name.replace(/^the /i, "") : "the store";
+  const storeOf = (f) => { const n = (f.store_name || "").replace(/^the /i, ""); return !n ? "the store" : /^google play$/i.test(n) ? n : "the " + n; };
   // state code -> one sentence, built only from facts the case carries
   const STATE_TEXT = {
     ACTIVE_RENEWING: (f) => "Premium is active and renews by itself" + on(f.renews_on),
@@ -276,7 +276,7 @@
     } else ver.append(el("span", "empty", "Reply still being written."));
     const perReply = el("ul", "info");
     d.messages.filter((m) => m.role === "assistant" && m.meta && m.meta.status !== "pending").forEach((m, i) => {
-      const meta = m.meta; const bits = [meta.used_fallback ? "template fallback" : "LLM reply passed"];
+      const meta = m.meta; const bits = [meta.used_fallback ? "template fallback" : meta.source === "seed" ? "scripted demo reply passed" : "LLM reply passed"];
       const rv = realViolations(meta.violations), le = llmErrors(meta.violations, meta.llm_error);
       if (rv.length) bits.push(rv.length + " violation(s)"); if (le.length) bits.push("LLM unavailable: " + le.join(", "));
       if (meta.status === "error") bits.push("pipeline error");
@@ -350,6 +350,8 @@
   async function refresh() {
     const [cs, ap] = await Promise.all([api("/api/cases"), api("/api/approvals")]);
     S.cases = cs.cases; S.approvals = ap.approvals;
+    // seeded demo cases carry a display name (GET /api/cases, demo only); the picker's names win
+    for (const c of S.cases) if (c.display_name && !S.names[c.customer_user_id]) S.names[c.customer_user_id] = c.display_name;
     const sig = JSON.stringify([S.cases, S.approvals, S.selected]);
     if (sig !== S.sig.list) { S.sig.list = sig; renderList(); }
     await refreshDetail();

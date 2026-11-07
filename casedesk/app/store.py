@@ -94,21 +94,23 @@ class Store:
         return json.dumps(v, default=str, ensure_ascii=False)
 
     # ------------------------------------------------------------------ cases
-    def create_case(self, customer_user_id: str, sale_context: dict) -> str:
-        cid = "c_" + uuid.uuid4().hex[:10]
-        t = now_iso()
+    def create_case(self, customer_user_id: str, sale_context: dict, case_id: str | None = None,
+                    at: str | None = None) -> str:
+        """`case_id` / `at` are for the demo seeder (stable ids, back-dated times); live cases leave them unset."""
+        cid = case_id or "c_" + uuid.uuid4().hex[:10]
+        t = at or now_iso()
         self._x("INSERT INTO cases(id, customer_user_id, created_at, updated_at, sale_context) VALUES (?,?,?,?,?)",
                 (cid, customer_user_id, t, t, self._j(sale_context)))
         return cid
 
-    def update_case(self, case_id: str, **fields) -> None:
+    def update_case(self, case_id: str, *, at: str | None = None, **fields) -> None:
         cols = []
         vals = []
         for k, v in fields.items():
             cols.append(f"{k}=?")
             vals.append(v if isinstance(v, str) or v is None else self._j(v))
         cols.append("updated_at=?")
-        vals.append(now_iso())
+        vals.append(at or now_iso())
         self._x(f"UPDATE cases SET {', '.join(cols)} WHERE id=?", (*vals, case_id))
 
     def get_case(self, case_id: str) -> dict | None:
@@ -134,9 +136,9 @@ class Store:
         return r
 
     # ------------------------------------------------------------------ messages
-    def add_message(self, case_id: str, role: str, text: str, meta: dict | None = None) -> int:
+    def add_message(self, case_id: str, role: str, text: str, meta: dict | None = None, at: str | None = None) -> int:
         cur = self._x("INSERT INTO messages(case_id, role, text, meta, created_at) VALUES (?,?,?,?,?)",
-                      (case_id, role, text, self._j(meta or {}), now_iso()))
+                      (case_id, role, text, self._j(meta or {}), at or now_iso()))
         return int(cur.lastrowid)
 
     def update_message(self, msg_id: int, text: str, meta: dict) -> None:
@@ -218,9 +220,10 @@ class Store:
         return r
 
     # ------------------------------------------------------------------ audit
-    def audit(self, actor: str, event: str, case_id: str | None = None, detail: dict | None = None) -> None:
+    def audit(self, actor: str, event: str, case_id: str | None = None, detail: dict | None = None,
+              at: str | None = None) -> None:
         self._x("INSERT INTO audit(ts, actor, event, case_id, detail) VALUES (?,?,?,?,?)",
-                (now_iso(), actor, event, case_id, self._j(detail or {})))
+                (at or now_iso(), actor, event, case_id, self._j(detail or {})))
 
     def audit_log(self, case_id: str | None = None, limit: int = 200) -> list[dict]:
         if case_id:

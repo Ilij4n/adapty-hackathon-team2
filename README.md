@@ -50,10 +50,22 @@ Set `ADAPTY_API_BASE` and `ADAPTY_SECRET_KEY`. Outside demo mode, set `CASEDESK_
 (the app signs `customer_user_id` with HMAC) and a `CONSOLE_TOKEN`. With `CASEDESK_PUBLIC=1` the server refuses to
 start while either is missing or still set to the demo value.
 
+### Seeded demo data
+
+`python -m casedesk.demo --fresh --seed` (or `python -m casedesk.seed [--db PATH] [--reset] [--count N]`) fills
+the console with 16 realistic cases from the 3 days before the demo clock: 8 languages including Serbian Cyrillic,
+refunds through Apple and Google, a privacy request, a request for a person, a prompt-injection attempt and one
+historical grant request the team denied. Each case belongs to a real Lumen replay user. Their state, facts and
+actions come from the real engine (mock Adapty profile, `classify`, `facts.build`, `policy.decide`), and everything is
+stored the same way live cases are. Only the user's message, the intent and the reply text are scripted. The replies
+are filled from each case's FactSheet and must pass the validator; if one fails, a template answers instead.
+Seeding never calls an LLM. Ava (00239), Marko (00009) and the other `/help` picker users are never seeded, so the
+live demo starts clean. Running it twice adds nothing; `--reset` removes and re-adds only the seeded cases.
+
 ## Tests
 
 ```bash
-uv run pytest -q                                      # 544 tests; 2 skip without the organisers' seed repo
+uv run pytest -q                                      # 558 tests; 2 skip without the organisers' seed repo
 uv run playwright install chromium && uv run python tests/e2e_ui.py   # UI end-to-end
 uv run python eval/run_eval.py --backend claude-cli --concurrency 4  # live eval with real Claude
 ```

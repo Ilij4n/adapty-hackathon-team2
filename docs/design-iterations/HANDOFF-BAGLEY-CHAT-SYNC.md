@@ -170,3 +170,8 @@ console scene drawn with bubbles (v5) or the old strips:
 - Optional, if time allows: an escalated case (Isla) where the suggested reply shows as ghost text in the chat box at
   the bottom and Tab takes it; the reason line above the hint ("Isla asked for a person...").
 - Note from your own guide: a grant request blocks Ava for 90 days, so record the approve take on a fresh demo.
+
+**Footer consistency (Ilijan, ~13:45):** the decision footer now looks the same whichever case is open. In
+`v2/console.view.js` `renderDock`, `featured` was `pend.find(open case) || (S.selected ? null : pend[0])`, so while
+reading an escalated case every request shrank to a compact row; it is now `pend.find(open case) || pend[0]`: the oldest
+request keeps the full row, others stay compact rows under it. E2E OK on v2 and v6.

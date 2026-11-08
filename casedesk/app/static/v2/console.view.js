@@ -227,9 +227,9 @@ window.CaseDeskConsoleView = (h) => {
       const t = el("span", null, `Premium given to ${h.nameOf(a.customer_user_id) || "this user"}${until}`);
       p.append(icon("tick"), t); li.append(p); q.append(li);
     }
-    // the big card belongs to the case on screen; with no case open, the oldest request gets it.
-    // Reading a case with nothing to approve (an escalated one, say), every request stays a compact row.
-    featured = pend.find((a) => a.case_id === S.selected) || (S.selected ? null : pend[0]) || null;
+    // the big card belongs to the case on screen; otherwise the oldest request gets it, so the footer looks the same
+    // whichever case is open (Ilijan: an escalated case and an approval case showed two different footers)
+    featured = pend.find((a) => a.case_id === S.selected) || pend[0] || null;
     if (featured) {
       const { li, want } = bigCard(featured, byCase[featured.case_id] || {});
       q.append(li);

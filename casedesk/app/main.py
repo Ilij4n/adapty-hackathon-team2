@@ -579,7 +579,8 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
 
     @app.get("/api/meta")
     async def meta():
-        return {"demo": auth.demo_mode(), "app_name": APP_NAME}
+        # server_now/clock as in /api/console/meta, so help can show the same (demo) clock as the console
+        return {"demo": auth.demo_mode(), "app_name": APP_NAME, "server_now": _iso(now_utc()), "clock": clock.mode()}
 
     # ------------------------------------------------------------------ console API
     console = Depends(auth.require_console)

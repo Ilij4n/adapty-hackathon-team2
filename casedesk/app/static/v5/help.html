@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b1324" media="(prefers-color-scheme: dark)">
+<title>Lumen Help (Night Shift, bubbles)</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/static/v2/fonts/plex-sans-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/v2/base.css">
+<link rel="stylesheet" href="/static/v2/help.css">
+<!-- v5 "Night Shift, bubbles" = v2 plus one delta: the shared chat spec (the same bubbles as the console) -->
+<link rel="stylesheet" href="/static/v5/chat.css">
+</head>
+<body class="help">
+<div class="stage">
+  <aside class="demo-side" id="demoSide" hidden>
+    <a class="back-home" href="/?v=5"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Lumen</a>
+    <h1 class="side-title">Pick a Lumen subscriber</h1>
+    <p class="demo-note">In the real app the subscriber is signed in already. Here you switch between seeded test accounts; each one is in a different situation in Adapty.</p>
+    <div class="profiles" id="profiles" role="radiogroup" aria-label="Demo subscriber"></div>
+    <p class="demo-foot">Building the app? <a href="/console?v=5" target="_blank" rel="noopener">Open the console</a> to see these cases and decide on requests.</p>
+  </aside>
+
+  <div class="phone" id="phone">
+    <div class="phone-notch" aria-hidden="true"></div>
+    <section class="widget" aria-label="Lumen subscription help">
+      <header class="w-head">
+        <svg class="w-logo" viewBox="0 0 32 32" aria-hidden="true"><use href="/static/lumen.svg#mark"/></svg>
+        <div class="w-title">
+          <strong data-i18n="title">Lumen Help</strong>
+          <span data-i18n="subtitle">Subscription</span>
+        </div>
+        <label class="demo-select" id="demoSelectWrap" hidden>
+          <span class="sr-only">Demo subscriber</span>
+          <select id="demoSelect"></select>
+        </label>
+      </header>
+
+      <div class="w-body" id="scroller">
+        <div class="status-mini" id="statusMini" aria-hidden="true"><div class="sm-bar"><span class="sm-badge"></span></div></div>
+        <section class="status" id="statusCard" aria-live="polite" hidden>
+          <div class="status-top">
+            <span class="st-k" data-i18n="whatWeFound">What we found on your account</span>
+            <span class="readout"><span class="badge" id="stateBadge"></span></span>
+          </div>
+          <dl class="facts" id="facts"></dl>
+          <span class="status-end" aria-hidden="true"></span>
+        </section>
+
+        <div class="intro" id="intro">
+          <h1 data-i18n="introTitle">Hi! What's going on with your subscription?</h1>
+          <p data-i18n="introBody">I can see your Lumen purchases, so I can tell you exactly what's true and what to do next. Write in any language.</p>
+        </div>
+
+        <ol class="log" id="log" aria-live="polite" aria-relevant="additions"></ol>
+      </div>
+
+      <footer class="w-foot">
+        <div class="chips" id="chips" role="group" aria-label="Suggestions"></div>
+        <form class="composer" id="composer" autocomplete="off">
+          <label for="msg" class="sr-only" data-i18n="placeholder">Describe the problem…</label>
+          <textarea id="msg" dir="auto" rows="1" maxlength="2000" data-i18n-placeholder="placeholder" placeholder="Describe the problem…"></textarea>
+          <button class="send" id="send" type="submit" aria-label="Send">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12.5M12.5 6.5 18 12l-5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </form>
+      </footer>
+    </section>
+  </div>
+</div>
+<script src="/static/i18n.js"></script>
+<script src="/static/v2/help.view.js"></script>
+<script src="/static/v5/help.chat.js"></script><!-- wraps the v2 view: the turn caption -->
+<script src="/static/help.js"></script>
+</body>
+</html>

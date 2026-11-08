@@ -1,0 +1,86 @@
+/* =====================================================================================================================
+   v6 "Night Shift, strips": ONE CHAT SPEC for the console transcript (#detail .turns > li.turn) and the help chat
+   (#log > li.msg). v6 is a thin layer: both pages load v2's CSS and JS unchanged, then this file and one small view
+   wrapper each (help-chat.js, console-chat.js). Each screen sets only --chat-fs (console 14px, help 16px); every other
+   size is in em, so the proportions match on both screens.
+     Shape    a strip: the column's full width up to a 72ch measure; a 2px rule on the inline-start side; padding
+              .5em/.55em block, 1em from the rule, .75em at the end; 6px radius on the two end corners only.
+     Head     speaker name (600, .93em) first; console-only flags ("Checked", "Something went wrong") after it; the
+              time at the inline end (Plex Mono 400, .86em, ink-3, 24h HH:MM). Text under it: 1em, line-height 1.5.
+     Who      subscriber: ink-3 rule on the --chat-you step, name in ink (help: t().you; console: their name).
+              Case Desk: amber rule, no fill, name in amber (help: t().helper; console: "Case Desk").
+              Event (grant given or denied): teal rule on teal-soft (ink-3 on sel when denied), one 600 line that
+              names who acted, the time at the end, no speaker. Error: coral rule on coral-soft, name in coral.
+              Typing: the Case Desk strip with three amber squares and the progress words in ink-2.
+     Gaps     .625em between turns, .3em from head to text. A reply's buttons and notes sit inside the amber rule.
+     RTL      a turn takes the direction of its own text: an Arabic turn puts its rule and its name on the right.
+   ===================================================================================================================== */
+
+:root { --chat-you: #e3e8f2; }   /* ink-3 on it 4.55:1; a visible step on white and on help's #edf1f7 */
+@media (prefers-color-scheme: dark) { :root { --chat-you: #16223e; } }   /* ink-3 on it 4.6:1 */
+.console { --chat-fs: var(--t-m); }
+.help { --chat-fs: 16px; }
+
+/* ------------------------------------------------------------ the column */
+#detail .turns, #log { display: flex; flex-direction: column; gap: .625em; font-size: var(--chat-fs); }
+
+/* ------------------------------------------------------------ the strip */
+#detail .turns > .turn, #log > .msg {
+  position: relative; display: grid; gap: .3em; align-content: start; align-self: stretch;
+  min-width: 0; width: auto; max-width: calc(72ch + 1.75em + 2px);
+  padding-block: .5em .55em; padding-inline: 1em .75em;
+  border-inline-start: 2px solid var(--ink-3); border-radius: 0;
+  border-start-end-radius: var(--r-ctl); border-end-end-radius: var(--r-ctl);
+  background: transparent; color: var(--ink);
+}
+#detail .turns > .turn.user, #log > .msg.user { background: var(--chat-you); }
+#detail .turns > .turn.assistant, #log > .msg.bot { border-inline-start-color: var(--amber); }
+#detail .turns > .turn.error, #log > .msg.error { border-inline-start-color: var(--coral); background: var(--coral-soft); }
+
+/* the head: name, flags, time */
+#detail .turn-head, #log .turn-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: .2em .85em; min-width: 0; font-size: 1em; line-height: 1.3; }
+#detail .turn-head > *, #log .turn-head > * { font-size: .86em; }
+#detail .turn-head > .turn-who, #log .turn-head > .turn-who { font-size: .93em; font-weight: 600; color: var(--ink); }
+#detail .turn.assistant .turn-who, #log > .msg.bot .turn-who { color: var(--amber); }
+#detail .turn.error .turn-who, #log > .msg.error .turn-who { color: var(--coral); }
+#detail .turn-head > .t, #log .turn-head > .t, #detail .turn.system .t, #log > .msg.system > .t {
+  margin-inline-start: auto; font-family: var(--font-mono); font-weight: 400; font-size: .86em; line-height: 1.3;
+  color: var(--ink-3); font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+
+/* the words */
+#detail .turns > .turn > .txt, #log > .msg > .bubble {
+  min-width: 0; max-width: none; margin: 0; padding: 0; border: 0; border-radius: 0; background: none;
+  font-size: 1em; font-weight: 400; line-height: 1.5; white-space: pre-wrap; overflow-wrap: break-word; color: var(--ink);
+}
+
+/* an event, not a speaker: one line in the event's colour, the time at the end. The console's "Lumen team" name stays
+   for screen readers only (the sentence itself names who acted). */
+#detail .turns > .turn.system, #log > .msg.system {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: .2em .85em;
+  border-inline-start-color: var(--teal); background: var(--teal-soft);
+}
+#detail .turn.system > .turn-head { display: contents; }
+#detail .turn.system .turn-who { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+#detail .turn.system .t, #log > .msg.system > .t { order: 2; color: var(--ink-2); }   /* ink-3 on teal-soft is under 4.5:1 at night */
+#detail .turns > .turn.system > .txt, #log > .msg.system > .bubble { flex: 1 1 16em; order: 1; font-weight: 600; color: var(--teal); }
+#log > .msg.system > .bubble::before { content: none; }
+#detail .turns > .turn.system.denied, #log > .msg.system.denied { border-inline-start-color: var(--ink-3); background: var(--sel); }
+#detail .turns > .turn.system.denied > .txt, #log > .msg.system.denied > .bubble { font-weight: 400; color: var(--ink-2); }
+
+/* Case Desk is writing: three amber squares and the step in words (help's typing row; the console's pending reply) */
+#detail .turns > .turn > .txt.typing, #log > .msg > .bubble.typing {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .3em .625em; font-size: .94em; color: var(--ink-2); white-space: normal;
+}
+#detail .typing .dots, #log .typing .dots { display: inline-flex; gap: .25em; }
+#detail .typing .dots i, #log .typing .dots i { width: .375em; height: .375em; border-radius: 1px; background: var(--amber); animation: chat-blink 1.2s infinite ease-in-out; }
+#detail .typing .dots i:nth-child(2), #log .typing .dots i:nth-child(2) { animation-delay: .15s; }
+#detail .typing .dots i:nth-child(3), #log .typing .dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes chat-blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { #detail .typing .dots i, #log .typing .dots i { animation: none; opacity: .7; } }
+
+/* ------------------------------------------------------------ help only: what sits inside the Case Desk strip */
+#log > .msg > .actions { margin-top: .3em; }
+#log > .msg > .note { padding: 0; border: 0; font-size: .875em; }
+#log > .msg > .note.grant { padding: .5em .75em; border-radius: var(--r-ctl); }
+#log > .msg > .steps { border-radius: var(--r-ctl); }

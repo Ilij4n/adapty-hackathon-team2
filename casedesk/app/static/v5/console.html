@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b1324" media="(prefers-color-scheme: dark)">
+<title>Case Desk: console (Night Shift, bubbles)</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/static/v2/fonts/plex-sans-latin-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/v2/base.css">
+<link rel="stylesheet" href="/static/v2/console.css">
+<link rel="stylesheet" href="/static/v2/rules.css"><!-- rules drawer (rules.js) -->
+<!-- v5 "Night Shift, bubbles" = v2 plus one delta: the shared chat spec (bubbles, the same as Lumen Help) -->
+<link rel="stylesheet" href="/static/v5/chat.css">
+</head>
+<body class="console">
+<a class="skip" href="#dock" id="skipQ">Jump to approvals</a>
+<header class="top">
+  <a class="mark" href="/?v=5" title="Back to the Lumen landing page"><span class="mk" aria-hidden="true"></span><span class="cd">Case Desk</span><span class="for">for Lumen</span></a>
+  <div class="top-meta" id="topMeta"></div>
+  <span class="live" id="live" aria-live="polite"></span>
+</header>
+
+<section class="gate" id="gate" hidden>
+  <form id="gateForm" class="gate-form">
+    <h1>Console token</h1>
+    <p>Enter the <code>CONSOLE_TOKEN</code> this server was started with.</p>
+    <label class="sr-only" for="tok">Console token</label>
+    <input id="tok" type="password" autocomplete="off" spellcheck="false" required>
+    <button class="btn primary" type="submit">Open the console</button>
+    <p class="err" id="gateErr" hidden>That token was not accepted. Check the server's CONSOLE_TOKEN and try again.</p>
+  </form>
+</section>
+
+<main class="app" id="app" hidden>
+  <section class="list" aria-labelledby="cH">
+    <div class="list-top">
+      <div class="list-head">
+        <h2 id="cH">Cases</h2>
+        <span class="count" id="cCount">0</span>
+        <span class="keys" aria-hidden="true"><kbd>j</kbd><kbd>k</kbd> move</span>
+      </div>
+      <div class="filters" id="filters" role="group" aria-label="Filter cases"></div>
+    </div>
+    <ol class="c-list" id="cases"></ol>
+    <p class="empty" id="cEmpty" hidden>No cases yet. Open <a href="/help?v=5" target="_blank" rel="noopener">Lumen Help</a> and send a message; it shows up here.</p>
+  </section>
+
+  <section class="detail" id="detail">
+    <div class="idle">
+      <h2>No case open</h2>
+      <p>Pick a case to see who wrote in, their subscription in plain words, the conversation, and what Case Desk checked before it answered.</p>
+      <p class="keys"><kbd>j</kbd><kbd>k</kbd> move through the cases, <kbd>e</kbd> shows the evidence</p>
+    </div>
+  </section>
+
+  <aside class="dock is-empty" id="dock" aria-labelledby="qH" tabindex="-1">
+    <div class="dock-head">
+      <h2 id="qH"><span class="q-n" id="qCount">0</span> <span id="qWord">waiting for your OK</span></h2>
+      <span class="q-days" id="qDays"></span>
+      <span class="keys" aria-hidden="true"><kbd>a</kbd> give <kbd>d</kbd> deny <kbd>j</kbd><kbd>k</kbd> move</span>
+    </div>
+    <ol class="q-list" id="queue"></ol>
+    <p class="empty" id="qEmpty">When Case Desk asks to give someone premium, the request waits here for your OK.</p>
+  </aside>
+</main>
+<script src="/static/v2/rules.js"></script><!-- rules drawer: GET/PUT /api/rules -->
+<script src="/static/v2/console.view.js"></script>
+<script src="/static/v5/console.chat.js"></script><!-- wraps the v2 view: typing row, v5 links -->
+<script src="/static/console.js"></script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+/* =====================================================================================================================
+   v5 "Night Shift, bubbles": ONE CHAT SPEC for both screens. v5 is v2 plus this file (and two small view wrappers).
+   Loaded last by /console?v=5 and /help?v=5, so the console's conversation and Lumen Help's are drawn by the same rules.
+   Lengths are em of --chat-fs (console 14px, help 16px): the screens differ in size, never in proportion.
+   1. Sides: the subscriber's words on the inline-end side, the helper's (Case Desk, white-labelled Lumen Help) on the
+      inline-start side, both on --chat-ground. A turn is at most min(88%, 72ch) wide; its bubble hugs the words.
+   2. Shapes: subscriber = --u-bg, .75em corners, a .25em tail corner at the bottom of its own side. Helper = --b-bg,
+      a 2px amber rule on its side with 2px corners there, .75em on the far side. Text 1em/1.45, padding .5625/.8125em.
+   3. Caption under the turn, on its side, at 6/7 of the text: the speaker (600; the helper's name in amber), then the
+      time (tabular, ink-3), then the console's check line (teal tick, coral cross). Help has no clock: speaker only.
+   4. System = a full-width teal-soft line with a square lamp and no speaker (denied: neutral). Error = the helper's
+      shape in coral-soft with a coral rule. Typing = the helper's shape, three amber squares, the progress words in
+      ink-2 at 15/16; no caption until the reply lands.
+   5. RTL: the words run in their own direction (dir=auto); side, tail, rule and caption follow the conversation.
+   Markup: help draws li.msg.{user|bot|system|error} > .bubble + .msg-cap; the console (v2's view) draws
+   li.turn.{user|assistant|system} > .turn-head + .txt. Each rule below names both, side by side.
+   ===================================================================================================================== */
+
+.help, .console {
+  --chat-ground: #edf1f7;
+  --u-bg: #cfd9ea;          /* the subscriber's words */
+  --b-bg: #ffffff;          /* the helper's words, with the amber rule */
+}
+@media (prefers-color-scheme: dark) {
+  .help, .console { --chat-ground: #0b1324; --u-bg: #1f2e52; --b-bg: #121d36; }
+}
+.help { --chat-fs: 16px; --w-ground: var(--chat-ground); }
+.console { --chat-fs: var(--t-m); }
+
+/* ------------------------------------------------------------ the conversation */
+:is(.help .log, .console .turns) { display: flex; flex-direction: column; gap: 1em; font-size: var(--chat-fs); line-height: 1.45; }
+/* the console: the subscriber's chat ground, full bleed across the case column; the turns keep to a 56em column */
+.console .turns {
+  margin: 0; padding-block: 20px 24px;
+  padding-inline: var(--gut) max(var(--gut), calc(100% - var(--gut) - 56em));
+  background: var(--chat-ground);
+}
+.console .readout:has(+ .turns) { border-bottom-color: transparent; }   /* the ground step already separates them */
+
+/* ------------------------------------------------------------ a turn */
+:is(.help .msg, .console .turn) {
+  display: grid; gap: .5em; min-width: 0; max-width: min(88%, 72ch);
+  padding: 0; border: 0; font-size: 1em;
+}
+:is(.help .msg.user, .console .turn.user) { align-self: flex-end; }
+:is(.help .msg.bot, .console .turn.assistant) { align-self: flex-start; }
+
+/* the bubble */
+:is(.help .msg > .bubble, .console .turn > .txt) {
+  min-width: 0; max-width: none; margin: 0; padding: .5625em .8125em; border: 0; border-radius: .75em;
+  font-size: 1em; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--ink);
+}
+:is(.help .msg.user > .bubble, .console .turn.user > .txt) { justify-self: end; background: var(--u-bg); }
+:is(.help .msg.bot > .bubble, .console .turn.assistant > .txt) { justify-self: start; background: var(--b-bg); }
+/* the shape follows the conversation (the turn), never the message's own direction (the bubble is dir=auto) */
+:is(.help .msg.user, .console .turn.user):dir(ltr) > :is(.bubble, .txt) { border-bottom-right-radius: .25em; }
+:is(.help .msg.user, .console .turn.user):dir(rtl) > :is(.bubble, .txt) { border-bottom-left-radius: .25em; }
+:is(.help .msg.bot, .console .turn.assistant):dir(ltr) > :is(.bubble, .txt) {
+  border-left: 2px solid var(--amber); border-top-left-radius: 2px; border-bottom-left-radius: 2px;
+}
+:is(.help .msg.bot, .console .turn.assistant):dir(rtl) > :is(.bubble, .txt) {
+  border-right: 2px solid var(--amber); border-top-right-radius: 2px; border-bottom-right-radius: 2px;
+}
+/* error: the helper's shape in coral (help: li.msg.error; console: the reply flagged "Something went wrong") */
+:is(.help .msg.error, .console .turn.assistant:has(> .turn-head .turn-flag.bad)) > :is(.bubble, .txt) {
+  background: var(--coral-soft); color: var(--coral); border-color: var(--coral);
+}
+
+/* ------------------------------------------------------------ the caption: who, when, and (console) the check */
+:is(.help .msg > .msg-cap, .console .turn > .turn-head) {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: .125em .75em; margin-top: -.25em;
+  font-size: .857em; line-height: 1.35; color: var(--ink-3);
+}
+.console .turn > .turn-head { order: 2; }   /* v2 writes the head first; the spec puts it under the bubble */
+:is(.help .msg.user > .msg-cap, .console .turn.user > .turn-head) { justify-content: flex-end; }
+:is(.help .msg-cap .who, .console .turn-head .turn-who) { font-size: 1em; font-weight: 600; color: var(--ink-2); }
+:is(.help .msg.bot > .msg-cap .who, .console .turn.assistant .turn-who) { color: var(--amber); }
+:is(.help .msg.error > .msg-cap .who, .console .turn.assistant:has(> .turn-head .turn-flag.bad) .turn-who) { color: var(--coral); }
+.console .turn-head .t { order: 1; margin-inline-start: 0; font-size: 1em; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.console .turn-head .checked { order: 2; align-items: baseline; gap: .35em; }
+.console .turn-head .checked .ic { width: 1.1em; height: 1.1em; align-self: center; }
+.console .turn-head .turn-flag { order: 3; }
+
+/* ------------------------------------------------------------ system lines: the app's own voice, full width */
+:is(.help .msg.system, .console .turn.system) { align-self: stretch; max-width: none; }
+:is(.help .msg.system > .bubble, .console .turn.system) {
+  display: flex; gap: .625em; align-items: baseline; margin: 0; padding: .5625em .8125em;
+  background: var(--teal-soft); color: var(--teal); border: 0; border-radius: var(--r-ctl);
+  font-size: .9375em; font-weight: 600; line-height: 1.45;
+}
+:is(.help .msg.system > .bubble, .console .turn.system)::before {
+  content: ""; flex: none; width: .625em; height: .625em; border-radius: 2px; background: currentColor; transform: translateY(-1px);
+}
+:is(.help .msg.system.denied > .bubble, .console .turn.system.denied) { background: var(--sel); color: var(--ink-2); font-weight: 400; }
+.console .turn.system > .turn-head { display: contents; }
+.console .turn.system .turn-who { display: none; }   /* the line names the team itself */
+.console .turn.system > .txt {
+  order: 1; flex: 1; padding: 0; background: none; border: 0; border-radius: 0;
+  color: inherit; font-size: 1em; font-weight: inherit; max-width: none;
+}
+.console .turn.system .t { order: 2; margin-inline-start: auto; font-size: var(--t-xs); font-weight: 400; color: var(--ink-3); }
+
+/* ------------------------------------------------------------ typing: the helper's shape, three amber squares */
+:is(.help .bubble.typing, .console .turn.pending > .txt) {
+  display: inline-flex; align-items: center; gap: .625em; color: var(--ink-2); font-size: .9375em;
+}
+.console .turn.pending > .turn-head { display: none; }   /* no caption until the reply lands */
+:is(.help, .console) .typing-dots, .help .typing .dots { display: inline-flex; gap: 4px; }
+:is(.help .typing .dots i, .console .typing-dots i) {
+  width: 6px; height: 6px; border-radius: 1px; background: var(--amber); animation: blink 1.2s infinite ease-in-out;
+}
+:is(.help .typing .dots i, .console .typing-dots i):nth-child(2) { animation-delay: .15s; }
+:is(.help .typing .dots i, .console .typing-dots i):nth-child(3) { animation-delay: .3s; }
+@keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+
+@media (max-width: 979px) {
+  .console .turns { padding-block: 16px 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(.help .typing .dots i, .console .typing-dots i) { animation: none; opacity: 1; }
+}

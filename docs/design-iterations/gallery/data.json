@@ -1,0 +1,66 @@
+{
+  "text": {
+    "H1": "Four directions for Case Desk",
+    "LEAD1": "Each iteration pairs the developer console with the subscriber help chat as one design system. All four run in the real app on the same data and the same logic; only the markup, styles and view layer differ, and every one passes the end-to-end test.",
+    "LEAD2": "Recommended for the demo: Board (v4). If the app should feel continuous with the pitch deck, Night Shift (v2). The current design is at the end for comparison.",
+    "RUN": "cd ~/Developer/adapty-hackathon/casedesk-design-iterations\nCASEDESK_DB=/tmp/cd-design.db \\\n  uv run python -m casedesk.demo --port 8300 --fresh --seed\n\nlocalhost:8300/console?v=1   (to v=4)\nlocalhost:8300/help?v=1      (to v=4)\nlocalhost:8300/console       current design",
+    "RUNNOTE": "To ship one, start the demo with CASEDESK_DESIGN=4 (or 1 to 3): /console and /help then serve that iteration, and ?v=0 still shows the current design. Everything is on the branch design/iterations; nothing is merged or pushed.",
+    "TABLE": "<table><thead><tr><th scope=\"col\"><span class=\"sr-only\">Aspect</span></th><th scope=\"col\">Statement (v1)</th><th scope=\"col\">Night Shift (v2)</th><th scope=\"col\">Correspondence (v3)</th><th scope=\"col\">Board (v4)</th></tr></thead><tbody><tr><th scope=\"row\">Stance</th><td>The account as a statement, on one time spine</td><td>The deck's control room, after dark</td><td>A calm mail client for a humane inbox</td><td>A Swiss triage board</td></tr><tr><th scope=\"row\">Console layout</th><td>Grant slips and index on the left; the case as one full-width sheet with the spine beside the conversation</td><td>Cases, the case, the evidence column; full height</td><td>Folder rail, index, wide reading pane</td><td>Four lanes across the top; the case as a full-width spread below</td></tr><tr><th scope=\"row\">Approvals</th><td>Tear-off slips, stamped on approve</td><td>A decision dock along the bottom</td><td>“Needs your OK” pinned atop the index</td><td>The first lane</td></tr><tr><th scope=\"row\">Technical record</th><td>Folded; claims beside the FactSheet rows</td><td>Always visible as the evidence column</td><td>Unfolds in place</td><td>Folded below the spread</td></tr><tr><th scope=\"row\">Type</th><td>Source Serif 4 and Source Sans 3</td><td>IBM Plex Sans and Plex Mono</td><td>Commissioner</td><td>Geologica and Ubuntu Sans Mono</td></tr><tr><th scope=\"row\">Colour</th><td>Cool paper, Prussian blue, stamp green</td><td>Deck navy; amber, teal, coral</td><td>Eucalyptus, deep green, marigold</td><td>White, true black, Lumen coral and blue</td></tr><tr><th scope=\"row\">Density</th><td>Medium</td><td>Highest</td><td>Lowest</td><td>Compact board, roomy spread</td></tr><tr><th scope=\"row\">Motion</th><td>The stamp; the spine draws in once</td><td>Changed values flash; the dock rises</td><td>Sections unfold</td><td>A ticket travels to its new lane</td></tr><tr><th scope=\"row\">Help chat</th><td>A printed receipt, serif replies</td><td>Lumen at night, status band</td><td>Status folded into a sentence, 17px text</td><td>The state as a headline, a grant tracker</td></tr></tbody></table>",
+    "FOOTER": "Screenshots are 1440 by 900 desktop and 390 phone (at 2x), light and dark, taken by tests/design_shots.py against a fresh seeded demo with template replies on the demo's frozen clock (4 Nov 2026). Built overnight on 8 Nov 2026 with Claude Code: design research, four parallel implementers, an independent senior design review of each iteration and one fix round."
+  },
+  "iterations": [
+    {
+      "v": "v4", "short": "v4", "name": "Board", "recommended": true,
+      "lede": "Triage first. No sidebar: the top of the screen is a board of lanes sorted by what each case needs, and the selected case opens as a full-width spread below it.",
+      "why": [
+        "A judge reads it in one look: 1 needs your OK, 2 need a person, 1 privacy, 14 answered. The approve button is the first thing in the first lane; on approve, Ava's ticket travels to Answered and the numerals tick. The spread sets the status sentence at 40px beside the conversation, with the checked verdict and what Case Desk did above the fold.",
+        "Swiss and typographic: Geologica on white, true black for headlines, Lumen's own coral as the only signal for “needs you” and Lumen's blue for the subscriber's voice. It holds up on a projector and is the furthest from generic SaaS.",
+        "Help leads with the account state as a headline, shows the facts as large figures, and draws a grant request as a three-step tracker (Requested, The team reviews, Given) that completes when the team approves."
+      ],
+      "facts": [["Console", "Four lanes across the top, the case as a full-width spread"], ["Type", "Geologica, Ubuntu Sans Mono for ids only"], ["Motion", "A ticket travels to its new lane; numerals tick"]],
+      "palette": [["Paper", "#FFFFFF"], ["Ground", "#F3F3F1"], ["Black", "#000000"], ["Coral", "#E8472B"], ["Blue", "#2747D9"], ["Green", "#1C7A47"]]
+    },
+    {
+      "v": "v2", "short": "v2", "name": "Night Shift",
+      "lede": "The pitch deck's control room after dark. A dense three-pane instrument in the deck's navy, with its colour grammar: amber needs you, teal is checked, coral is blocked.",
+      "why": [
+        "It is the direction where the facts, the actions policy chose and the reply the checker passed sit on one screen, which is exactly the sentence the demo script says. Every pending grant lives in a decision dock along the bottom; its amber button is the brightest thing on screen, and the dock is gone when nothing waits.",
+        "It flows straight out of the slides: the same navy, IBM Plex and colour meanings, so the jump from deck to live demo feels like one product. Day shift (light) is designed too, for a bright room.",
+        "Help is Lumen at night: a compact status band, replies on an amber rule, the phone over a still from the deck. j and k move through cases in the console."
+      ],
+      "facts": [["Console", "Cases, the case, an always-open evidence column; a decision dock"], ["Type", "IBM Plex Sans, Plex Mono for literal values"], ["Motion", "Changed values flash once; the dock rises"]],
+      "palette": [["Night", "#070B14"], ["Navy", "#0B1324"], ["Raised", "#101A30"], ["Amber", "#FFA84C"], ["Teal", "#3FD0C0"], ["Coral", "#FF7A6B"]]
+    },
+    {
+      "v": "v1", "short": "v1", "name": "Statement",
+      "lede": "The account as a statement. Every case reads on one dated spine: what the store did, when the user wrote, what Case Desk did, what waits for you.",
+      "why": [
+        "It regroups the case by time instead of by panel, which is how a developer reasons about a billing complaint: bought 12 Oct, charged 15 Oct, renewal failed 22 Oct, Ava wrote 8 Nov. The status sentence, set large in Source Serif 4, is the one bold thing on the page.",
+        "It shows the pitch's central claim as layout: the spine's facts come from Adapty, the conversation sits beside them, and the user's claims sit on the FactSheet rows that confirm or contradict them. Approving stamps the grant slip, which then folds away.",
+        "Help is a printed receipt: plan, raw price and key dates on a mini spine, Case Desk's replies as serif text on paper, and the grant as a slip that receives a dated stamp."
+      ],
+      "facts": [["Console", "Slips and index on the left, the case as one full-width sheet"], ["Type", "Source Serif 4, Source Sans 3"], ["Motion", "The Approved stamp; the spine draws in once"]],
+      "palette": [["Paper", "#F5F6F4"], ["Sheet", "#FFFFFF"], ["Ink", "#1B2430"], ["Prussian", "#1D3E66"], ["Stamp", "#2D6B4A"], ["Ochre", "#875700"]]
+    },
+    {
+      "v": "v3", "short": "v3", "name": "Correspondence",
+      "lede": "Support as correspondence. A calm mail client in the lineage of Things and Front: big humane type, a lot of air, each case read like a letter.",
+      "why": [
+        "The most legible of the four and the friendliest for a developer who is not deep in billing: a folder rail with the four filters, an index with “Needs your OK” pinned on top, and a wide reading pane. Details unfold in place only when asked.",
+        "Each letter opens with the correspondent's name in Commissioner's flared display weight, the one memorable element, then a plain sentence: writes in Serbian, bought on the App Store on 22 Sept for 36.99 EUR. Once a grant is approved, the outcome appears right under the status.",
+        "Help is the gentlest: the status folded into one sentence under the header that unfolds to every fact, 17px text, and suggestions that wrap instead of scrolling."
+      ],
+      "facts": [["Console", "Folder rail, index, wide reading pane"], ["Type", "Commissioner, one family"], ["Motion", "Sections unfold in place, nothing else moves"]],
+      "palette": [["Eucalyptus", "#EEF2EE"], ["Sheet", "#FBFCFA"], ["Ink", "#1E2A24"], ["Green", "#2C6A4F"], ["Marigold", "#8A5A00"], ["Blue gum", "#2A6276"]]
+    },
+    {
+      "v": "v0", "short": "now", "name": "Current design",
+      "lede": "What the app ships today, kept unchanged as the reference.",
+      "why": [
+        "Queue and cases on the left, one case card capped at 760px on the right, the technical record in a “Details (for the curious)” disclosure. Bricolage Grotesque, Onest and JetBrains Mono."
+      ],
+      "facts": [["Console", "Queue and cases left, one card capped at 760px"], ["Type", "Bricolage Grotesque, Onest, JetBrains Mono"]],
+      "palette": []
+    }
+  ]
+}

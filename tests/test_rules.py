@@ -124,7 +124,8 @@ def test_auto_within_limit_is_approved_at_once(client):
     assert d["pending_approval"] is False and d["approval_id"] is None
     assert d["auto_granted"]["rule"] == "rule: auto up to 3 days"
     # the reply says it is active, never that it was requested; the validator saw no violation
-    assert "is active on your account now" in d["reply"] and "7 November 2026" in d["reply"]
+    assert d["reply"].startswith("Good news: a 3-day courtesy extension is active on your account now, until 7 November 2026.")
+    assert d["state_badge"]["code"] == "GRANTED_BY_DEVELOPER"   # the card is re-read after the grant
     assert "isn't active yet" not in d["reply"] and "asked the team" not in d["reply"].lower()
     assert all(a["kind"] != "PROPOSE_GRANT" for a in d["actions"])
     case = client.get(f"/api/cases/{d['case_id']}", headers=CON).json()

@@ -422,7 +422,7 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
         pending = approval_id is not None and not auto_given
         reply_text = rep.text
         if auto_given:  # said only after Adapty confirmed the grant; the validated reply above never mentions it
-            reply_text = (rep.text.rstrip() + " " + rules.active_sentence(language, *auto_given)).strip()
+            reply_text = (rules.active_sentence(language, *auto_given) + " " + rep.text.strip()).strip()
         raw = list(getattr(rep, "violations", []) or [])
         validator = {"used_fallback": bool(getattr(rep, "used_fallback", False)),
                      "violations": [v for v in raw if not str(v).startswith("llm_error")],
@@ -510,6 +510,8 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
         except asyncio.TimeoutError:
             result = {"reply": None, "reply_status": "pending", "actions": [], "pending_approval": False,
                       "language": None, "approval_id": None, "intent": None}
+        if result.get("auto_granted"):  # rules: the grant is already live, so the status card shows it now
+            _, _, block = status_block(await load_profile(cuid), now_utc())
         return {"case_id": case_id, "message_id": msg_id, **block, **result,
                 "approvals": approvals_view(cuid)}
 

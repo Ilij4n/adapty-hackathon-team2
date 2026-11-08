@@ -90,7 +90,7 @@ To make an option the default without moving files: start the demo with `CASEDES
 - One shared backend change: `/api/meta` now returns `server_now` and `clock`, like `/api/console/meta`, so help can
   show the same demo clock as the console.
 
-## Checks run on this branch (11:15, before your team-reply merge)
+## Checks run on this branch
 
 - `uv run pytest -q`: 707 passed, 3 skipped.
 - `uv run python tests/e2e_ui.py --variant 5`, `--variant 6`, and the default: E2E OK.
@@ -99,8 +99,10 @@ To make an option the default without moving files: start the demo with `CASEDES
 - The Give button was checked on screen at 360 to 1920px, light and dark, with 1 and 8 pending grants, the case open
   or not, the evidence panel open or closed.
 
-After your team-reply merge (b96d775), the follow-up commit styles `li.msg.team` (help) and `.turn.team` (console) in
-both chat specs and re-runs the same checks; pull before judging.
+After your team-reply merge (b96d775), a follow-up commit styles the team speaker in both chat specs: `li.msg.team`
+(help) and `.turn.team` (console), plus the console's "Write to ..." reply box sitting on the chat column. Re-run at
+11:35: pytest 714 passed, 5 skipped; e2e `--variant 5` and `--variant 6` E2E OK; design_shots v5 and v6 26 shots each,
+0 problems.
 
 ## Known gaps
 

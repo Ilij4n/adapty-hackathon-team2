@@ -1,7 +1,8 @@
 /* Lumen Help, v5 "Night Shift, bubbles": a thin layer over v2's help view (static/v2/help.view.js, loaded first).
    It adds the shared chat caption (static/v5/chat.css, point 3) under every subscriber and helper turn: who said it,
    in the subscriber's language (t().you, t().helper). Help has no clock, so the caption carries no time.
-   Not on the typing row (the caption arrives with the reply) and not on system lines. Text only, never innerHTML. */
+   Not on the typing row (the caption arrives with the reply), not on system lines, and not on the team's turns
+   (help.js already names the team in span.team-who; chat.css moves it into the caption slot). Text only. */
 (() => {
   "use strict";
   const base = window.CaseDeskHelpView;
@@ -10,7 +11,7 @@
     const log = document.getElementById("log");
     const who = (li) => (li.classList.contains("user") ? h.t().you : h.t().helper);
     function caption(li) {
-      if (!li || li.nodeType !== 1 || !li.classList.contains("msg") || li.classList.contains("system")) return;
+      if (!li || li.nodeType !== 1 || !li.classList.contains("msg") || li.classList.contains("system") || li.classList.contains("team")) return;
       if (li.querySelector(":scope > .bubble.typing, :scope > .msg-cap")) return;
       const c = h.el("div", "msg-cap"); c.append(h.el("span", "who", who(li))); li.append(c);
     }

@@ -1,6 +1,7 @@
 /* Lumen Help, v6 "Night Shift, strips": a thin layer over v2's help view (static/v2/help.view.js, loaded first).
    The conversation is drawn as the console's strips (v6/chat.css, "one chat spec"). help.js still makes
-   li.msg.<kind> > .bubble; this wrapper gives each turn its head (t().you or t().helper, and the time) and the
+   li.msg.<kind> > .bubble; this wrapper gives each turn its head (t().you, t().helper or help.js's span.team-who for
+   the app's team, and the time) and the
    direction of its own text, so an Arabic turn puts its rule on the right. Everything else is v2's view unchanged. */
 (() => {
   "use strict";
@@ -22,11 +23,23 @@
     // the direction of a text is the direction of its first strong letter (as dir="auto" decides it)
     const RTL_CH = /[֐-ࣿיִ-﷿ﹰ-﻿]/, LETTER = /\p{L}/u;
     function rtlText(s) { for (const ch of String(s || "")) { if (RTL_CH.test(ch)) return true; if (LETTER.test(ch)) return false; } return false; }
-    const kindOf = (li) => li.classList.contains("system") ? "system" : li.classList.contains("user") ? "user" : "bot";
+    const kindOf = (li) => li.classList.contains("system") ? "system" : li.classList.contains("user") ? "user" : li.classList.contains("team") ? "team" : "bot";
     const whoText = (kind) => (kind === "user" ? h.t().you : h.t().helper);
     function timeEl(ms) {
       const d = new Date(ms); const t = el("time", "mono t", pad(d.getHours()) + ":" + pad(d.getMinutes()));
       t.dateTime = d.toISOString(); t.translate = false; return t;
+    }
+
+    // a team message can be older than the moment it arrives here (the widget shows the team's last unanswered word
+    // on open): read its real time from GET /api/messages, which help.js polls with the same signed identity
+    function teamTime(mid, t) {
+      const id = Number(mid); if (!id || !h.S.user) return;
+      const q = `customer_user_id=${encodeURIComponent(h.S.user)}&signature=${encodeURIComponent(h.S.sig || "")}&after=${id - 1}`;
+      fetch(`/api/messages?${q}`).then((r) => (r.ok ? r.json() : null)).then((d) => {
+        const m = d && (d.messages || []).find((x) => x.message_id === id);
+        const at = m && new Date(m.created_at);
+        if (at && !isNaN(at)) { t.textContent = pad(at.getHours()) + ":" + pad(at.getMinutes()); t.dateTime = at.toISOString(); }
+      }).catch(() => { /* keep the arrival time */ });
     }
 
     // idempotent: the observer calls it for every new turn, renderActions again when a reply replaces the typing row
@@ -42,6 +55,17 @@
         return;
       }
       let head = li.querySelector(":scope > .turn-head");
+      if (kind === "team") { // a person from the app's team: help.js's own span.team-who becomes the name on the head line
+        if (head) return;
+        head = el("div", "turn-head");
+        const who = li.querySelector(":scope > .team-who") || el("span", "team-who", "Lumen team");
+        who.classList.add("turn-who");
+        const t = timeEl(+li.dataset.t);
+        head.append(who, t);
+        li.prepend(head);
+        teamTime(li.dataset.mid, t);
+        return;
+      }
       if (head && !fresh) return;
       if (head) head.remove();
       head = el("div", "turn-head");
@@ -59,7 +83,7 @@
     };
     const onLang = v.onLang;
     v.onLang = (lang, strings) => { // the reply may switch the widget's language: the names follow
-      if (log) log.querySelectorAll(":scope > .msg").forEach((li) => { const w = li.querySelector(":scope > .turn-head > .turn-who"); if (w) w.textContent = whoText(kindOf(li)); });
+      if (log) log.querySelectorAll(":scope > .msg").forEach((li) => { const k = kindOf(li), w = li.querySelector(":scope > .turn-head > .turn-who"); if (w && (k === "user" || k === "bot")) w.textContent = whoText(k); });
       if (onLang) onLang(lang, strings);
     };
     return v;

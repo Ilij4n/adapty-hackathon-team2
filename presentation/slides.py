@@ -12,7 +12,7 @@ dict(id="title", bg="live", secs=18, html=f"""
 <h1 class="mega">Case <span class="amb">Desk</span></h1>
 <p class="hook" data-step="1">Every subscription app has a support inbox<br><span class="amb">nobody talks about.</span></p>
 <div class="team">{TEAM}</div>
-""", notes="""Good evening. We're Team 2: I'm Mateja Subin, and with me are Andrija Milikić and Ilijan Kojović. This is Case Desk. [click]
+""", notes="""Good afternoon. We're Team 2: I'm Mateja Subin, and with me are Andrija Milikić and Ilijan Kojović. This is Case Desk. [click]
 Every subscription app has a support inbox nobody talks about: the messages that start with "you charged me". That inbox is what we built for."""),
 
 dict(id="brief", bg="live", secs=22, html="""

@@ -1,12 +1,13 @@
-/* Scene 5 — "Lucía and Ava" (4 beats: Lucía, Ava, console, approve). Stage "the money room": two phones (white Lumen Help
-   screens, s5_lh copied from scene 3's s3_lh; Lucía's in the localized Spanish UI) on glowing pedestals, the developer's desk
-   at the back. Beat 0 Lucía (payment failed, update-payment steps, stamp "no grant: never paid", the gift box's lid slams).
-   Beat 1 Ava (paid → billing error → "requested, not active yet", an envelope flies to the developer). Beats 2–3 (REV 2):
-   the REDESIGNED console grows out of the laptop (docs/screens/console-pending-1280.png / console-approved-1280.png): left
-   "Waiting for approval" card with ONE green "Give Ava 3 days of premium" + Deny, "Cases"; right one calm case card. Amber
-   outline on the status line (facts) → "What Case Desk did" (actions) → reply + "Checked" pill (checker). Beat 3: a cursor
-   clicks the green button, the left card goes ("Nothing waiting for you."), the green "Premium given · expires 7 Nov,
-   00:12" box appears, and Ava's white phone pops up with the "Good news" note. Helpers are scene-local (s5_). */
+/* Scene 5 — "Lucía and Ava" (4 beats: Lucía, Ava, console, approve). Stage "the money room": two phones on glowing pedestals
+   (Lumen Help in the team's Night Shift dark style, s5_lh; Lucía's in the localized Spanish UI), the developer's desk at the
+   back. Beat 0 Lucía (payment failed, update-payment steps, stamp "no grant: never paid", the gift box's lid slams). Beat 1
+   Ava (paid → billing error → "requested, not active yet", an envelope flies to the developer). Beats 2–3 (NIGHT SHIFT,
+   case-desk-design v2 + the bagley/night-shift-fixes spec): the console grows out of the laptop into a 1000 x 460 window:
+   cases list ("Needs a person" pinned), the calm case (evidence collapsed), the count-first dock "1 waiting for your OK".
+   A spotlight moves facts → "What Case Desk did" → the checked reply. Then the window zooms onto the big decision card, the
+   cursor clicks the amber "Give Ava 3 days of premium" on 'approve', amber→white→teal flash, the card collapses into
+   "✓ Premium given to Ava · until 7 Nov 2026", and Ava's Night Shift phone pops up with "Premium given by the team".
+   Helpers are scene-local (s5_). */
 (()=>{
 const s5_E=(a,b,x)=>sm(cl((x-a)/(b-a)));
 const s5_ROSE='255,143,163',s5_CYAN='95,230,255';
@@ -99,31 +100,31 @@ function s5_pose(o,t,c,i,T,A){const p=t-c(i);o.lp.pose(T);s5_shot(o.camera,s5_SH
    {link,a} | {note,kind:'amber'|'green',a}], chips, ph (input placeholder), fs} */
 const s5_FNT=(w,fs)=>`${w} ${fs}px "IBM Plex Sans",sans-serif`;
 function s5_lh(x,W,H,o={}){const dw=o.dw||300,u=W/dw,w=dw,h=H/u;x.save();x.scale(u,u);x.textBaseline='middle';
-  x.fillStyle='#f3f4f7';x.fillRect(0,0,w,h);
-  x.fillStyle='#ffffff';x.fillRect(0,0,w,50);x.fillStyle='#e2e5ea';x.fillRect(0,50,w,1);
+  x.fillStyle='#0d1629';x.fillRect(0,0,w,h);
+  x.fillStyle='#0b1324';x.fillRect(0,0,w,50);x.fillStyle='#1c2944';x.fillRect(0,50,w,1);
   x.fillStyle='#1c2230';x.beginPath();x.roundRect(10,11,28,28,7);x.fill();x.lineWidth=2.6;
   x.strokeStyle='#f08a4b';x.beginPath();x.arc(24,25,7.5,-2.6,.6);x.stroke();x.strokeStyle='#5b86f2';x.beginPath();x.arc(24,25,7.5,.8,3.4);x.stroke();
   x.fillStyle='#ffffff';x.beginPath();x.arc(24,25,2.6,0,6.283);x.fill();
-  x.textAlign='left';x.fillStyle='#121826';x.font=s5_FNT(700,15);x.fillText(o.title||'Lumen Help',46,20);x.fillStyle='#6b7280';x.font=s5_FNT(400,11);x.fillText(o.sub||'Subscription',46,36);
-  x.font=s5_FNT(600,11);const who=o.who||'Ava · 00239',pw=x.measureText(who).width+30;x.beginPath();x.roundRect(w-10-pw,13,pw,24,12);x.fillStyle='#eef0f4';x.fill();x.strokeStyle='#d5d9e1';x.lineWidth=1;x.stroke();
-  x.fillStyle='#1f2430';x.fillText(who,w-pw,25.5);x.beginPath();x.moveTo(w-24,23);x.lineTo(w-17,23);x.lineTo(w-20.5,27.5);x.closePath();x.fill();
+  x.textAlign='left';x.fillStyle='#e8edf7';x.font=s5_FNT(700,15);x.fillText(o.title||'Lumen Help',46,20);x.fillStyle='#7d8ba8';x.font=s5_FNT(400,11);x.fillText(o.sub||'Subscription',46,36);
+  x.font=s5_FNT(600,11);const who=o.who||'Ava · 00239',pw=x.measureText(who).width+30;x.beginPath();x.roundRect(w-10-pw,13,pw,24,12);x.fillStyle='#101a30';x.fill();x.strokeStyle='#2a3a5c';x.lineWidth=1;x.stroke();
+  x.fillStyle='#e8edf7';x.fillText(who,w-pw,25.5);x.beginPath();x.moveTo(w-24,23);x.lineTo(w-17,23);x.lineTo(w-20.5,27.5);x.closePath();x.fill();
   /* status card */
   let top=60;const cd=o.card,ca=cd?(cd.a??1):0;if(ca>0){x.save();x.globalAlpha*=ca;const cw=w-20,cx=10,cy=60,col=(cw-24)/2,rows=cd.rows;
     x.font=s5_FNT(600,12);const rh=rows.map(r=>Math.max(...r.filter(Boolean).map(([k,v])=>rfWrap(x,v,col-4).length))*15+16);const chh=58+rh.reduce((s,a)=>s+a,0)+4;
-    x.shadowColor='rgba(20,30,60,.08)';x.shadowBlur=6;x.shadowOffsetY=1;x.beginPath();x.roundRect(cx,cy,cw,chh,10);x.fillStyle='#ffffff';x.fill();x.shadowColor='transparent';x.strokeStyle='#e2e5ea';x.stroke();
-    x.fillStyle='#6b7280';x.font=s5_FNT(600,9);x.letterSpacing='1px';x.fillText(cd.label||'WHAT WE FOUND ON YOUR ACCOUNT',cx+12,cy+15);x.letterSpacing='0px';
-    x.font=s5_FNT(600,10);const st=cd.status,sw=x.measureText(st).width+24;x.beginPath();x.roundRect(cx+12,cy+26,sw,19,9.5);x.fillStyle=cd.bg||'#e9ebf0';x.fill();
-    x.fillStyle=cd.dot||'#374151';x.beginPath();x.arc(cx+20,cy+35.5,2.2,0,6.283);x.fill();x.fillStyle=cd.fg||'#374151';x.fillText(st,cx+27,cy+36);
-    let yy=cy+56;rows.forEach((r,j)=>{r.forEach((c,k)=>{if(!c)return;const xx=cx+12+k*(col+4);x.fillStyle='#6b7280';x.font=s5_FNT(400,9.5);x.fillText(c[0],xx,yy+5);
-      x.fillStyle='#111827';x.font=s5_FNT(600,12);rfWrap(x,c[1],col-4).forEach((l,n)=>x.fillText(l,xx,yy+19+n*15))});yy+=rh[j]});
+    x.shadowColor='rgba(20,30,60,.08)';x.shadowBlur=6;x.shadowOffsetY=1;x.beginPath();x.roundRect(cx,cy,cw,chh,10);x.fillStyle='#0b1324';x.fill();x.shadowColor='transparent';x.strokeStyle='#1c2944';x.stroke();
+    x.fillStyle='#7d8ba8';x.font=s5_FNT(400,10);x.fillText(cd.label||'What we found on your account',cx+12,cy+15);x.letterSpacing='0px';
+    x.font=s5_FNT(600,10);const st=cd.status,sw=x.measureText(st).width+24;x.beginPath();x.roundRect(cx+12,cy+26,sw,19,9.5);x.fillStyle=cd.bg||'#16223d';x.fill();
+    x.fillStyle=cd.dot||'#9aa7c2';x.beginPath();x.arc(cx+20,cy+35.5,2.2,0,6.283);x.fill();x.fillStyle=cd.fg||'#9aa7c2';x.fillText(st,cx+27,cy+36);
+    let yy=cy+56;rows.forEach((r,j)=>{r.forEach((c,k)=>{if(!c)return;const xx=cx+12+k*(col+4);x.fillStyle='#7d8ba8';x.font=s5_FNT(400,9.5);x.fillText(c[0],xx,yy+5);
+      x.fillStyle='#e8edf7';x.font=s5_FNT(600,12);rfWrap(x,c[1],col-4).forEach((l,n)=>x.fillText(l,xx,yy+19+n*15))});yy+=rh[j]});
     x.restore();top=cy+chh*ca+10}
   /* bottom: chips + input */
-  const chipY=h-90,inY=h-50;x.fillStyle='#f6f7f9';x.fillRect(0,chipY-12,w,h-chipY+12);x.fillStyle='#e2e5ea';x.fillRect(0,chipY-12,w,1);
-  let cxp=10;x.font=s5_FNT(500,10.5);for(const c of(o.chips||['Charged after cancelling','I paid but have no premium'])){const cw=x.measureText(c).width+22;x.beginPath();x.roundRect(cxp,chipY,cw,26,13);x.fillStyle='#eceef2';x.fill();x.strokeStyle='#d8dbe2';x.stroke();
-    x.fillStyle='#1f2430';x.fillText(c,cxp+11,chipY+13.5);cxp+=cw+6}
-  x.beginPath();x.roundRect(10,inY,w-60,36,18);x.fillStyle='#ffffff';x.fill();x.lineWidth=1;x.strokeStyle='#d8dbe2';x.stroke();
-  x.font=s5_FNT(400,12);x.fillStyle='#9aa1ad';x.fillText(o.ph||'Describe the problem…',22,inY+18.5);
-  x.fillStyle='#2f5be7';x.beginPath();x.arc(w-28,inY+18,17,0,6.283);x.fill();x.strokeStyle='#ffffff';x.lineWidth=2;x.lineCap='round';x.beginPath();x.moveTo(w-35,inY+18);x.lineTo(w-21,inY+18);x.moveTo(w-27,inY+12);x.lineTo(w-21,inY+18);x.lineTo(w-27,inY+24);x.stroke();
+  const chipY=h-90,inY=h-50;x.fillStyle='#0b1324';x.fillRect(0,chipY-12,w,h-chipY+12);x.fillStyle='#1c2944';x.fillRect(0,chipY-12,w,1);
+  let cxp=10;x.font=s5_FNT(500,10.5);for(const c of(o.chips||['Charged after cancelling','I paid but have no premium'])){const cw=x.measureText(c).width+22;x.beginPath();x.roundRect(cxp,chipY,cw,26,13);x.fillStyle='#0b1324';x.fill();x.strokeStyle='#2a3a5c';x.stroke();
+    x.fillStyle='#e8edf7';x.fillText(c,cxp+11,chipY+13.5);cxp+=cw+6}
+  x.beginPath();x.roundRect(10,inY,w-60,36,18);x.fillStyle='#0b1324';x.fill();x.lineWidth=1;x.strokeStyle='#2a3a5c';x.stroke();
+  x.font=s5_FNT(400,12);x.fillStyle='#7d8ba8';x.fillText(o.ph||'Describe the problem…',22,inY+18.5);
+  x.fillStyle='#1b2a4a';x.beginPath();x.arc(w-28,inY+18,17,0,6.283);x.fill();x.strokeStyle='#e8edf7';x.lineWidth=2;x.lineCap='round';x.beginPath();x.moveTo(w-35,inY+18);x.lineTo(w-21,inY+18);x.moveTo(w-27,inY+12);x.lineTo(w-21,inY+18);x.lineTo(w-27,inY+24);x.stroke();
   /* chat: bubbles, link buttons, notes; newest kept in view */
   const bot=chipY-18;x.save();x.beginPath();x.rect(0,top-4,w,bot-top+4);x.clip();
   const fs=o.fs||12.5,lh=fs*1.32,ms=(o.msgs||[]).filter(m=>(m.a??1)>0),mw=(w-20)*.84;
@@ -132,106 +133,177 @@ function s5_lh(x,W,H,o={}){const dw=o.dw||300,u=W/dw,w=dw,h=H/u;x.save();x.scale
     x.font=s5_FNT(m.me?500:400,fs);const L1=rfWrap(x,m.text,mw-20);return{m,L1,bw:Math.min(mw,Math.max(...L1.map(l=>x.measureText(l).width))+20),bh:L1.length*lh+14}});
   const tot=lay.reduce((s,q)=>s+q.bh+8,0);let y=top+4-Math.max(0,tot-(bot-top-4));
   for(const q of lay){const m=q.m;x.save();x.globalAlpha*=m.a??1;
-    if(m.link){x.beginPath();x.roundRect(10,y,q.bw,q.bh,15);x.fillStyle='#ffffff';x.fill();x.strokeStyle='#2f5be7';x.lineWidth=1.2;x.stroke();
-      x.fillStyle='#2f5be7';x.font=s5_FNT(600,11);x.fillText(m.link,22,y+15.5);x.font=s5_FNT(600,12);x.fillText('↗',q.bw-6,y+15.5)}
-    else if(m.note){const gr=m.kind==='green',nx=gr?(w-q.bw)/2:10;x.beginPath();x.roundRect(nx,y,q.bw,q.bh,8);x.fillStyle=gr?'#dcf3e6':'#fbf0d9';x.fill();
-      x.font=s5_FNT(gr?600:400,11);x.fillStyle=gr?'#167a50':'#8a5a0b';if(gr){x.textAlign='center';q.L1.forEach((l,n)=>x.fillText(l,w/2,y+15+n*15));x.textAlign='left'}
-      else{x.fillStyle='#c9a35b';x.beginPath();x.arc(nx+12,y+15,2.6,0,6.283);x.fill();x.fillStyle='#8a5a0b';q.L1.forEach((l,n)=>x.fillText(l,nx+22,y+15+n*15))}}
-    else{const bx=m.me?w-10-q.bw:10;x.beginPath();x.roundRect(bx,y,q.bw,q.bh,12);x.fillStyle=m.me?'#2f5be7':'#ffffff';x.fill();if(!m.me){x.strokeStyle='#dfe2e8';x.lineWidth=1;x.stroke()}
-      x.fillStyle=m.me?'#ffffff':'#1f2430';x.font=s5_FNT(m.me?500:400,fs);q.L1.forEach((l,n)=>x.fillText(l,bx+10,y+7+lh/2+n*lh))}
+    if(m.link){x.beginPath();x.roundRect(10,y,q.bw,q.bh,15);x.fillStyle='#0b1324';x.fill();x.strokeStyle='#2a3a5c';x.lineWidth=1.2;x.stroke();
+      x.fillStyle='#e8edf7';x.font=s5_FNT(600,11);x.fillText(m.link,22,y+15.5);x.font=s5_FNT(600,12);x.fillText('↗',q.bw-6,y+15.5)}
+    else if(m.note){const gr=m.kind==='green',nx=gr?(w-q.bw)/2:10;x.beginPath();x.roundRect(nx,y,q.bw,q.bh,8);x.fillStyle=gr?'#0f2b2f':'#2a2117';x.fill();
+      x.font=s5_FNT(gr?600:400,11);x.fillStyle=gr?'#3fd0c0':'#ffa84c';if(gr){x.textAlign='center';q.L1.forEach((l,n)=>x.fillText(l,w/2,y+15+n*15));x.textAlign='left'}
+      else{x.fillStyle='#ffa84c';x.beginPath();x.arc(nx+12,y+15,2.6,0,6.283);x.fill();x.fillStyle='#ffa84c';q.L1.forEach((l,n)=>x.fillText(l,nx+22,y+15+n*15))}}
+    else{const bx=m.me?w-10-q.bw:10;x.beginPath();x.roundRect(bx,y,q.bw,q.bh,12);x.fillStyle=m.me?'#1b2a4a':'#101a30';x.fill();if(!m.me){x.fillStyle='#ffa84c';x.fillRect(bx,y+2,2.5,q.bh-4)}
+      x.fillStyle='#e8edf7';x.font=s5_FNT(m.me?500:400,fs);q.L1.forEach((l,n)=>x.fillText(l,bx+10,y+7+lh/2+n*lh))}
     x.restore();y+=q.bh+8}
   x.restore();x.restore()}
 /* Lucía (Spanish UI, like the real localized app) and Ava */
 const s5_LU={title:'Ayuda de Lumen',sub:'Suscripción',who:'Lucía',ph:'Describe el problema…',chips:['Me cobraron después de cancelar','Pagué y no tengo premium'],
-  card:{label:'LO QUE ENCONTRAMOS EN TU CUENTA',status:'Prueba — el pago falló',dot:'#c4323a',bg:'#fbe3e3',fg:'#a3262d',rows:[[['Paquete','Lumen Premium Weekly'],['Comprado en','Google Play']],[['Pagado','Nunca'],['Prueba','pago fallido']]]}};
+  card:{label:'Lo que encontramos en tu cuenta',status:'Prueba — el pago falló',dot:'#ff7a6b',bg:'#2d1a20',fg:'#ff7a6b',rows:[[['Paquete','Lumen Premium Weekly'],['Comprado en','Google Play']],[['Pagado','Nunca'],['Prueba','pago fallido']]]}};
 const s5_LU_Q='Mi prueba terminó y no tengo premium',s5_LU_R='El pago de tu prueba de Lumen Premium Weekly no se completó en Google Play, así que nunca se cobró. Para seguir, actualiza tu método de pago en Google Play: play.google.com/store/paymentmethods';
-const s5_AV={who:'Ava · 00239',card:{status:"Ended — the payment didn't go through",dot:'#c4323a',bg:'#fbe3e3',fg:'#a3262d',rows:[[['Package','Lumen Premium Weekly'],['Bought on','App Store']],[['Price','6.99 USD'],['Payment failed on','22 Oct 2026']]]}};
+const s5_AV={who:'Ava · 00239',card:{status:"Ended: the payment didn't go through",dot:'#ff7a6b',bg:'#2d1a20',fg:'#ff7a6b',rows:[[['Package','Lumen Premium Weekly'],['Bought on','App Store']],[['Price','6.99 USD'],['Payment failed on','22 Oct 2026']]]}};
 const s5_AV_R="Your Lumen Premium Weekly subscription ended on 22 October 2026 because App Store couldn't take the renewal payment. Please update your payment method in your Apple account. I've asked the team to review a 3-day courtesy extension of your access. It isn't active yet — it only starts if they approve it.";
-const s5_AV_N="Requested — the Lumen team will review it. Nothing changes until they decide; you'll see it here.",s5_AV_G="Good news — the Lumen team added Premium until Nov 7, 2026. It's active now.";
+const s5_AV_N="Requested. The Lumen team will review it. Nothing changes until they decide; you'll see it here.",s5_AV_G="Good news — the Lumen team added Premium until Nov 7, 2026. It's active now.";
 /* 2D phone (black frame, white Lumen Help screen) centred at cx,cy, h tall */
 function s5_phone2(g,cx,cy,h,pop,o){const w=h*.49;if(pop<=0)return;g.save();g.translate(cx,cy);g.rotate(-.03);const sc=bk(cl(pop));g.scale(sc,sc);
   g.shadowColor='rgba(80,230,150,.55)';g.shadowBlur=40;g.beginPath();g.roundRect(-w/2,-h/2,w,h,w*.13);g.fillStyle='#16181d';g.fill();g.shadowColor='transparent';
   g.lineWidth=2;g.strokeStyle='rgba(200,210,235,.35)';g.stroke();const m=w*.045,sw=w-2*m,sh=h-2*m;g.save();g.beginPath();g.roundRect(-sw/2,-sh/2,sw,sh,w*.1);g.clip();
   g.translate(-sw/2,-sh/2);s5_lh(g,sw,sh,o);g.restore();g.restore()}
 
-/* ---------- the developer console, redrawn after the REDESIGNED real one (docs/screens/console-pending-1280.png,
-   console-approved-1280.png): header, left "Waiting for approval" card with ONE green button + Deny, "Cases"; right one calm
-   case card. Panel space 1180 x 540. st = {hl:{facts,actions,reply,checker}, ck (cursor 0..0.8 glide, pressed at .8), ok, T} */
-const s5_INK='#141a26',s5_GR='#6b7280',s5_LN='#e2e5ea',s5_GRN='#167a50',s5_BLU='#2f5be7';
-function s5_t(g,x,y,s,fs,col,o={}){g.font=`${o.w||400} ${fs}px ${o.m?'"IBM Plex Mono",monospace':'"IBM Plex Sans",sans-serif'}`;g.fillStyle=col;g.textAlign=o.al||'left';g.textBaseline='middle';g.fillText(s,x,y);return g.measureText(s).width}
+/* ---------- the developer console in the team's NIGHT SHIFT design (case-desk-design casedesk/app/static/v2, tokens at the
+   top of base.css; fixes on bagley/night-shift-fixes): navy panes, IBM Plex, amber = needs your OK, teal = checked, coral =
+   problem. Evidence column collapsed ("Evidence ▸"), "Needs a person" pinned in the list, the dock is count-first
+   ("1 waiting for your OK") with ONE big decision card. Drawn in its own space (1000 x 720, s5_NW x s5_NH) and seen through
+   a 1000 x 460 window (y 110–570): beat 2 shows the top at 1:1, beat 3 zooms onto the decision card. */
+const s5_N={page:'#070b14',pane:'#0b1324',raised:'#101a30',sel:'#16223d',line:'#1c2944',line2:'#2a3a5c',ink:'#e8edf7',ink2:'#9aa7c2',ink3:'#7d8ba8',
+  amb:'#ffa84c',ambOn:'#1f1200',ambSoft:'#2a2117',teal:'#3fd0c0',tealSoft:'#0f2b2f',coral:'#ff7a6b'};
+const s5_NW=1000,s5_NH=720,s5_VW=[70,110,1000,460];
+function s5_t(g,x,y,s,fs,col,o={}){g.font=`${o.w||400} ${fs}px ${o.m?'"IBM Plex Mono",monospace':'"IBM Plex Sans",sans-serif'}`;g.fillStyle=col;g.textAlign=o.al||'left';g.textBaseline='middle';
+  if(o.max&&g.measureText(s).width>o.max){while(s.length>2&&g.measureText(s+'…').width>o.max)s=s.slice(0,-1);s=s.trimEnd()+'…'}g.fillText(s,x,y);return g.measureText(s).width}
 function s5_box(g,x,y,w,h,r,fill,stroke,lw=1){g.beginPath();g.roundRect(x,y,w,h,r);if(fill){g.fillStyle=fill;g.fill()}if(stroke){g.lineWidth=lw;g.strokeStyle=stroke;g.stroke()}}
-function s5_ck(g,x,y,s,c,lw=2.2){g.save();g.strokeStyle=c;g.lineWidth=lw;g.lineCap='round';g.lineJoin='round';g.beginPath();g.moveTo(x-s*.5,y);g.lineTo(x-s*.12,y+s*.38);g.lineTo(x+s*.55,y-s*.42);g.stroke();g.restore()}
-function s5_dot(g,x,y,c,r=4){g.fillStyle=c;g.beginPath();g.arc(x,y,r,0,6.283);g.fill()}
-function s5_hl(g,x,y,w,h,v){v=v||0;if(v<=0)return;g.save();g.globalAlpha*=cl(v);g.shadowColor='rgba(255,168,76,.95)';g.shadowBlur=22;s5_box(g,x-5,y-5,w+10,h+10,14,null,'rgba(255,168,76,1)',4);g.restore()}
-const s5_REPLY="Your Lumen Premium Weekly subscription ended on 22 October 2026 because App Store couldn't take the renewal payment. Please update your payment method in your Apple account… I've asked the team to review a 3-day courtesy extension of your access. It isn't active yet — it only starts if they approve it.";
-function s5_console(g,cx,cy,sc,st){const W=1180,H=556,ok=st.ok||0,hl=st.hl||{},ck=st.ck||0;g.save();g.translate(cx,cy);g.scale(sc,sc);g.translate(-W/2,-H/2);
-  g.shadowColor='rgba(0,0,0,.55)';g.shadowBlur=30;g.shadowOffsetY=10;s5_box(g,0,0,W,H,14,'#f3f4f7');g.shadowColor='transparent';
-  g.save();g.beginPath();g.roundRect(0,0,W,46,[14,14,0,0]);g.fillStyle='#ffffff';g.fill();g.restore();
-  const hw=s5_t(g,22,24,'Case Desk',22,s5_INK,{w:700});s5_t(g,32+hw,25,'for Lumen',15,s5_GR);g.fillStyle=s5_LN;g.fillRect(0,46,W,1);
-  /* left column */
-  const lx=22,lw=372,gone=sm(cl(ok*1.6));
-  let w1=s5_t(g,lx,76,'Waiting for approval',17,s5_INK,{w:700});s5_t(g,lx+w1+10,77,ok>.5?'0':'1',14,s5_GR);
-  if(gone<1){g.save();g.globalAlpha*=1-gone;const y0=92;
-    g.save();g.shadowColor='rgba(22,122,80,.35)';g.shadowBlur=10;s5_box(g,lx,y0,lw,170,12,'#ffffff','#2f8a5f',2);g.restore();
-    let nx=lx+16+s5_t(g,lx+16,y0+26,'Ava',17,s5_INK,{w:700});nx+=s5_t(g,nx,y0+26,'  ·  ',15,s5_GR);s5_t(g,nx,y0+27,'00239',13,s5_GR,{m:1});
-    s5_t(g,lx+16,y0+54,'Wants 3 days of premium',16,'#2b3140');
-    s5_dot(g,lx+20,y0+80,'#c4323a');s5_t(g,lx+32,y0+80,"Ended — the payment didn't go through",15,s5_GR);
-    const bl='Give Ava 3 days of premium';g.font='700 16px "IBM Plex Sans",sans-serif';const bw=g.measureText(bl).width+40,by=y0+122,pr=ck>.8&&ck<1?.94:1;
-    g.save();g.translate(lx+16+bw/2,by);g.scale(pr,pr);s5_box(g,-bw/2,-21,bw,42,21,s5_GRN);s5_t(g,0,0,bl,16,'#ffffff',{w:700,al:'center'});g.restore();
-    st.btn=[lx+16+bw/2,by];
-    s5_box(g,lx+26+bw,by-21,70,42,21,'#ffffff','#d0d4dc');s5_t(g,lx+61+bw,by,'Deny',16,s5_INK,{w:600,al:'center'});
-    s5_t(g,lx+16,y0+156,'Nothing is granted until you approve.',13.5,s5_GR);g.restore()}
-  if(ok>0){g.save();g.globalAlpha*=cl(ok*2-.6);s5_t(g,lx+2,106,'Nothing waiting for you.',15,s5_GR);g.restore()}
-  const cy0=L(294,146,gone);
-  w1=s5_t(g,lx,cy0,'Cases',17,s5_INK,{w:700});s5_t(g,lx+w1+10,cy0+1,'1',14,s5_GR);
-  {const y=cy0+18;s5_box(g,lx,y,lw,92,12,'#ffffff',s5_BLU,2);let nx=lx+16+s5_t(g,lx+16,y+24,'Ava',16,s5_INK,{w:700});nx+=s5_t(g,nx,y+24,'  ·  ',14,s5_GR);s5_t(g,nx,y+25,'00239',12.5,s5_GR,{m:1});
-    s5_t(g,lx+lw-14,y+24,'just now',13,s5_GR,{al:'right'});s5_t(g,lx+16,y+50,'I paid but have no premium',15,'#2b3140');
-    s5_dot(g,lx+20,y+74,'#c4323a');s5_t(g,lx+32,y+74,ok>.5?"Ended — the payment didn't go through":"Ended — the payment didn't go…",14,s5_GR);
-    if(ok<.5){g.font='600 12.5px "IBM Plex Sans",sans-serif';const tw=g.measureText('waiting').width+16;s5_box(g,lx+lw-14-tw,y+63,tw,22,11,'#fbefcf');s5_t(g,lx+lw-14-tw/2,y+74,'waiting',12.5,'#8a6410',{w:600,al:'center'})}}
-  /* right: the case card */
-  const rx=414,rw=744,ry=62,rh=480,x0=rx+28,iw=rw-56;
-  g.save();g.shadowColor='rgba(20,30,60,.10)';g.shadowBlur=12;g.shadowOffsetY=2;s5_box(g,rx,ry,rw,rh,18,'#ffffff');g.restore();s5_box(g,rx,ry,rw,rh,18,null,s5_LN);
-  s5_dot(g,x0+22,ry+38,'#e4e9fb',22);s5_t(g,x0+22,ry+39,'A',20,s5_BLU,{w:700,al:'center'});
-  let nx=x0+56+s5_t(g,x0+56,ry+28,'Ava',21,s5_INK,{w:600});nx+=s5_t(g,nx,ry+28,'  ·  ',16,s5_GR);s5_t(g,nx,ry+29,'00239',14,s5_GR,{m:1});
-  s5_t(g,x0+56,ry+51,'English · App Store',15,s5_GR);
-  const sy=ry+82;s5_dot(g,x0+5,sy,'#c4323a',5);const sw=s5_t(g,x0+18,sy,"Paid, then the App Store couldn't take the renewal on 22 Oct",19,s5_INK,{w:700});
-  s5_hl(g,x0-4,sy-16,sw+26,32,hl.facts);
-  const py=ry+112,pv=1+.06*cl(hl.checker||0)*Math.max(0,Math.sin((st.T||0)*5));g.font='700 14px "IBM Plex Sans",sans-serif';const pw=g.measureText('Checked: every fact matches the account').width+42;
-  g.save();g.translate(x0+pw/2,py);g.scale(pv,pv);s5_box(g,-pw/2,-13,pw,26,13,'#dcf3e6');s5_ck(g,-pw/2+16,0,10,s5_GRN,2.2);s5_t(g,-pw/2+28,1,'Checked: every fact matches the account',14,s5_GRN,{w:700});g.restore();
-  s5_hl(g,x0,py-13,pw,26,hl.checker);
-  const um='I paid but have no premium';g.font='500 16px "IBM Plex Sans",sans-serif';const uw=g.measureText(um).width+30;s5_box(g,x0+iw-uw,ry+132,uw,36,14,s5_BLU);s5_t(g,x0+iw-15,ry+150,um,16,'#ffffff',{w:500,al:'right'});
-  g.font='400 15px "IBM Plex Sans",sans-serif';const RL=rfWrap(g,s5_REPLY,600),rby=ry+176,rbh=RL.length*20+20;s5_box(g,x0,rby,630,rbh,14,'#eceef2');RL.forEach((l,k)=>s5_t(g,x0+15,rby+20+k*20,l,15,'#1f2430'));
-  s5_hl(g,x0,rby,630,rbh,hl.reply);
-  const dy=rby+rbh+10,dh=98;s5_box(g,x0,dy,iw,dh,12,'#f1f2f6');s5_t(g,x0+18,dy+20,'What Case Desk did',15,s5_INK,{w:700});
-  ['Explained what happened','Sent the link to update payment','Asked you for a 3-day courtesy extension'].forEach((s,k)=>{s5_ck(g,x0+24,dy+45+k*22,11,s5_GRN);s5_t(g,x0+42,dy+45+k*22,s,15,'#4a5263')});
-  s5_hl(g,x0,dy,iw,dh,hl.actions);
-  const wy=dy+dh+10;
-  if(ok<1){g.save();g.globalAlpha*=1-cl(ok*2);const wl='Waiting for your OK… approve or deny it in the list';g.font='600 14.5px "IBM Plex Sans",sans-serif';const ww=g.measureText(wl).width+62;
-    s5_box(g,x0,wy,ww,34,10,'#fdf8ec','#e2cf9f');s5_t(g,x0+16,wy+17,'←',16,'#9a6a12',{w:700});s5_t(g,x0+42,wy+17,wl,14.5,'#5a5f6b',{w:600});g.restore()}
-  if(ok>0){g.save();g.globalAlpha*=cl(ok*2-.4);const gl='Premium given · expires 7 Nov, 00:12';g.font='700 17px "IBM Plex Sans",sans-serif';const gw=g.measureText(gl).width+70,s=.9+.1*bk(cl(ok*1.5));
-    g.translate(x0,wy+17);g.scale(s,s);s5_box(g,0,-19,gw,38,10,'#e1f3ea','#8fcfad',1.2);s5_dot(g,20,0,s5_GRN,11);s5_ck(g,20,0,10,'#ffffff',2.4);s5_t(g,42,1,gl,17,s5_GRN,{w:700});g.restore()}
-  g.fillStyle=s5_LN;g.fillRect(x0,wy+48,iw,1);g.fillStyle='#2b3140';g.beginPath();g.moveTo(x0+2,wy+60);g.lineTo(x0+10,wy+66);g.lineTo(x0+2,wy+72);g.closePath();g.fill();s5_t(g,x0+18,wy+66,'Details (for the curious)',14,'#2b3140',{w:600});
-  /* the cursor: glides in from the lower right to the green button, presses at .8 */
-  if(ck>0&&ck<1.5&&st.btn){const [bx,by]=st.btn,q=sm(cl(ck/.8)),px=L(W*.55,bx+30,q),py=L(H+40,by+8,q),ca=cl(ck*6)*cl((1.5-ck)*4);
-    g.save();g.globalAlpha*=ca;g.translate(px,py);const ps=ck>.8&&ck<1?.86:1;g.scale(ps*1.3,ps*1.3);g.beginPath();g.moveTo(0,0);g.lineTo(0,26);g.lineTo(7,20);g.lineTo(12,31);g.lineTo(17,29);g.lineTo(12,18);g.lineTo(21,18);g.closePath();
-    g.fillStyle='#ffffff';g.fill();g.lineWidth=2;g.strokeStyle='#0e1a33';g.stroke();g.restore();
-    if(ck>.8&&ck<1.3){const r=cl((ck-.8)/.5);g.save();g.globalAlpha*=1-r;g.lineWidth=3;g.strokeStyle='rgba(22,122,80,1)';g.beginPath();g.arc(bx+30,by+8,10+40*r,0,6.283);g.stroke();g.restore()}}
-  g.restore()}
+function s5_ck(g,x,y,s,c,lw=2){g.save();g.strokeStyle=c;g.lineWidth=lw;g.lineCap='round';g.lineJoin='round';g.beginPath();g.moveTo(x-s*.5,y);g.lineTo(x-s*.12,y+s*.38);g.lineTo(x+s*.55,y-s*.42);g.stroke();g.restore()}
+function s5_sq(g,x,y,c,s=9,hollow){if(hollow){g.lineWidth=2;g.strokeStyle=c;g.strokeRect(x-s/2+1,y-s/2+1,s-2,s-2)}else{g.fillStyle=c;g.fillRect(x-s/2,y-s/2,s,s)}}
+function s5_who(g,x,y,name,id,fs=14){const w=s5_t(g,x,y,name,fs,s5_N.ink,{w:600});return w+6+s5_t(g,x+w+6,y+1,id,fs-1.5,s5_N.ink3,{m:1})}
+const s5_REPLY3=["Your Lumen Premium Weekly subscription ended on 22 October 2026 because App","Store couldn't take the renewal payment. Please update your payment method …","I've asked the team to review a 3-day courtesy extension. It isn't active yet."];
+const s5_GIVEN='Premium given to Ava · until 7 Nov 2026';
+/* regions (console space) the beat-2 spotlight moves between: facts, actions, the checked reply */
+const s5_RG={facts:[288,90,690,62],actions:[288,316,690,104],reply:[288,226,690,86]};
+/* st = {spot:[x,y,w,h,a,tag], press 0..1, flash 0..1, done 0..1 (card collapses into the given line), T} → button rect */
+function s5_nsConsole(g,st){const N=s5_N,W=s5_NW,H=s5_NH,done=st.done||0,flash=st.flash||0;let btn=null;
+  g.fillStyle=N.page;g.fillRect(0,0,W+200,H);
+  /* top bar */
+  g.fillStyle=N.pane;g.fillRect(0,0,W+200,40);g.fillStyle=N.line;g.fillRect(0,40,W+200,1);
+  s5_sq(g,20,20,N.amb,10);const hw=s5_t(g,32,20,'Case Desk',16,N.ink,{w:600});s5_t(g,40+hw,21,'for Lumen',13,N.ink3);
+  s5_t(g,W-18,21,'02:00',13,N.ink3,{m:1,al:'right'});s5_t(g,W-66,21,'Live',13,N.ink2,{al:'right'});s5_sq(g,W-104,21,N.teal,10,1);
+  s5_t(g,W-130,21,'Demo data',13,N.ink3,{al:'right'});
+  /* the cases list (left, 270) — "Needs a person" pinned first, in its own ink (not amber) */
+  const LW=270;g.fillStyle=N.pane;g.fillRect(0,41,LW,H);g.fillStyle=N.line;g.fillRect(LW,41,1,H);
+  let cw=s5_t(g,18,64,'Cases',15,N.ink,{w:600});s5_t(g,26+cw,65,'18',13,N.ink3,{m:1});
+  const pin=(y)=>{g.save();g.strokeStyle=N.ink2;g.lineWidth=1.6;g.beginPath();g.arc(24,y-3,3.2,0,6.283);g.stroke();g.beginPath();g.arc(24,y+7,6,Math.PI*1.1,Math.PI*1.9);g.stroke();g.restore()};
+  pin(94);cw=s5_t(g,36,94,'Needs a person',13,N.ink2,{w:600});s5_t(g,44+cw,95,'2',13,N.ink3,{m:1});
+  const row=(y,name,id,when,msg,lab,lc,o={})=>{if(o.sel){g.fillStyle=N.sel;g.fillRect(0,y,LW,50);g.fillStyle=N.ink;g.fillRect(0,y,3,50)}
+    s5_sq(g,22,y+16,o.dot||N.ink3,8,o.hollow);s5_who(g,34,y+16,name,id,14);s5_t(g,LW-16,y+16,when,12.5,N.ink3,{al:'right'});
+    let lw=0;if(lab){lw=s5_t(g,LW-16,y+35,lab,13,lc,{w:600,al:'right'})+10}s5_t(g,34,y+35,msg,13,N.ink2,{max:LW-50-lw});g.fillStyle=N.line;g.fillRect(0,y+50,LW,1)};
+  row(108,'Isla','00185','3 Nov','I want to talk to a real person','asked for a person',N.ink2,{hollow:1,dot:N.ink2});
+  row(159,'Benjamin','00044','2 Nov','Please delete my account and all my data','privacy request',N.ink2,{hollow:1,dot:N.ink2});
+  g.fillStyle=N.line2;g.fillRect(0,212,LW,2);
+  row(216,'Ava','00239','now','I paid but have no premium',done>.5?null:'waiting',N.amb,{sel:1,dot:N.coral});
+  row(267,'Marko','00009','now','Naplatili ste mi pretplatu posle otkazivanja!');
+  row(318,'Oliver','03873','3 Nov','I cancelled the free trial but I think you still charged me');
+  row(369,'Harry','01826','3 Nov','Can I get my money back? I don\'t use the app',null,null,{hollow:1});
+  row(420,'Lukas','00998','3 Nov','Ich habe mein Abo gekündigt und trotzdem bezahlt');
+  row(471,'Léa','00359','3 Nov','Bonjour, comment est-ce que je peux annuler ?',null,null,{hollow:1});
+  row(522,'Giulia','00095','3 Nov','Ho cambiato telefono e adesso l\'app non mi riconosce');
+  row(573,'Jelena','01941','3 Nov','Otkazala sam pretplatu, a opet ste mi skinuli novac');
+  row(624,'Madison','01067','3 Nov','When will I actually be charged? I\'m still on trial',null,null,{hollow:1});
+  /* the case (rest of the width; evidence collapsed) */
+  const x0=LW+28,R=W-28;g.fillStyle=N.pane;g.fillRect(LW+1,41,W-LW+200,H);
+  s5_who(g,x0,62,'Ava','00239',17);s5_t(g,x0+104,63,'English  ·  App Store  ·  Lumen Premium Weekly',13,N.ink2);
+  g.font='400 13px "IBM Plex Sans",sans-serif';const ew=g.measureText('Evidence').width+36;s5_box(g,R-ew,49,ew,28,6,null,N.line2);s5_t(g,R-ew+11,63.5,'Evidence',13,N.ink2);
+  g.save();g.strokeStyle=N.ink2;g.lineWidth=1.6;g.beginPath();g.moveTo(R-17,58.5);g.lineTo(R-12,63.5);g.lineTo(R-17,68.5);g.stroke();g.restore();
+  g.fillStyle=N.line;g.fillRect(LW+1,84,W-LW,1);
+  s5_sq(g,x0+4,104,N.coral,9);s5_t(g,x0+16,104,"Ended: the payment didn't go through",13.5,N.coral,{w:600});
+  {let fs=24;const s="Paid, then the App Store couldn't take the renewal on 22 Oct";g.font=`600 ${fs}px "IBM Plex Sans",sans-serif`;while(g.measureText(s).width>R-x0&&fs>19){fs-=.5;g.font=`600 ${fs}px "IBM Plex Sans",sans-serif`}
+    s5_t(g,x0,133,s,fs,N.ink,{w:600})}
+  s5_ck(g,x0+6,170,10,N.teal,2);s5_t(g,x0+20,170,'Every fact in the reply matches the account.',14,N.teal);
+  g.fillStyle=N.line;g.fillRect(x0,190,R-x0,1);
+  /* the conversation */
+  g.fillStyle=N.line2;g.fillRect(x0,198,2,24);s5_t(g,x0+14,204,'Ava',13,N.ink,{w:600});s5_t(g,x0+50,205,'I paid but have no premium',14,N.ink);s5_t(g,R,204,'01:58',12.5,N.ink3,{m:1,al:'right'});
+  g.fillStyle=N.amb;g.fillRect(x0,232,2,76);let cdw=s5_t(g,x0+14,240,'Case Desk',13,N.amb,{w:600});
+  {const pv=1+.08*cl((st.ckPulse||0))*Math.max(0,Math.sin((st.T||0)*6));g.save();g.translate(x0+26+cdw,240);g.scale(pv,pv);s5_ck(g,4,0,9,N.teal,1.8);s5_t(g,14,0,'Checked',13,N.teal,{w:600});g.restore()}
+  s5_t(g,R,240,'01:58',12.5,N.ink3,{m:1,al:'right'});
+  s5_REPLY3.forEach((l,k)=>s5_t(g,x0+14,262+k*20,l,14,N.ink,{max:R-x0-14}));
+  /* What Case Desk did */
+  s5_t(g,x0,330,'What Case Desk did',13.5,N.teal,{w:600});
+  ['Explained what happened','Sent the link to update payment','Sent the link to manage the subscription'].forEach((s,k)=>{s5_ck(g,x0+8,352+k*20,10,N.teal,1.8);s5_t(g,x0+24,352+k*20,s,14,N.ink)});
+  s5_sq(g,x0+8,412,done>.5?N.teal:N.amb,8);s5_t(g,x0+24,412,'Asked you for a 3-day courtesy extension',14,N.ink,{w:600});
+  /* the dock: count first, then the ONE big decision card; after the click it collapses into the teal "given" line */
+  const dy=438;g.fillStyle=N.raised;g.fillRect(LW+1,dy,W-LW+200,H-dy);g.fillStyle=done>.5?N.teal:N.amb;g.fillRect(LW+1,dy,W-LW+200,3);
+  if(done<.5){g.save();g.globalAlpha*=1-cl(done*2.2);const nw=s5_t(g,x0,dy+24,'1',17,N.amb,{w:600,m:1});s5_t(g,x0+nw+8,dy+24,'waiting for your OK',17,N.amb,{w:600});
+    s5_t(g,R,dy+25,'3 days of premium asked for',13,N.ink3,{al:'right'});g.restore()}
+  else{g.save();g.globalAlpha*=cl(done*2-1);s5_t(g,x0,dy+24,'Nothing waiting',17,N.ink2,{w:600});g.restore()}
+  const cy=dy+44,chFull=176,ch=L(chFull,56,sm(cl(done)));
+  g.save();if(flash>0){g.shadowColor=`rgba(63,208,192,${.8*flash})`;g.shadowBlur=40*flash}
+  s5_box(g,x0-8,cy,R-x0+16,ch,8,done>.5?N.tealSoft:N.pane,flash>0?`rgba(63,208,192,${.5+.5*flash})`:N.line2,flash>0?2:1);g.restore();
+  if(done<1){g.save();g.beginPath();g.rect(x0-8,cy,R-x0+16,ch);g.clip();g.globalAlpha*=1-cl(done*2.5);
+    s5_sq(g,x0+6,cy+22,N.amb,8);let kw=s5_t(g,x0+18,cy+22,'Case Desk asks you to confirm',13,N.ink2);s5_t(g,R-8,cy+22,'02:00',12.5,N.ink3,{m:1,al:'right'});
+    let w=s5_t(g,x0+4,cy+52,'Ava',24,N.ink,{w:600});w+=s5_t(g,x0+14+w,cy+54,'00239',14,N.ink3,{m:1})+24;s5_t(g,x0+4+w,cy+52,'3 days of premium',24,N.ink,{w:600});
+    s5_t(g,x0+4,cy+80,"Paid, then the App Store couldn't take the renewal on 22 Oct.",14,N.ink2);
+    s5_t(g,x0+4,cy+100,'Ava gets premium for 3 days. Nothing else changes.',14,N.ink);
+    const bl='Give Ava 3 days of premium';g.font='600 17px "IBM Plex Sans",sans-serif';const bw=g.measureText(bl).width+56,bh=50,bx=x0+4,by=cy+114,pr=1-.05*(st.press||0);
+    const fm=(a,b,q)=>`rgb(${Math.round(L(a[0],b[0],q))},${Math.round(L(a[1],b[1],q))},${Math.round(L(a[2],b[2],q))})`,fc=flash<=0?N.amb:flash<.4?fm([255,168,76],[255,250,235],flash/.4):fm([255,250,235],[63,208,192],(flash-.4)/.6);
+    g.save();g.translate(bx+bw/2,by+bh/2);g.scale(pr,pr);g.shadowColor='rgba(255,168,76,.45)';g.shadowBlur=flash>0?0:18;s5_box(g,-bw/2,-bh/2,bw,bh,8,fc);g.shadowColor='transparent';
+    if(flash>.5){s5_ck(g,-bw/2+24,0,13,N.ambOn,2.6);s5_t(g,8,1,'Giving…',17,N.ambOn,{w:600,al:'center'})}else s5_t(g,0,1,bl,17,N.ambOn,{w:600,al:'center'});g.restore();
+    btn=[bx,by,bw,bh];
+    s5_box(g,bx+bw+12,by,92,bh,8,null,N.line2);s5_t(g,bx+bw+58,by+bh/2+1,'Deny',17,N.ink,{w:600,al:'center'});
+    s5_t(g,bx+bw+120,by+bh/2+1,'Nothing is granted until you approve.',13,N.ink3);
+    g.restore()}
+  if(done>0){const a=cl(done*2-.8);if(a>0){g.save();g.globalAlpha*=a;const s=.92+.08*bk(cl(done*1.4-.4));g.translate(x0+6,cy+28);g.scale(s,s);
+    g.fillStyle=N.teal;g.beginPath();g.arc(12,0,12,0,6.283);g.fill();s5_ck(g,12,0,12,N.pane,2.6);s5_t(g,34,1,s5_GIVEN,20,N.teal,{w:600});g.restore()}}
+  /* the beat-2 spotlight: dims the rest, a thin ink outline + a tag */
+  const sp=st.spot;if(sp&&sp[4]>0){const [x,y,w,h,a,tag]=sp;g.save();g.globalAlpha*=a;g.beginPath();g.rect(0,0,W,H);g.roundRect(x-8,y-8,w+16,h+16,10);g.fillStyle='rgba(3,6,12,.55)';g.fill('evenodd');
+    g.strokeStyle='rgba(232,237,247,.95)';g.lineWidth=2;g.beginPath();g.roundRect(x-8,y-8,w+16,h+16,10);g.stroke();
+    if(tag){g.font='600 14px "IBM Plex Sans",sans-serif';const tw=g.measureText(tag).width+24;s5_box(g,x+w+8-tw,y+h-5,tw,26,13,N.ink);s5_t(g,x+w+8-tw/2,y+h+8.5,tag,14,N.page,{w:600,al:'center'})}g.restore()}
+  return btn}
 
-/* the console grows out of the laptop at the start of beat 3 and stays for beat 4 */
-const s5_PC=[630,296];
+/* view: console point F at the window centre, zoom z; returns the console→screen mapping */
+function s5_view(F,z){const [vx,vy,vw,vh]=s5_VW,cx=vx+vw/2,cy=vy+vh/2;return{z,tx:cx-F[0]*z,ty:cy-F[1]*z,at:(x,y)=>[cx+(x-F[0])*z,cy+(y-F[1])*z]}}
 function s5_drawConsole(g,t,c,i,T,A){if(i<3)return;const o=S5.built;if(!o)return;
-  const gq=i===3?s5_E(c(3)+.15,c(3)+1.0,t):1;let sx=s5_PC[0],sy=s5_PC[1];
-  if(gq<1){const [lx,ly]=X3.at(S5,o.lapPt);sx=L(lx,sx,gq);sy=L(ly,sy,gq)}
-  const sc=L(.1,1,gq);if(gq<=0)return;
-  const pk=(w,d=.3)=>i>3?0:s5_E(A(3,w)-.2,A(3,w)+d,t),off=w=>1-s5_E(A(3,w)-.15,A(3,w)+.2,t);
-  const hl=i===3?{facts:pk('facts')*off('actions'),actions:pk('actions')*off('reply'),reply:pk('reply'),checker:pk('checker')}:{};
-  const ap=i===4?A(4,'approve'):1e9,c4=c(4),ck=i===4?(t<ap?.8*cl((t-c4+.05)/Math.max(.4,ap-c4+.05)):.8+(t-ap)/1.25):0,ok=i===4?cl((t-ap-.2)/.6):0;
-  g.save();g.globalAlpha*=cl(gq*3);s5_console(g,sx,sy,sc,{hl,ck,ok,T});g.restore()}
-/* Ava's phone pops up over the left column once she has premium again: the white Lumen Help screen with the green note */
-function s5_drawAva(g,t,c,i,T,A){if(i!==4)return;const t0=A(4,'ava')-.2,pp=cl((t-t0)/.45);if(pp<=0)return;
-  s5_phone2(g,215,352,410,pp,Object.assign({dw:250,fs:11.5,msgs:[{me:1,text:'I paid but have no premium'},{text:s5_AV_R},{link:'Update payment method'},{note:s5_AV_N,kind:'amber'},{note:s5_AV_G,kind:'green'}]},s5_AV,{card:null}))}
-
+  const gq=i===3?s5_E(c(3)+.1,c(3)+.9,t):1;if(gq<=0)return;
+  /* beat 2 spotlight: facts → actions → the reply the checker passed */
+  const pas=A(3,'passed'),E=(w,d=.3)=>s5_E(A(3,w)-.2,A(3,w)+d,t);let spot=null,ckp=0;
+  if(i===3){const k1=E('facts'),k2=E('actions'),k3=E('reply'),off=1-s5_E(pas+.25,pas+.55,t),R1=s5_RG.facts,R2=s5_RG.actions,R3=s5_RG.reply;
+    const r=R1.map((v,k)=>L(L(v,R2[k],k2),R3[k],k3));ckp=s5_E(A(3,'checker')-.2,A(3,'checker')+.2,t)*off;
+    spot=[...r,k1*off,k3>.5?'the reply the checker passed':k2>.5?'the actions policy chose':'the facts']}
+  /* beat 3: the camera pans and zooms onto the decision card (from the end of beat 2), the click lands on 'approve' */
+  const ap=A(4,'approve'),zs=Math.min(pas+.4,c(4)-.25),zp=s5_E(zs,Math.max(zs+.5,c(4)+.32),t);
+  const press=i===4?cl(1-Math.abs(t-ap-.04)/.1):0,flash=i===4?cl((t-ap)/.12)*(1-s5_E(ap+.35,ap+.7,t)):0,done=i===4?s5_E(ap+.3,ap+.85,t):0;
+  const F=[L(L(500,628,zp),680,done),L(L(230,586,zp),420,done)],z=L(L(1,1.36,zp),1.22,done),V=s5_view(F,z);
+  const [vx,vy,vw,vh]=s5_VW,gs=L(.12,1,gq);let lx=vx+vw/2,ly=vy+vh/2;if(gq<1){const p=X3.at(S5,o.lapPt);lx=L(p[0],lx,gq);ly=L(p[1],ly,gq)}
+  g.save();g.globalAlpha*=cl(gq*3);g.translate(lx,ly);g.scale(gs,gs);g.translate(-(vx+vw/2),-(vy+vh/2));
+  g.save();g.shadowColor='rgba(0,0,0,.6)';g.shadowBlur=34;g.shadowOffsetY=10;s5_box(g,vx,vy,vw,vh,12,s5_N.page);g.restore();
+  g.save();g.beginPath();g.roundRect(vx,vy,vw,vh,12);g.clip();g.translate(V.tx,V.ty);g.scale(z,z);
+  const btn=s5_nsConsole(g,{spot,press,flash,done,ckPulse:ckp,T});g.restore();
+  s5_box(g,vx+.5,vy+.5,vw-1,vh-1,12,null,s5_N.line2,1.5);
+  /* the click: a teal ring bursts from the button */
+  if(btn&&i===4){const [bx,by]=V.at(btn[0]+btn[2]/2,btn[1]+btn[3]/2);const r=cl((t-ap)/.6);
+    if(r>0&&r<1){g.save();g.globalAlpha*=(1-r);g.lineWidth=4;g.strokeStyle='#3fd0c0';g.beginPath();g.ellipse(bx,by,btn[2]*z*.5+70*r,btn[3]*z*.5+50*r,0,0,6.283);g.stroke();g.restore()}
+    /* the cursor: in from the lower right during the zoom, presses on 'approve', leaves */
+    const c0=zs+.1,q=sm(cl((t-c0)/Math.max(.3,ap-.06-c0))),ca=cl((t-c0)*5)*(1-s5_E(ap+.5,ap+.8,t));
+    if(ca>0){const px=L(1010,bx+40,q),py=L(560,by+10,q);g.save();g.globalAlpha*=ca;g.translate(px,py);const ps=1.5*(1-.14*press);g.scale(ps,ps);
+      g.beginPath();g.moveTo(0,0);g.lineTo(0,26);g.lineTo(7,20);g.lineTo(12,31);g.lineTo(17,29);g.lineTo(12,18);g.lineTo(21,18);g.closePath();
+      g.fillStyle='#ffffff';g.fill();g.lineWidth=2;g.strokeStyle='#070b14';g.stroke();g.restore()}}
+  g.restore()}
+/* Ava's phone (Night Shift help screen, dark) pops up on the right once she has premium again */
+function s5_nsHelp(x,W,H){const N=s5_N,u=W/250,w=250,h=H/u;x.save();x.scale(u,u);x.textBaseline='middle';
+  x.fillStyle='#0d1629';x.fillRect(0,0,w,h);x.fillStyle=N.pane;x.fillRect(0,0,w,56);x.fillStyle=N.line;x.fillRect(0,56,w,1);
+  x.fillStyle='#1c2230';x.beginPath();x.roundRect(10,11,34,34,8);x.fill();x.lineWidth=3;x.strokeStyle='#f08a4b';x.beginPath();x.arc(27,28,8.5,-2.6,.6);x.stroke();x.strokeStyle='#5b86f2';x.beginPath();x.arc(27,28,8.5,.8,3.4);x.stroke();
+  x.fillStyle='#fff';x.beginPath();x.arc(27,28,3,0,6.283);x.fill();
+  s5_t(x,52,21,'Lumen Help',16,N.ink,{w:600});s5_t(x,52,40,'Subscription',12,N.ink3);
+  s5_box(x,174,14,66,28,6,null,N.line2);s5_t(x,184,28.5,'Ava',14,N.ink,{w:600});x.fillStyle=N.ink2;x.beginPath();x.moveTo(220,25);x.lineTo(230,25);x.lineTo(225,31);x.closePath();x.fill();
+  /* status band: granted (teal = checked / true) */
+  x.fillStyle=N.tealSoft;x.fillRect(0,57,w,166);x.fillStyle=N.teal;x.fillRect(0,57,3,166);
+  s5_t(x,14,77,'What we found on your account',12,N.ink2);s5_sq(x,19,103,N.teal,11,1);s5_t(x,32,103,'Premium given by the team',16,N.ink,{w:600});
+  s5_t(x,14,133,'Plan',12,N.ink2);s5_t(x,14,152,'Lumen Premium',15,N.ink,{w:600});s5_t(x,140,133,'Given until',12,N.ink2);s5_t(x,140,152,'Nov 7, 2026',15,N.teal,{w:600});
+  s5_t(x,14,182,'Days left',12,N.ink2);s5_t(x,14,201,'3 days',15,N.ink,{w:600});
+  /* the turns */
+  x.font='400 14px "IBM Plex Sans",sans-serif';const um='I paid but have no premium',uw=x.measureText(um).width+24;s5_box(x,w-10-uw,240,uw,34,8,'#1b2a4a');s5_t(x,w-10-uw+12,257.5,um,14,N.ink);
+  s5_box(x,10,286,w-20,54,6,N.raised);x.fillStyle=N.amb;x.fillRect(10,286,2.5,54);s5_t(x,22,303,"…It isn't active yet and only",13,N.ink2);s5_t(x,22,323,'starts if they approve it.',13,N.ink2);
+  s5_box(x,10,352,w-20,70,6,N.tealSoft,'rgba(63,208,192,.65)');s5_ck(x,26,372,11,N.teal,2.2);s5_t(x,40,372,'The Lumen team approved',14,N.teal,{w:600});
+  s5_t(x,22,396,'access until 7 November 2026.',14,N.ink);
+  const cy=h-54;x.fillStyle=N.pane;x.fillRect(0,cy-10,w,h);x.fillStyle=N.line;x.fillRect(0,cy-10,w,1);
+  s5_box(x,10,cy,180,38,6,null,N.line2);s5_t(x,22,cy+19.5,'Describe the problem…',13,N.ink3);s5_box(x,198,cy,42,38,6,'#1b2a4a');
+  x.strokeStyle=N.ink;x.lineWidth=2;x.lineCap='round';x.beginPath();x.moveTo(211,cy+19);x.lineTo(227,cy+19);x.moveTo(221,cy+13);x.lineTo(227,cy+19);x.lineTo(221,cy+25);x.stroke();
+  x.restore()}
+function s5_drawAva(g,t,c,i,T,A){if(i!==4)return;const t0=A(4,'ava')-.25,pp=cl((t-t0)/.45);if(pp<=0)return;
+  const h=462,w=h*.49,cx=958,cy=340;g.save();g.translate(cx,cy);g.rotate(.025);const sc=bk(pp);g.scale(sc,sc);
+  g.shadowColor='rgba(63,208,192,.5)';g.shadowBlur=44;s5_box(g,-w/2,-h/2,w,h,w*.13,'#05080f');g.shadowColor='transparent';s5_box(g,-w/2,-h/2,w,h,w*.13,null,'rgba(160,180,215,.45)',2);
+  const m=w*.04,sw=w-2*m,sh=h-2*m;g.save();g.beginPath();g.roundRect(-sw/2,-sh/2,sw,sh,w*.1);g.clip();g.translate(-sw/2,-sh/2);s5_nsHelp(g,sw,sh);g.restore();g.restore()}
 /* the narration starts at Lucía (the old "Money needs more care." beat was cut): the pose/console code keeps its 5-beat
    numbering (1 Lucía … 4 approve) through this remap; beat 1's camera move starts from the wide shot. */
 const s5_c=c=>j=>c(Math.max(0,j-1)),s5_A=A=>(j,w)=>A(Math.max(0,j-1),w);

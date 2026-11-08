@@ -62,10 +62,17 @@ are filled from each case's FactSheet and must pass the validator; if one fails,
 Seeding never calls an LLM. Ava (00239), Marko (00009) and the other `/help` picker users are never seeded, so the
 live demo starts clean. Running it twice adds nothing; `--reset` removes and re-adds only the seeded cases.
 
+### Suggested replies for people
+
+When a case goes to a person (the user asked for one, a privacy request, or a message that tried to give orders),
+Case Desk also drafts the person's answer: built from the FactSheet, in the user's language, checked by the same
+validator (template fallback), stored as `suggested_reply` on the case and shown with a Copy button in the console's
+"A person needs to answer this" panel. It is never sent to the user.
+
 ## Tests
 
 ```bash
-uv run pytest -q                                      # 558 tests; 2 skip without the organisers' seed repo
+uv run pytest -q                                      # 681 tests
 uv run playwright install chromium && uv run python tests/e2e_ui.py   # UI end-to-end
 uv run python eval/run_eval.py --backend claude-cli --concurrency 4  # live eval with real Claude
 ```

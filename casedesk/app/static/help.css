@@ -77,6 +77,9 @@ body { overflow: hidden; }
 .msg.system .bubble { background: var(--ok-soft); color: var(--ok); font-weight: 600; font-size: .88rem; text-align: center; border-radius: var(--r-m); }
 .msg.system.denied .bubble { background: var(--info-soft); color: var(--info); }
 .msg.error .bubble { background: var(--bad-soft); color: var(--bad); border-color: transparent; }
+.msg.team { align-self: flex-start; gap: 4px; }
+.msg.team .team-who { font-size: .78rem; font-weight: 600; color: var(--ok); padding-inline-start: 4px; }
+.msg.team .bubble { background: var(--ok-soft); border: 1px solid var(--line); border-bottom-left-radius: 6px; }
 
 .typing { display: flex; align-items: center; gap: 10px; color: var(--ink-2); font-size: .9rem; }
 .typing .dots { display: inline-flex; gap: 4px; }

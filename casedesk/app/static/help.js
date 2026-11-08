@@ -11,6 +11,7 @@
   const S = {
     lang: "en", user: null, sig: null, locale: null, caseId: null, busy: false, gen: 0, inflight: null,
     approvals: {}, approvalTimer: null, demoUsers: [], lastStatus: null,
+    appName: "Lumen", teamAfter: 0, teamSeen: new Set(), teamTimer: null,
   };
   const t = () => I[S.lang] || I.en;
   const pickLang = (loc) => {
@@ -81,6 +82,15 @@
   const scrollDown = () => requestAnimationFrame(() => { scroller.scrollTop = scroller.scrollHeight; });
   function addMsg(kind, text) {
     const li = el("li", "msg " + kind); const b = el("div", "bubble", text); b.dir = "auto"; li.append(b); log.append(li); scrollDown(); return li;
+  }
+  // a message the app's team wrote from the console (role "team"): its own bubble, labelled, not Case Desk's
+  function addTeamMsg(m) {
+    if (S.teamSeen.has(m.message_id)) return null;
+    S.teamSeen.add(m.message_id);
+    const li = el("li", "msg team"); li.dataset.mid = m.message_id;
+    const who = el("span", "team-who", m.author || `${S.appName} team`);
+    const b = el("div", "bubble", m.text); b.dir = "auto";
+    li.append(who, b); log.append(li); $("#intro").hidden = true; scrollDown(); return li;
   }
   function addTyping() {
     const li = el("li", "msg bot"); const b = el("div", "bubble typing");
@@ -228,6 +238,28 @@
   }
   function stopWatch() { clearInterval(S.approvalTimer); S.approvalTimer = null; }
 
+  // ------------------------------------------------------------ team replies: GET /api/messages (signed), every 4 s
+  async function pullTeam(gen, first) {
+    const d = await api(`/api/messages?${authQ()}&after=${S.teamAfter}`);
+    if (S.gen !== gen) return;
+    S.teamAfter = Math.max(S.teamAfter, d.last_id || 0);
+    let msgs = d.messages || [];
+    if (first) { // opening the widget: only the team's latest unanswered word, in the newest case that has one
+      const last = msgs.filter((m) => m.awaiting).pop();
+      msgs = last ? msgs.filter((m) => m.awaiting && m.case_id === last.case_id) : [];
+    }
+    for (const m of msgs) { addTeamMsg(m); if (!S.caseId) S.caseId = m.case_id; } // answering continues that case
+  }
+  function watchTeam() {
+    clearInterval(S.teamTimer);
+    const gen = S.gen;
+    pullTeam(gen, true).catch(() => {});
+    S.teamTimer = setInterval(() => {
+      if (S.gen !== gen) return clearInterval(S.teamTimer);
+      if (!document.hidden) pullTeam(gen, false).catch(() => { /* keep trying quietly */ });
+    }, 4000);
+  }
+
   // ------------------------------------------------------------ identity
   async function selectUser(u) {
     stopWatch();
@@ -237,6 +269,7 @@
     }
     S.user = u.customer_user_id; S.sig = u.signature; S.locale = (u.locale || "en").replace("_", "-");
     S.caseId = null; S.approvals = {}; S.lastStatus = null; S.gen++;
+    S.teamAfter = 0; S.teamSeen = new Set(); clearInterval(S.teamTimer);
     S.busy = false; $("#send").disabled = false;
     log.textContent = ""; $("#intro").hidden = false; $("#statusCard").hidden = true;
     document.querySelectorAll(".profile").forEach((p) => { const on = p.dataset.uid === S.user; p.setAttribute("aria-checked", String(on)); p.tabIndex = on ? 0 : -1; });
@@ -249,6 +282,7 @@
       if (S.gen !== gen) return;
       renderStatus(st); noteApprovals(st.approvals, true);
       if (Object.values(S.approvals).includes("pending")) watchApprovals();
+      watchTeam();
     } catch (e) { if (S.gen === gen) addMsg("bot error", e.status === 401 ? t().errAuth : t().errGeneric); }
   }
   function fillProfile(b, u) {
@@ -262,6 +296,7 @@
     applyLang(qs.get("locale") || navigator.language);
     let meta = { demo: false };
     try { meta = await api("/api/meta"); } catch { /* offline? */ }
+    if (meta.app_name) S.appName = meta.app_name;
     if (qs.get("uid")) {
       return selectUser({ customer_user_id: qs.get("uid"), signature: qs.get("sig"), locale: qs.get("locale") || navigator.language });
     }
@@ -294,7 +329,7 @@
   }
 
   // ------------------------------------------------------------ design variants
-  const H = { S, t, SL, $, el, fmtDate, cardRows, initials, linkBtn, stepsBtn, safeUrl, scrollDown, ICON_OUT,
+  const H = { S, t, SL, $, el, fmtDate, addTeamMsg, cardRows, initials, linkBtn, stepsBtn, safeUrl, scrollDown, ICON_OUT,
     defaults: { paintStatus, addTyping, renderActions, fillProfile } };
   const V = Object.assign({ paintStatus, addTyping, renderActions, fillProfile },
     typeof window.CaseDeskHelpView === "function" ? window.CaseDeskHelpView(H) : {});

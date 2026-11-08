@@ -30,31 +30,21 @@ dict(id="brief", bg="live", secs=22, html="""
 We read "earn more" as also: don't lose the subscribers you already have. [click]
 A question about a charge that gets no answer, or a wrong one, turns into a refund or a cancel. A true answer, fast, keeps the subscriber."""),
 
-dict(id="why", bg="live", secs=30, html="""
-<div class="kick">HOW WE CHOSE IT</div>
-<h2>We let agents argue first.</h2>
-<div class="why">
-  <div class="wrow" data-step="1"><span class="wn">~20</span><p>ideas researched against the brief,<br>then <b class="tea">debated</b> by our agents</p></div>
-  <div class="wrow dead" data-step="2"><span class="wn">✕</span><p>First favourite: <s>an A/B-test “referee”</s><br><small>other teams were building it; Adapty partly does it already</small></p></div>
-  <div class="wrow win" data-step="3"><span class="wn">✓</span><p><b class="amb">Ilijan's idea won</b><br>
-    <span class="chips"><span>the pain is the subscriber's</span><span>the data is Adapty's</span><span>nobody here was answering the subscriber</span></span></p></div>
-</div>
-""", notes="""How did we pick it? We let agents argue first. [click]
-Our agents researched about twenty ideas against that brief, then debated them. [click]
-The early favourite, an A/B-test "referee", was being built by other teams, and Adapty already does part of it. So we dropped it. [click]
-Ilijan's idea won: the pain is the subscriber's, the data is Adapty's, and nobody here was answering the subscriber. Even then, the final vote was a tie."""),
-
-dict(id="primer", bg="live", secs=22, html="""
+dict(id="primer", bg="live", secs=30, html="""
 <div class="kick">WHAT YOU'LL SEE</div>
-<p class="lumen"><b>Lumen</b> = Adapty's own hackathon test app</p>
-<div class="views" data-step="1">
-  <figure class="vw phone"><img alt="" src="{{img}}p_help.jpg"><figcaption><b>Lumen Help</b><span>what the subscriber sees</span></figcaption></figure>
-  <figure class="vw cons"><img alt="" src="{{img}}p_console.jpg"><figcaption><b>The console</b><span>what the developer sees</span></figcaption></figure>
+<h2>Three things no other team here has built.</h2>
+<div class="see2"><div class="why">
+  <div class="wrow" data-step="1"><span class="wn tea">✓</span><p><b>Every reply is checked</b> against the subscriber's account<br><small>before they see it, in their own language</small></p></div>
+  <div class="wrow" data-step="2"><span class="wn amb">1</span><p><b class="amb">Free premium only with your OK</b>, or a rule you set<br><small>privacy requests and attacks always go to a person</small></p></div>
+  <div class="wrow" data-step="3"><span class="wn tea">✦</span><p><b>Your support desk inside Claude</b><br><small>approve a grant, answer a subscriber, close a case, over MCP</small></p></div>
 </div>
-<div class="who" data-step="2"><span class="lbl">Watch for</span><span class="person">Marko <small>writes in Serbian</small></span><span class="person">Lucía</span><span class="person">Ava</span></div>
-""", notes="""Three things help you read the video. Lumen is Adapty's own hackathon test app. [click]
-Case Desk lives inside it twice: as "Lumen Help", the screen the subscriber sees, and as a console, which is what the developer sees. [click]
-And watch for three users: Marko, who writes in Serbian, then Lucía and Ava."""),
+<div class="shots" data-step="1"><img class="sh-c" alt="The Case Desk console" src="{{img}}ui_console.jpg"><img class="sh-p" alt="Lumen Help on a phone" src="{{img}}ui_help.jpg"></div></div>
+<p class="lumen" data-step="3"><small>In the video: <b>Lumen</b>, Adapty's own test app · watch for Marko (Serbian), Lucía and Ava</small></p>
+""", notes="""Here is what you'll see, and as far as the other teams' public repos show, nobody else here has built it. [click]
+One: every reply is checked against the subscriber's real account before they ever see it, in their own language. [click]
+Two: free premium only goes out with your OK, or under a rule you set. Privacy requests and attacks always go to a person. [click]
+Three: the whole support desk works from inside Claude. You can approve a grant, answer a subscriber or close a case, over MCP.
+In the video, the app is Lumen, Adapty's own test app. Watch for Marko, who writes in Serbian, then Lucía and Ava."""),
 
 dict(id="watch", bg="live", secs=5, html="""
 <h1 class="mega sm">Watch it.</h1>
@@ -66,25 +56,13 @@ dict(id="video", bg=None, secs=0, video=True, html="", notes="""[The video plays
 [When it ends, the deck takes the keys back: press → for "Under the hood".]
 [To leave early: Esc, then →. Inside the video: ←/→ seek 5 s, N/P next/previous scene, C captions, F fullscreen (whole deck).]"""),
 
-dict(id="hood", bg="s5", secs=24, html="""
+dict(id="hood", bg="s5", secs=30, html="""
 <div class="kick">UNDER THE HOOD</div>
-<div class="arch">
-  <div class="node app" data-step="1"><b>The app</b><small>“Lumen Help”</small></div>
-  <div class="edge e1" data-step="1"><span>HMAC-signed<br>user id</span></div>
-  <div class="node core" data-step="1"><b>Case Desk</b><small>FastAPI · sqlite · uv</small>
-    <div class="pipe2" data-step="2"><span>13 states × intent</span><i>→</i><span>policy table</span><i>→</i><span>FactSheet</span><i>→</i><span class="amb">Claude</span><i>→</i><span class="tea">validator</span></div>
-  </div>
-  <div class="edge e2" data-step="3"><span>Api-Key<br>API v2</span></div>
-  <div class="node adapty" data-step="3"><b>Adapty</b>
-    <code>GET  …/profile/</code><code>POST …/grant/access-level/</code></div>
-  <div class="node console" data-step="4"><b>Console</b><small>approve → re-check → grant</small></div>
-  <div class="foot2" data-step="4">chat rate-limited per user · failed sign-ins per IP · grants never automatic</div>
-</div>
+<div class="archimg" data-step="1"><img alt="Case Desk architecture: code decides the facts, Claude writes the words, you approve the money" src="{{img}}architecture.jpg"></div>
 """, notes="""Under the hood, for the engineers. [click]
-The app signs each user id with HMAC, so you only ever see your own account. [click]
-Code sorts the profile into one of thirteen states; a fixed table picks the actions; the FactSheet is all a reply may use. [click]
-Two real Adapty calls: read the profile, grant an access level. [click]
-And the grant only comes from the console, re-checked when you approve."""),
+Three lanes. Claude writes the words: it reads what the user wants and phrases the reply, and that's all it does.
+Plain code decides the facts: it reads the Adapty profile through the server-side API, sorts it into one of thirteen states, builds the FactSheet and picks the actions from a fixed policy table. Then the validator blocks any number or date that isn't in the FactSheet.
+And you approve the money: a grant waits for your click, or follows a rule you set, and it's re-checked when it's approved. On the right, the console and the MCP server both use the same approve path."""),
 
 dict(id="real", bg="s8", secs=20, html="""
 <div class="kick">WHAT'S REAL TODAY</div>

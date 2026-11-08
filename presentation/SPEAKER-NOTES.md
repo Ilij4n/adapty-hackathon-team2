@@ -4,7 +4,7 @@ Read the plain text. Lines in [brackets] are actions, not words. [click] = press
 
 The deck shows these notes with N (bottom panel + timer) or P (separate presenter window for a second screen).
 
-Spoken before the video: ≈96 s. After the video: ≈90 s. Video ≈3:04. Whole slot ≈5 min + Q&A.
+Spoken before the video: ≈89 s. After the video: ≈108 s. Video ≈3:04. Whole slot ≈5 min + Q&A.
 
 ## 1. title — ≈19 s (46 words)
 
@@ -17,45 +17,39 @@ Adapty's brief was: help subscription apps earn more, or make Adapty easier or s
 We read "earn more" as also: don't lose the subscribers you already have. [click]
 A question about a charge that gets no answer, or a wrong one, turns into a refund or a cancel. A true answer, fast, keeps the subscriber.
 
-## 3. why — ≈30 s (72 words)
+## 3. primer — ≈45 s (109 words)
 
-How did we pick it? We let agents argue first. [click]
-Our agents researched about twenty ideas against that brief, then debated them. [click]
-The early favourite, an A/B-test "referee", was being built by other teams, and Adapty already does part of it. So we dropped it. [click]
-Ilijan's idea won: the pain is the subscriber's, the data is Adapty's, and nobody here was answering the subscriber. Even then, the final vote was a tie.
+Here is what you'll see, and as far as the other teams' public repos show, nobody else here has built it. [click]
+One: every reply is checked against the subscriber's real account before they ever see it, in their own language. [click]
+Two: free premium only goes out with your OK, or under a rule you set. Privacy requests and attacks always go to a person. [click]
+Three: the whole support desk works from inside Claude. You can approve a grant, answer a subscriber or close a case, over MCP.
+In the video, the app is Lumen, Adapty's own test app. Watch for Marko, who writes in Serbian, then Lucía and Ava.
 
-## 4. primer — ≈22 s (52 words)
-
-Three things help you read the video. Lumen is Adapty's own hackathon test app. [click]
-Case Desk lives inside it twice: as "Lumen Help", the screen the subscriber sees, and as a console, which is what the developer sees. [click]
-And watch for three users: Marko, who writes in Serbian, then Lucía and Ava.
-
-## 5. watch — ≈2 s (6 words)
+## 4. watch — ≈2 s (6 words)
 
 That's all you need. Three minutes.
 [→ starts the video right here: same frame, it pulls into focus]
 
-## 6. video — VIDEO (≈3:04, narrated)
+## 5. video — VIDEO (≈3:04, narrated)
 
 [The video plays by itself. Don't talk over it; it is narrated.]
 [When it ends, the deck takes the keys back: press → for "Under the hood".]
 [To leave early: Esc, then →. Inside the video: ←/→ seek 5 s, N/P next/previous scene, C captions, F fullscreen (whole deck).]
 
-## 7. hood — ≈28 s (68 words)
+## 6. hood — ≈46 s (111 words)
 
 Under the hood, for the engineers. [click]
-The app signs each user id with HMAC, so you only ever see your own account. [click]
-Code sorts the profile into one of thirteen states; a fixed table picks the actions; the FactSheet is all a reply may use. [click]
-Two real Adapty calls: read the profile, grant an access level. [click]
-And the grant only comes from the console, re-checked when you approve.
+Three lanes. Claude writes the words: it reads what the user wants and phrases the reply, and that's all it does.
+Plain code decides the facts: it reads the Adapty profile through the server-side API, sorts it into one of thirteen states, builds the FactSheet and picks the actions from a fixed policy table. Then the validator blocks any number or date that isn't in the FactSheet.
+And you approve the money: a grant waits for your click, or follows a rule you set, and it's re-checked when it's approved. On the right, the console and the MCP server both use the same approve path.
 
-## 8. real — ≈41 s (99 words)
+## 7. real — ≈41 s (99 words)
 
 And to be honest about what's real today. [click]
 The live demo runs real Claude and checks every reply. You choose the rules for what it does alone, you can run it from Claude through our MCP server, your team gets suggested replies, and there are over seven hundred automated tests. [click]
 The Adapty side is a mock server with Adapty's Lumen hackathon data; our client is built for the real API v2; switching is a config change, but we have not run it against a live Adapty account yet. The seeded console cases are scripted text through the real engine.
 
-## 9. next — ≈21 s (50 words)
+## 8. next — ≈21 s (50 words)
 
 What's next? [click]
 A real Adapty app, with keys and webhooks. A tab in the Adapty dashboard. An add-on like Refund Saver; the price is Adapty's call. The complaint signal across apps. Search, paging and assignment for bigger teams. And more languages tested. [click]

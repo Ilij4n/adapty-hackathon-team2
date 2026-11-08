@@ -101,6 +101,13 @@ blockquote.brief b{color:var(--amb)}
 .person{font-family:var(--d);font-size:40px;font-weight:600;background:var(--card);border:2px solid rgba(255,168,76,.45);border-radius:40px;padding:10px 30px}
 .person small{font-family:var(--b);font-weight:400;font-size:24px;color:var(--dim);margin-left:8px}
 /* why */
+.see2{display:flex;gap:44px;align-items:flex-start}.see2 .why{flex:1 1 0;max-width:none;gap:26px}
+.shots{position:relative;flex:0 0 760px;height:560px}
+.shots img{position:absolute;border-radius:14px;border:1px solid var(--line);box-shadow:0 24px 60px rgba(0,0,0,.55)}
+.shots .sh-c{left:0;top:0;width:690px}
+.shots .sh-p{right:0;top:110px;width:220px;border-radius:24px}
+.archimg{position:absolute;left:150px;right:150px;top:190px;bottom:70px;display:flex;justify-content:center;align-items:flex-start}
+.archimg img{max-width:100%;max-height:100%;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.5)}
 .why{display:flex;flex-direction:column;gap:34px;max-width:1250px}
 .wrow{display:flex;gap:34px;align-items:flex-start}
 .wn{font-family:var(--d);font-weight:700;font-size:64px;color:var(--tea);min-width:130px;line-height:1}
@@ -156,6 +163,9 @@ body.shownotes #notes{display:block}
 #notes .bar b{color:var(--amb);font-weight:600}
 #notes .tx{white-space:pre-wrap;color:#f3f6fc}
 #notes .tx i{color:var(--tea);font-style:normal}
+#vback{position:fixed;left:18px;top:16px;z-index:50;height:40px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:rgba(11,19,36,.82);color:var(--ink);font:600 15px/38px var(--b,inherit);cursor:pointer;opacity:0;pointer-events:none;transition:opacity .3s}
+body.onvideo #vback{opacity:.35;pointer-events:auto}
+body.onvideo #vback:hover,body.onvideo #vback.vis{opacity:1}
 #fsb{position:fixed;right:18px;top:16px;z-index:50;width:46px;height:46px;border-radius:12px;border:1px solid var(--line);background:rgba(11,19,36,.82);color:var(--ink);font-size:24px;line-height:44px;text-align:center;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .3s}
 #fsb.vis{opacity:1;pointer-events:auto}#fsb:hover{border-color:var(--amb);color:var(--amb)}
 #prog{position:fixed;left:0;bottom:0;height:3px;background:var(--amb);z-index:20;transition:width .3s}
@@ -171,6 +181,7 @@ body.onvideo #prog{display:none}
 <div id="notes"><div class="bar"><span id="nslide"></span><span>total <b id="ntot">0:00</b></span><span>this slide <b id="nsl">0:00</b> / <span id="ntarget"></span></span><span>next: <span id="nnext"></span></span><span>N hide · T reset timer · P presenter window</span></div><div class="tx" id="ntx"></div></div>
 <div id="prog"></div>
 <button id="fsb" title="Fullscreen (F)" aria-label="Fullscreen">⛶</button>
+<button id="vback" title="Back to the slides (Esc)" aria-label="Back to the slides">‹ Slides</button>
 <script>
 const META=/*META*/[];
 const S=[...document.querySelectorAll('#stage .slide')];
@@ -235,7 +246,7 @@ addEventListener('message',e=>{const q=e.data;
   if(d==='advance'){vidState='playing';if(!isVideo(cur))go(cur+1,0,true);return}
   if(d==='playing'||d==='paused'||d==='ready')vidState=d;
   if(!isVideo(cur))return;
-  if(d==='back'){send('pause');deckKeys(true)}
+  if(d==='back'){backToSlides();return}
   else if(d==='ended'){vidState='ended';deckKeys(true)}
   else if(d==='next'){deckKeys(true);next()}});
 addEventListener('blur',()=>{if(isVideo(cur))setTimeout(()=>{if(document.activeElement===vid)document.body.classList.remove('deckkeys')},0)});
@@ -258,7 +269,10 @@ document.addEventListener('keydown',onKey);
 function toggleFS(){const d=document;try{if(d.fullscreenElement||d.webkitFullscreenElement){(d.exitFullscreen||d.webkitExitFullscreen).call(d)}
   else{const r=d.documentElement,f=r.requestFullscreen||r.webkitRequestFullscreen;const p=f&&f.call(r,{navigationUI:'hide'});p&&p.catch&&p.catch(()=>{})}}catch(_){}}
 const fsb=document.getElementById('fsb');let fsT=0;
-function showFsb(){fsb.textContent=document.fullscreenElement?'✕':'⛶';fsb.title=document.fullscreenElement?'Exit fullscreen (F / Esc)':'Fullscreen (F)';fsb.classList.add('vis');clearTimeout(fsT);fsT=setTimeout(()=>fsb.classList.remove('vis'),2500)}
+/* Subin: from the video, Esc / PageUp / the ‹ Slides button go back to the slide before it (video paused, reset to its first frame) */
+function backToSlides(){if(!isVideo(cur))return;send('pause');deckKeys(true);go(cur-1,maxSteps(cur-1))}
+const vback=document.getElementById('vback');vback.addEventListener('click',e=>{e.stopPropagation();backToSlides()});
+function showFsb(){vback.classList.add('vis');setTimeout(()=>vback.classList.remove('vis'),2500);fsb.textContent=document.fullscreenElement?'✕':'⛶';fsb.title=document.fullscreenElement?'Exit fullscreen (F / Esc)':'Fullscreen (F)';fsb.classList.add('vis');clearTimeout(fsT);fsT=setTimeout(()=>fsb.classList.remove('vis'),2500)}
 fsb.addEventListener('click',e=>{e.stopPropagation();toggleFS();showFsb();if(isVideo(cur))enterVideo()});
 addEventListener('pointermove',showFsb,{passive:true});
 document.addEventListener('fullscreenchange',()=>{fit();showFsb();if(isVideo(cur))setTimeout(()=>{try{vid.focus()}catch(e){}},50)});

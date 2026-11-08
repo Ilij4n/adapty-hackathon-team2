@@ -39,6 +39,10 @@ def icon(n):
 
 def make_bgs(dest):
     os.makedirs(dest, exist_ok=True)
+    for f in os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static_img')):  # real UI shots + the architecture drawing, crisp
+        im = Image.open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static_img', f)).convert('RGB')
+        im.thumbnail((2000, 2000), Image.LANCZOS)
+        im.save(os.path.join(dest, os.path.splitext(f)[0] + '.jpg'), quality=90, optimize=True)
     for name, (t, blur, light, *crop) in BGS.items():
         im = Image.open(os.path.join(B, "frames", f"f{t.replace(':', '_')}.png")).convert("RGB")
         if crop:

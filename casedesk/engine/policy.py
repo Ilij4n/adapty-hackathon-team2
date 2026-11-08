@@ -26,21 +26,21 @@ Store links only exist for app_store / play_store: cancel / manage / payment / r
 (stripe, adapty, unknown) become a single ESCALATE_TO_HUMAN.
 
 Decision table (rows: state; columns: intent type)
-| state | CHARGED_AFTER_CANCEL | PAID_NO_ACCESS | REFUND_REQUEST | HOW_TO_CANCEL | RESTORE_NEW_DEVICE | BILLING_FAILED | STATUS_QUESTION | OTHER |
-|---|---|---|---|---|---|---|---|---|
-| ACTIVE_RENEWING | explain! cancel refund | explain! restore | explain refund cancel | explain cancel | explain restore | explain! | explain | explain |
-| CANCELLED_PAID_UP | charge? | explain! restore | explain refund | explain | explain restore | explain! | explain | explain |
-| TRIAL_ACTIVE | explain! cancel | explain! restore | explain! cancel | explain cancel | explain restore | explain! | explain | explain |
-| TRIAL_CANCELLED | explain! | explain! restore | explain! | explain | explain restore | explain! | explain | explain |
-| GRACE_PERIOD | explain! cancel | explain! payment restore | explain refund | explain cancel | explain payment restore | explain payment | explain payment | explain |
-| BILLING_RETRY | explain! cancel | explain payment grant | explain refund | explain cancel | explain payment grant | explain payment grant | explain payment grant | explain |
-| EXPIRED_BILLING_ERROR | explain! | explain payment manage grant | explain refund | explain | explain payment manage grant | explain payment manage grant | explain payment manage grant | explain |
-| EXPIRED_CANCELLED | charge? | explain! manage | explain refund | explain | explain manage | explain! | explain | explain |
-| REFUNDED | explain! | explain! | explain! | explain | explain | explain | explain | explain |
-| LIFETIME | explain! | explain! restore | explain refund | explain | explain restore | explain! | explain | explain |
-| GRANTED_BY_DEVELOPER | explain! human | explain! restore | explain! | explain | explain restore | explain | explain | explain |
-| FAMILY_SHARED | explain! | explain! restore | explain! | explain | explain restore | explain | explain | explain |
-| NO_PURCHASE | explain! restore human | explain! restore human | explain human | explain manage | explain restore human | explain human | explain | explain |
+| state | CHARGED_AFTER_CANCEL | PAID_NO_ACCESS | REFUND_REQUEST | HOW_TO_CANCEL | RESTORE_NEW_DEVICE | BILLING_FAILED | STATUS_QUESTION | OTHER | UNRECOGNISED_CHARGE | FREE_ACCESS_REQUEST |
+|---|---|---|---|---|---|---|---|---|---|---|
+| ACTIVE_RENEWING | explain! cancel refund | explain! restore | explain refund cancel | explain cancel | explain restore | explain! | explain | explain | explain refund cancel | explain |
+| CANCELLED_PAID_UP | charge? | explain! restore | explain refund | explain | explain restore | explain! | explain | explain | explain refund | explain |
+| TRIAL_ACTIVE | explain! cancel | explain! restore | explain! cancel | explain cancel | explain restore | explain! | explain | explain | explain! cancel | explain |
+| TRIAL_CANCELLED | explain! | explain! restore | explain! | explain | explain restore | explain! | explain | explain | explain! | explain |
+| GRACE_PERIOD | explain! cancel | explain! payment restore | explain refund | explain cancel | explain payment restore | explain payment | explain payment | explain | explain refund cancel | explain payment |
+| BILLING_RETRY | explain! cancel | explain payment grant | explain refund | explain cancel | explain payment grant | explain payment grant | explain payment grant | explain | explain refund cancel | explain payment grant |
+| EXPIRED_BILLING_ERROR | explain! | explain payment manage grant | explain refund | explain | explain payment manage grant | explain payment manage grant | explain payment manage grant | explain | explain refund | explain payment manage grant |
+| EXPIRED_CANCELLED | charge? | explain! manage | explain refund | explain | explain manage | explain! | explain | explain | explain refund | explain manage |
+| REFUNDED | explain! | explain! | explain! | explain | explain | explain | explain | explain | explain! | explain manage |
+| LIFETIME | explain! | explain! restore | explain refund | explain | explain restore | explain! | explain | explain | explain refund | explain restore |
+| GRANTED_BY_DEVELOPER | explain! human | explain! restore | explain! | explain | explain restore | explain | explain | explain | explain! | explain |
+| FAMILY_SHARED | explain! | explain! restore | explain! | explain | explain restore | explain | explain | explain | explain! | explain |
+| NO_PURCHASE | explain! restore human | explain! restore human | explain human | explain manage | explain restore human | explain human | explain | explain | explain! | explain manage restore |
 
 | state | HUMAN_REQUEST | ACKNOWLEDGEMENT | OTHER_APP | PRIVACY_REQUEST | THIRD_PARTY_ACCOUNT | DISCOUNT_REQUEST |
 |---|---|---|---|---|---|---|
@@ -59,12 +59,14 @@ Decision table (rows: state; columns: intent type)
 | NO_PURCHASE | human | — | — | human | — | explain |
 
 Fact checks applied after the table (in this order):
-  H7 claims vs facts — for STATUS_QUESTION / CHARGED_AFTER_CANCEL / REFUND_REQUEST / PAID_NO_ACCESS: if
+  H7 claims vs facts — for STATUS_QUESTION / CHARGED_AFTER_CANCEL / REFUND_REQUEST / PAID_NO_ACCESS /
+     UNRECOGNISED_CHARGE: if
      claims.claimed_store (app_store|play_store) differs from the account's store, or claims.claimed_amount is not a
      number in the FactSheet (only checked when there is a `price`) -> the first action becomes explain! reason
      `charge_not_found` with params store_mismatch / amount_mismatch; refund paths are dropped (that charge is not on
      this account); a store mismatch adds ESCALATE_TO_HUMAN.
-  H4 never charged — facts.ever_charged == "no" with REFUND_REQUEST or CHARGED_AFTER_CANCEL (not FAMILY_SHARED):
+  H4 never charged — facts.ever_charged == "no" with REFUND_REQUEST, CHARGED_AFTER_CANCEL or UNRECOGNISED_CHARGE
+     (not FAMILY_SHARED):
      explain! reason `nothing_charged` (`no_charge_on_account` for NO_PURCHASE / GRANTED_BY_DEVELOPER, and for
      CHARGED_AFTER_CANCEL in CANCELLED_PAID_UP / EXPIRED_CANCELLED), and no refund path.
   M5 charge? + claims.wants_refund — a contradicted charged-after-cancel claim still gets the store refund path when
@@ -96,7 +98,8 @@ from casedesk.engine.state import CaseState, _utc, ever_paid, last_charge_at
 ACTION_KINDS = ("EXPLAIN_STATUS", "MANAGE_SUBSCRIPTION_LINK", "CANCEL_STEPS", "REFUND_PATH_APPLE", "REFUND_PATH_GOOGLE",
                 "RESTORE_PURCHASES_STEPS", "UPDATE_PAYMENT_METHOD", "PROPOSE_GRANT", "ESCALATE_TO_HUMAN")
 INTENT_TYPES = ("CHARGED_AFTER_CANCEL", "PAID_NO_ACCESS", "REFUND_REQUEST", "HOW_TO_CANCEL", "RESTORE_NEW_DEVICE",
-                "BILLING_FAILED", "STATUS_QUESTION", "OTHER", "HUMAN_REQUEST", "ACKNOWLEDGEMENT", "OTHER_APP",
+                "BILLING_FAILED", "STATUS_QUESTION", "OTHER", "UNRECOGNISED_CHARGE", "FREE_ACCESS_REQUEST",
+                "HUMAN_REQUEST", "ACKNOWLEDGEMENT", "OTHER_APP",
                 "PRIVACY_REQUEST", "THIRD_PARTY_ACCOUNT", "DISCOUNT_REQUEST")
 # Intents whose column is the same in every state except DISCOUNT_REQUEST's grant (see _UNIFORM below).
 UNIFORM_INTENTS = ("HUMAN_REQUEST", "ACKNOWLEDGEMENT", "OTHER_APP", "PRIVACY_REQUEST", "THIRD_PARTY_ACCOUNT",
@@ -170,6 +173,32 @@ _row("NO_PURCHASE",            "explain! restore human",  "explain! restore huma
                                "explain manage",          "explain restore human",      "explain human",
                                "explain",                 "explain")
 
+# Two state-dependent columns added after the head-to-head test (2026-11-08):
+#   UNRECOGNISED_CHARGE  "why was I charged, I never bought anything": explain the charges the account shows and where
+#                        to request a refund; never-charged accounts get explain! (H4) and no refund path.
+#   FREE_ACCESS_REQUEST  "give me premium for free": explain what the account shows and what the user can do
+#                        (subscribe / restore if they paid / fix payment). A grant only where one is already eligible
+#                        (paid-only rule unchanged); store slots never escalate here (see decide()).
+_NEW_COLS = {
+    #  state                    UNRECOGNISED_CHARGE          FREE_ACCESS_REQUEST
+    "ACTIVE_RENEWING":       ("explain refund cancel",    "explain"),
+    "CANCELLED_PAID_UP":     ("explain refund",           "explain"),
+    "TRIAL_ACTIVE":          ("explain! cancel",          "explain"),
+    "TRIAL_CANCELLED":       ("explain!",                 "explain"),
+    "GRACE_PERIOD":          ("explain refund cancel",    "explain payment"),
+    "BILLING_RETRY":         ("explain refund cancel",    "explain payment grant"),
+    "EXPIRED_BILLING_ERROR": ("explain refund",           "explain payment manage grant"),
+    "EXPIRED_CANCELLED":     ("explain refund",           "explain manage"),
+    "REFUNDED":              ("explain!",                 "explain manage"),
+    "LIFETIME":              ("explain refund",           "explain restore"),
+    "GRANTED_BY_DEVELOPER":  ("explain!",                 "explain"),
+    "FAMILY_SHARED":         ("explain!",                 "explain"),
+    "NO_PURCHASE":           ("explain!",                 "explain manage restore"),
+}
+for _state, (_unrec, _free) in _NEW_COLS.items():
+    TABLE[_state]["UNRECOGNISED_CHARGE"] = tuple(_unrec.split())
+    TABLE[_state]["FREE_ACCESS_REQUEST"] = tuple(_free.split())
+
 # The six newer intents: same cells for every state, except DISCOUNT_REQUEST may carry a grant where one is already
 # eligible (BILLING_RETRY / EXPIRED_BILLING_ERROR). Never `human` for a discount ask.
 _UNIFORM = {"HUMAN_REQUEST": "human", "ACKNOWLEDGEMENT": "", "OTHER_APP": "", "PRIVACY_REQUEST": "human",
@@ -196,6 +225,9 @@ _CONTRADICTION = {
                        "REFUNDED": "already_refunded", "GRANTED_BY_DEVELOPER": "nothing_charged",
                        "FAMILY_SHARED": "organizer_must_request"},
     "BILLING_FAILED": {"_default": "payment_ok"},
+    "UNRECOGNISED_CHARGE": {"TRIAL_ACTIVE": "nothing_charged", "TRIAL_CANCELLED": "nothing_charged",
+                            "REFUNDED": "already_refunded", "GRANTED_BY_DEVELOPER": "no_charge_on_account",
+                            "FAMILY_SHARED": "organizer_pays", "NO_PURCHASE": "no_charge_on_account"},
 }
 
 _STORE_SLOTS = {"cancel", "manage", "payment", "refund"}
@@ -257,7 +289,7 @@ def grant_still_eligible(state: CaseState, facts: FactSheet, history, now: datet
 
 # --------------------------------------------------------------------------- claims (typed, sanitised only)
 
-_CHARGE_TOPICS = {"STATUS_QUESTION", "CHARGED_AFTER_CANCEL", "REFUND_REQUEST", "PAID_NO_ACCESS"}
+_CHARGE_TOPICS = {"STATUS_QUESTION", "CHARGED_AFTER_CANCEL", "REFUND_REQUEST", "PAID_NO_ACCESS", "UNRECOGNISED_CHARGE"}
 _PLATFORM_STORE = {"ios": "app_store", "android": "play_store"}
 
 
@@ -350,7 +382,7 @@ def decide(state: CaseState, intent: IntentLike | str, facts: FactSheet, history
 
     # H4: nothing was ever charged -> say so, never send them to a refund form.
     h4_reason = None
-    if never_charged and itype in ("REFUND_REQUEST", "CHARGED_AFTER_CANCEL"):
+    if never_charged and itype in ("REFUND_REQUEST", "CHARGED_AFTER_CANCEL", "UNRECOGNISED_CHARGE"):
         h4_reason = _never_charged_reason(state.code, itype)
         slots = [("explain!" if sl == "explain" else sl) for sl in slots if sl != "refund"]
 
@@ -382,6 +414,8 @@ def decide(state: CaseState, intent: IntentLike | str, facts: FactSheet, history
                               else "no_cancellation_recorded")
             out.append(_explain(state, True, reason))
         elif slot in _STORE_SLOTS:
+            if itype == "FREE_ACCESS_REQUEST" and store not in MANAGE_URLS:
+                continue   # a free-access ask is never worth a human ticket: no store link, no escalation
             out.extend(_store_actions(slot, store))
         elif slot == "restore":
             guessed = state.primary is None and state.access_level is None

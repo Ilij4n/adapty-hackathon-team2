@@ -34,7 +34,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from casedesk.adapty.models import Profile
-from casedesk.ai import templates, validate
+from casedesk.ai import suggest, templates, validate
 from casedesk.ai.intent import Intent
 from casedesk.app.store import Store
 from casedesk.engine import facts as facts_mod
@@ -92,6 +92,8 @@ class Turn:
     claims: dict = field(default_factory=dict)
     injection: bool = False
     reply: Callable[[Facts], str] = lambda f: ""
+    # Escalated turns: the scripted draft a person would send (the console's "Suggested reply"). None = template draft.
+    suggested: Callable[[Facts], str] | None = None
 
 
 @dataclass
@@ -114,7 +116,12 @@ TICKETS: list[Ticket] = [
         reply=lambda f: (f"I can't change anything on your account myself, but I've passed this to a person on the "
                          f"{f['app_name']} team, who will reply here. For reference: your {f['product_name']} ended on "
                          f"{f.d('expires_on')} after auto-renew was turned off. You can subscribe again any time at "
-                         f"{f['manage_url']}."))]),
+                         f"{f['manage_url']}."),
+        suggested=lambda f: (f"Hi Dylan, this is the {f['app_name']} support team. We can't change access because of "
+                             f"instructions in a chat message, so nothing on your account was changed. Your "
+                             f"{f['product_name']} ended on {f.d('expires_on')} after auto-renew was turned off. If "
+                             f"you'd like it back, you can subscribe again at {f['manage_url']}. If anything is "
+                             f"unclear, just reply here."))]),
     Ticket("lifetime-renewal", "lumen_demo_03301", "Charlotte", 61.0, "en-GB", "en", [Turn(
         0, "Does my plan renew every year? I don't want any surprise charges.",
         "STATUS_QUESTION", {"says_charged": True},
@@ -145,7 +152,12 @@ TICKETS: list[Ticket] = [
         reply=lambda f: (f"Thanks for letting us know. I've passed your data-deletion request to the {f['app_name']} "
                          f"team, who handle these requests personally and will follow up with you. One thing to know: "
                          f"deleting your data doesn't stop your {f['product_name']} subscription. That is managed in "
-                         f"the {f['store_name']} at {f['manage_url']}."))]),
+                         f"the {f['store_name']} at {f['manage_url']}."),
+        suggested=lambda f: (f"Hi Benjamin, this is the {f['app_name']} team. We've received your request to delete "
+                             f"your account and data under GDPR, and we're handling it through our data-protection "
+                             f"process; we'll confirm here once it's done. Please note that deleting your data doesn't "
+                             f"stop your {f['product_name']} subscription: you can manage or cancel it in the "
+                             f"{f['store_name']} at {f['manage_url']}."))]),
     Ticket("billing-error-fr", "lumen_demo_01124", "Camille", 41.0, "fr-FR", "fr", [Turn(
         0, "J'ai payé mon abonnement mais je n'ai plus accès à Premium depuis des jours. Pourquoi ?",
         "PAID_NO_ACCESS", {"says_paid": True},
@@ -169,7 +181,11 @@ TICKETS: list[Ticket] = [
         Turn(16 * 60, "any news?", "HUMAN_REQUEST", {"follow_up": True, "previous_intent": "HUMAN_REQUEST"},
              reply=lambda f: (f"Your request is still with the {f['app_name']} team, and a person will reply here as "
                               f"soon as they pick it up. In the meantime, your {f['product_name']} is active and renews "
-                              f"on {f.d('renews_on')}."))]),
+                              f"on {f.d('renews_on')}."),
+             suggested=lambda f: (f"Hi Isla, this is the {f['app_name']} support team, thanks for your patience. "
+                                  f"I've checked your account: your {f['product_name']} is active and renews on "
+                                  f"{f.d('renews_on')} through the {f['store_name']}. What can we help you with? Just "
+                                  f"reply here and we'll take it from there."))]),
     Ticket("cyrillic-paid-no-access", "lumen_demo_02990", "Nikola", 26.5, "sr-RS", "sr-Cyrl", [Turn(
         0, "Платио сам годишњу претплату, а апликација ми и даље тражи да платим за премијум. Шта да радим?",
         "PAID_NO_ACCESS", {"says_paid": True},
@@ -444,6 +460,23 @@ async def _seed_ticket(st: Store, t: Ticket, now: datetime, get_profile, res: Se
                                          "approval_id": approval_id,
                                          "grant_request": "pending" if any(a.kind == "PROPOSE_GRANT" for a in actions)
                                          else g_status, "abandoned": False})
+        if suggest.needs_suggestion(intent, actions):   # same as main.phase2, but scripted: never an LLM here
+            d_acts = templates.draft_actions(actions, intent.type)
+            try:
+                draft = turn.suggested(Facts(dict(facts.fields), t.language)) if turn.suggested else ""
+                d_viol = suggest._draft_violations(draft, facts, d_acts, state) if draft else ["no_script"]
+            except KeyError as e:
+                draft, d_viol = "", [f"missing_fact:{e.args[0]}"]
+            if d_viol:
+                if turn.suggested:
+                    log.warning("seed %s turn %d: scripted draft rejected (%s); template drafts", t.key, i, d_viol)
+                draft = templates.render(state, actions, facts, t.language, intent_type=intent.type,
+                                         claims=intent.claims, injection=intent.injection_suspected, draft=True)
+            st.update_case(case_id, at=_iso(reply_at), suggested_reply={
+                "text": draft, "language": t.language, "source": "template" if d_viol else "seed",
+                "used_fallback": bool(d_viol) and turn.suggested is not None,
+                "violations": [f"seed_script:{v}" for v in d_viol] if turn.suggested and d_viol else [],
+                "sent": False})
         st.audit("system", "reply_ready", case_id, {"intent": intent.type,
                                                     "injection_suspected": intent.injection_suspected,
                                                     "actions": [x["kind"] for x in acts], "escalations": escalations,

@@ -285,3 +285,22 @@ def test_console_api_lists_seeded_cases_and_ava_still_gets_her_grant(seeded):
         assert ok.json()["approval"]["status"] == "approved"
         # the new live case sorts above every seeded one
         assert c.get("/api/cases", headers=CON).json()["cases"][0]["customer_user_id"] == ava
+
+
+def test_escalated_cases_carry_a_scripted_suggested_reply(seeded):
+    """Every escalated seeded case stores a draft for the person (scripted, validated, never an LLM, never sent);
+    the others store none."""
+    st, _ = seeded
+    escalated = 0
+    for t in seed.TICKETS:
+        c = st.get_case(seed.case_id_for(t.key))
+        esc = any(a["kind"] == "ESCALATE_TO_HUMAN" for a in c["actions"]) or c["intent"]["injection_suspected"] \
+            or c["intent"]["type"] == "PRIVACY_REQUEST"
+        sug = c.get("suggested_reply")
+        if not esc:
+            assert not sug, t.key
+            continue
+        escalated += 1
+        assert sug["source"] == "seed" and sug["violations"] == [] and sug["sent"] is False, t.key
+        assert sug["text"] and sug["text"] not in [m["text"] for m in st.messages(c["id"])]
+    assert escalated >= 3

@@ -125,10 +125,17 @@ curl -X PUT -H "X-Console-Token: $CONSOLE_TOKEN" -H 'content-type: application/j
 `courtesy_grants` is `ask | auto | off`, `max_days` 1–7; both optional (a partial PUT keeps the other); any other
 key is a 422. Both calls return `{"rules": {...}, "limits": {...}, "locked": [...]}`. Code: `casedesk/app/rules.py`.
 
+### Suggested replies for people
+
+When a case goes to a person (the user asked for one, a privacy request, or a message that tried to give orders),
+Case Desk also drafts the person's answer: built from the FactSheet, in the user's language, checked by the same
+validator (template fallback), stored as `suggested_reply` on the case and shown with a Copy button in the console's
+"A person needs to answer this" panel. It is never sent to the user.
+
 ## Tests
 
 ```bash
-uv run pytest -q                                      # 595 tests; 2 skip without the organisers' seed repo
+uv run pytest -q                                      # 717 tests; 2 skip without the organisers' seed repo
 uv run playwright install chromium && uv run python tests/e2e_ui.py   # UI end-to-end
 uv run python eval/run_eval.py --backend claude-cli --concurrency 4  # live eval with real Claude
 ```

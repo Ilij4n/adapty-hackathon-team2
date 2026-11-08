@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#eef2ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121814" media="(prefers-color-scheme: dark)">
+<title>Case Desk console</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/static/v3/fonts/commissioner-latin-flar.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/v3/base.css">
+<link rel="stylesheet" href="/static/v3/console.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-tray" viewBox="0 0 20 20"><path d="M3 11.5 5.1 5A1.6 1.6 0 0 1 6.6 3.9h6.8A1.6 1.6 0 0 1 14.9 5L17 11.5V15a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 15Z"/><path d="M3 11.5h3.6l1.2 2h4.4l1.2-2H17"/></symbol>
+  <symbol id="i-person" viewBox="0 0 20 20"><circle cx="10" cy="6.6" r="3.1"/><path d="M4.2 16.6c.7-3 3-4.8 5.8-4.8s5.1 1.8 5.8 4.8"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 20 20"><rect x="4.5" y="8.8" width="11" height="7.7" rx="1.6"/><path d="M7 8.8V6.6a3 3 0 0 1 6 0v2.2"/><path d="M10 11.8v1.6"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 20 20"><circle cx="10" cy="10" r="6.8"/><path d="M10 6.3V10l2.6 1.6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 20 20"><path d="m4.6 10.4 3.5 3.5 7.3-7.6"/></symbol>
+  <symbol id="i-speech" viewBox="0 0 20 20"><path d="M4 5.6A1.6 1.6 0 0 1 5.6 4h8.8A1.6 1.6 0 0 1 16 5.6v5.8a1.6 1.6 0 0 1-1.6 1.6H9.2L6 15.8V13h-.4A1.6 1.6 0 0 1 4 11.4Z"/></symbol>
+  <symbol id="i-link" viewBox="0 0 20 20"><path d="M8.4 4.5H5.6A1.6 1.6 0 0 0 4 6.1v8.3A1.6 1.6 0 0 0 5.6 16h8.3a1.6 1.6 0 0 0 1.6-1.6v-2.8"/><path d="M11.5 4.5h4v4"/><path d="m15.5 4.5-6.6 6.6"/></symbol>
+  <symbol id="i-steps" viewBox="0 0 20 20"><path d="M8.5 6h7.5M8.5 10h7.5M8.5 14h7.5"/><path d="M4.6 6h.1M4.6 10h.1M4.6 14h.1" stroke-width="2.4"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 20 20"><rect x="3.8" y="8" width="12.4" height="8.4" rx="1.4"/><path d="M3 5.6h14V8H3z"/><path d="M10 5.6v10.8"/><path d="M10 5.6C8.6 3 6.2 3.2 6.2 4.6c0 1 1.6 1 3.8 1M10 5.6c1.4-2.6 3.8-2.4 3.8-1 0 1-1.6 1-3.8 1"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 20 20"><path d="M10 3.2 15.8 5.4v4.1c0 3.5-2.4 6.2-5.8 7.3-3.4-1.1-5.8-3.8-5.8-7.3V5.4Z"/><path d="M10 7.4v3.2M10 13.1v.1"/></symbol>
+  <symbol id="i-left" viewBox="0 0 20 20"><path d="M16 10H4.5M9 5.5 4.5 10 9 14.5"/></symbol>
+  <symbol id="i-up" viewBox="0 0 20 20"><path d="M10 16V4.5M5.5 9 10 4.5 14.5 9"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 20 20"><path d="m7.5 5 5 5-5 5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 20 20"><path d="m5.5 5.5 9 9M14.5 5.5l-9 9"/></symbol>
+  <symbol id="i-letter" viewBox="0 0 20 20"><rect x="3" y="5" width="14" height="10.5" rx="1.6"/><path d="m3.6 6 6.4 5 6.4-5"/></symbol>
+  <symbol id="i-out" viewBox="0 0 20 20"><path d="M11.5 4.5h4v4"/><path d="m15.5 4.5-7 7"/><path d="M14 12v2.4a1.6 1.6 0 0 1-1.6 1.6H5.6A1.6 1.6 0 0 1 4 14.4V7.6A1.6 1.6 0 0 1 5.6 6H8"/></symbol>
+</svg>
+
+<section class="gate" id="gate" hidden>
+  <form id="gateForm" class="gate-sheet">
+    <p class="mark-word">Case Desk <span>for Lumen</span></p>
+    <h1>Enter the console token</h1>
+    <p>Use the <code translate="no">CONSOLE_TOKEN</code> this server was started with. It stays in this tab only.</p>
+    <label class="sr-only" for="tok">Console token</label>
+    <input id="tok" type="password" autocomplete="off" required placeholder="Console token">
+    <button class="btn" type="submit">Open the console</button>
+    <p class="err" id="gateErr" role="alert" hidden>That token was not accepted. Check it and try again.</p>
+  </form>
+</section>
+
+<main class="mail" id="app" hidden>
+  <nav class="rail" aria-label="Case Desk">
+    <a class="mark-word" href="/help?v=3" title="Open Lumen Help, the subscriber side">Case Desk <span>for Lumen</span></a>
+    <div class="folders-home" id="railFolders">
+      <div class="folders" id="filters" role="group" aria-label="Folders"></div>
+    </div>
+    <div class="rail-foot">
+      <p class="live" id="live" aria-live="polite"></p>
+      <div class="top-meta" id="topMeta"></div>
+      <p class="keys" aria-hidden="true"><kbd>j</kbd> <kbd>k</kbd> move between cases</p>
+      <a class="rail-link" href="/help?v=3" target="_blank" rel="noopener">Open Lumen Help<svg class="ic" aria-hidden="true"><use href="#i-out"/></svg></a>
+    </div>
+  </nav>
+
+  <section class="index" aria-label="Cases">
+    <section class="queue" aria-labelledby="qH">
+      <div class="sec-head"><h2 id="qH">Needs your OK</h2><span class="count" id="qCount">0</span></div>
+      <ol class="q-list" id="queue"></ol>
+      <p class="empty" id="qEmpty">Nothing needs your OK. When Case Desk asks to give someone premium, the request waits here.</p>
+    </section>
+    <section class="inbox" aria-labelledby="cH">
+      <div class="sec-head"><h2 id="cH">Everything</h2><span class="count" id="cCount">0</span></div>
+      <div class="folders-narrow" id="narrowFolders"></div>
+      <ol class="c-list" id="cases"></ol>
+      <p class="empty" id="cEmpty">Nothing in this folder. New cases arrive when someone writes in <a href="/help?v=3" target="_blank" rel="noopener">Lumen Help</a>.</p>
+    </section>
+  </section>
+
+  <section class="detail" id="detail" aria-live="polite">
+    <div class="placeholder">
+      <svg class="ic big" aria-hidden="true"><use href="#i-letter"/></svg>
+      <h2>No case open</h2>
+      <p>Choose a case to read it. You will see who wrote in, what is true on their account, what Case Desk answered, and anything waiting for your OK.</p>
+    </div>
+  </section>
+</main>
+<script src="/static/v3/console.view.js"></script>
+<script src="/static/console.js"></script>
+</body>
+</html>

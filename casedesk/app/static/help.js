@@ -276,7 +276,7 @@
       b.tabIndex = -1; b.onclick = () => selectUser(u); box.append(b);
       // the narrow-screen select: short first name + id, so the five "Jake"s stay tell-apart-able when truncated
       const short = String(u.display_name).replace(/\s*\(.*?\)\s*/g, "") || u.customer_user_id;
-      const o = el("option", null, `${short} · ${String(u.customer_user_id).replace(/^.*_/, "")}`); o.value = u.customer_user_id; o.title = u.scenario; sel.append(o);
+      const o = el("option", null, `${short} (${String(u.customer_user_id).replace(/^.*_/, "")})`); o.value = u.customer_user_id; o.title = u.scenario; sel.append(o);
     });
     // radiogroup keyboard pattern: one tab stop, arrow keys move and select
     box.addEventListener("keydown", (e) => {

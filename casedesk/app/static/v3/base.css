@@ -1,0 +1,205 @@
+@import url("fonts/fonts.css");
+
+/* ==========================================================================================================
+   Iteration 3: Correspondence.  Token plan (written first, reviewed against the AI clusters, then built).
+
+   STANCE   Support is correspondence. Case Desk is a calm mail client for a humane inbox, in the lineage of
+            Things and Front: big humane type, a lot of air, almost no boxes. Each case reads like a letter, and the
+            technical record unfolds in place only when asked. Lumen Help is the friendliest of the four.
+
+   COLOUR   Every colour has one job. Neutrals are hued toward eucalyptus, never grey.
+     Eucalyptus  #EEF2EE  ground: rail, index, help stage                         dark #121814
+     Sheet       #FBFCFA  the letter: reading pane, chat, grant notes             dark #19211C
+     Ink         #1E2A24  text; ink-2 #4D5C54, ink-3 #57665E (AA on every ground) dark #E6ECE7 #AEBBB2 #8A988F
+     Deep green  #2C6A4F  THE accent: primary action, selection, focus, the subscriber's own words   dark #8FD0AE
+     Marigold    #8A5A00 on #FBEBC4  needs you: a grant waiting, a person needed, a privacy request dark #E8B95A
+     Blue gum    #2A6276  checked and true: the reply passed the checker, premium given             dark #8CC6D6
+     Rosehip     #A63A2E  blocked or failed, nothing else                                           dark #F09086
+     Status colours never carry meaning alone: each sits next to words (or a named icon).
+
+   TYPE     Commissioner, one family (variable wght + FLAR "flair"). Two weights: 400 and 600.
+            Flair only on the three display moments: the correspondent's name, the status sentence, the help
+            greeting (FLAR 36, a little). Sentence case everywhere; no capitals labels, no mono.
+            Console scale 13 / 14 / 17 / 22 / 30.  Help scale 13 / 15 / 17 / 22 / 26.
+            Line-height 1.45 to 1.5, measure under 72ch. Commissioner ships no tabular figures, so times live
+            right-aligned in their own column instead of relying on tnum.
+
+   SPACE    4 8 12 16 24 32 48 64; more space between groups than inside them. Radius follows nesting:
+            8 small controls, 12 rows, buttons and notes, 20 bubbles, 44 the phone. Shadows only on what floats
+            (the toast, the phone).
+
+   CONSOLE at 1440 (three panes; 980 to 1199 the rail folds into the index head; under 980 one column)
+     +-------------+---------------------------+----------------------------------------------------------+
+     | Case Desk   | Needs your OK           1 |                                     Opened 4 Nov, 00:10   |
+     |  for Lumen  | .-------------------------.  Ava 00239                                                |
+     |             | | Ava 00239       2 min    |  Writes in English. Bought Lumen Premium Weekly (6.99 USD) |
+     | [] Every 16 | | Wants 3 days of premium  |  on the App Store on 12 Oct.                               |
+     | () Escal  3 | | o Ended: payment failed  |                                                          |
+     | [] Priv   1 | | [Give Ava 3 days] [Deny] |  o Paid, then the App Store couldn't take the renewal     |
+     | () Wait   1 | | Nothing is granted ...   |  v Checked: every fact in the replies matches the account |
+     |             | '-------------------------'                                                          |
+     |             | Everything             16 |      Ava, 00:10                                          |
+     |             |   Oliver 03873      3 Nov |      ( I paid but premium is gone ... )  deep green      |
+     |             |   I cancelled the free    |  Case Desk, 00:10                                        |
+     |             |   trial but I think ...   |  ( I checked your account: ... ) eucalyptus wash        |
+     |             |   o Trial cancelled       |  v Checked against the account                           |
+     | Up to date  |   ...                     |  What Case Desk did     (sentences, one icon each)       |
+     | j k: move   |                           |  <- Waiting for your OK on 3 days of premium for Ava     |
+     |             |                           |  > Show the technical record   (unfolds in place)        |
+     +-------------+---------------------------+----------------------------------------------------------+
+
+   HELP (phone; from 720px inside a soft eucalyptus device next to a column of correspondents)
+     +-----------------------------------+
+     | [L] Lumen Help           [Ava v]  |   header on sheet
+     |     Subscription                  |
+     | o Ended: the payment didn't go    |   the status, folded into a sentence;
+     |   through                       v |   tap to unfold every fact (220ms)
+     |   Ended on 22 Oct 2026            |
+     |-----------------------------------|
+     |  Hi! What's going on with your    |   26px greeting, a little flair
+     |  subscription?                    |
+     |        ( I paid but no premium )  |   user bubbles in deep green, right
+     |  ( Reply in 17px ... )            |   Lumen's replies on eucalyptus wash
+     |  [Update payment method  /]       |
+     |   [I was charged after cancelling]|   suggestions wrap at the end of the
+     |       [New phone] [Refund]        |   conversation (no sideways scroll)
+     |-----------------------------------|
+     | ( Describe the problem...   (>) ) |   large composer
+     +-----------------------------------+
+
+   PRINCIPLES
+     1. Space first, then a background step (eucalyptus vs sheet), then a hairline. A box only for an object you
+        act on or must not miss: a grant note, an alert, a bubble.
+     2. Words over badges. Status is a sentence; flags are small named icons shared with the folder rail.
+     3. Boldness in one place: the letter itself (big flared name, the status sentence). Everything else quiet.
+     4. Motion only unfolds or settles: disclosures open in place (block-size 220ms ease-out, then the content
+        fades in), a new message settles (opacity + 6px, 180ms), a newly opened case cross-fades (120ms).
+
+   REVIEW against the AI clusters, and what changed
+     - Not cream + serif + terracotta, not near-black + acid, not broadsheet hairlines: cool eucalyptus, one sans.
+     - SaaS card kit: first draft had every case as a bordered card and a tinted state pill in help. Changed: the
+       index is borderless rows on the ground (selection = a deep-green wash), the help status is a sentence.
+     - Template chrome: whoEl's name-dot-id and the stock dotted meta lines are rebuilt as layout; no
+       uppercase eyebrows; no mono labels; icons, not arrows-in-text, on buttons.
+     - First draft used the deep green for "checked" too; that made "verified" look clickable. Changed: a
+       separate blue-gum hue for true/checked, the green stays the one accent.
+     - Dark mode: the mint accent shouted at bubble size, so the subscriber's bubbles keep a deep green
+       (#2A6249) after dark while buttons, links and focus use the mint.
+     - Stock chips scroll sideways in the footer. Changed: they are quick replies that wrap at the end of the
+       conversation, aligned to the subscriber's side, so the footer stays a single large composer.
+   ========================================================================================================== */
+
+:root {
+  --rail: #e5ebe6;          /* one step darker than the ground: the folder rail */
+  --ground: #eef2ee;
+  --sheet: #fbfcfa;
+  --wash: #e4ebe5;          /* bubbles from Lumen / Case Desk, hover */
+  --line: #d3ddd5;
+  --line-strong: #8d9c93;   /* form-control edges (3:1) */
+  --ink: #1e2a24;
+  --ink-2: #4d5c54;
+  --ink-3: #57665e;
+  --accent: #2c6a4f;
+  --accent-ink: #ffffff;
+  --accent-wash: #d9e9df;
+  --you: #2c6a4f;           /* the subscriber's own words: the accent, as a bubble */
+  --you-ink: #ffffff;
+  --needs: #8a5a00;
+  --needs-wash: #fbebc4;
+  --needs-ink: #573a00;     /* text on the marigold wash */
+  --ok: #2a6276;
+  --ok-wash: #dcebef;
+  --bad: #a63a2e;
+  --bad-wash: #f8e1dc;
+  --toast: #1e2a24;
+  --toast-ink: #fbfcfa;
+  --float: 0 1px 2px rgba(30, 42, 36, .08), 0 12px 32px rgba(30, 42, 36, .14);
+
+  --font: "Commissioner", "Noto Sans Arabic", "Geeza Pro", "Segoe UI", Tahoma, sans-serif;
+  --flair: "FLAR" 36;
+  --r-1: 8px; --r-2: 12px; --r-3: 20px;
+  --ease-out: cubic-bezier(.2, .7, .2, 1);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --rail: #0e130f;
+    --ground: #121814;
+    --sheet: #19211c;
+    --wash: #232d27;
+    --line: #2c3830;
+    --line-strong: #5f6e65;
+    --ink: #e6ece7;
+    --ink-2: #aebbb2;
+    --ink-3: #8a988f;
+    --accent: #8fd0ae;
+    --accent-ink: #0f1a14;
+    --accent-wash: #1e3428;
+    --you: #2a6249;         /* deep green after dark: the mint accent would shout at bubble size */
+    --you-ink: #eef6f1;
+    --needs: #e8b95a;
+    --needs-wash: #33280f;
+    --needs-ink: #f3dba6;
+    --ok: #8cc6d6;
+    --ok-wash: #18303a;
+    --bad: #f09086;
+    --bad-wash: #3a1e1a;
+    --toast: #e6ece7;
+    --toast-ink: #0f1a14;
+    --float: 0 1px 2px rgba(0, 0, 0, .4), 0 14px 36px rgba(0, 0, 0, .45);
+    color-scheme: dark;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; interpolate-size: allow-keywords; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font: 400 14px/1.5 var(--font);
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+h1, h2, h3 { margin: 0; font-weight: 600; text-wrap: balance; letter-spacing: -0.005em; }
+p { margin: 0; text-wrap: pretty; }
+ol, ul { list-style: none; margin: 0; padding: 0; }
+a { color: var(--accent); text-underline-offset: .18em; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+[hidden] { display: none !important; }
+
+/* one icon family: 20-unit grid, 1.6 stroke, round joins, currentColor */
+.ic { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 0 18px;
+  border: 1px solid transparent; border-radius: var(--r-2);
+  background: var(--accent); color: var(--accent-ink);
+  font-weight: 600; line-height: 1.25; text-align: center; text-decoration: none;
+  transition: background-color .15s ease, transform .12s ease;
+}
+.btn:hover { background: color-mix(in srgb, var(--accent) 88%, var(--ink)); }
+.btn:active { transform: scale(.98); }
+.btn[disabled] { opacity: .55; cursor: default; transform: none; }
+
+/* the status mark: a small shape whose colour repeats the words beside it */
+.mark { display: inline-block; flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--ink-3); }
+.mark.info { background: transparent; box-shadow: inset 0 0 0 1.6px var(--ink-3); }
+.mark.ok { background: var(--ok); }
+.mark.warn { background: var(--needs); }
+.mark.bad { background: var(--bad); }
+
+@keyframes settle { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes crossfade { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+/* a separate rule: browsers without ::details-content would drop the whole list above */
+@media (prefers-reduced-motion: reduce) { ::details-content { transition: none !important; } }

@@ -139,14 +139,14 @@ class Run:
         self.shot(p, "console-approved-1440-light")
         p.context.close()
 
+    MARKO_SAYS = "Naplatili ste mi pretplatu posle otkazivanja! Zašto?"
+
     def run(self) -> None:
-        # Ava asks for her premium back (a pending grant for the console), on a phone, light and dark
+        # Ava asks for her premium back (a pending grant for the console) on a phone; Marko writes in Serbian on a
+        # laptop (the phone frame next to the demo picker). The dark twins run on a second server (run_dark), so the
+        # console shows each conversation once.
         self.help_flow(PHONE, "light", AVA, None, 1, "ava-390-light")
-        self.help_flow(PHONE, "dark", AVA, None, 1, "ava-390-dark")
-        # Marko in Serbian on a laptop: the phone frame next to the demo picker
-        marko = "Naplatili ste mi pretplatu posle otkazivanja! Zašto?"
-        self.help_flow(DESK, "light", MARKO, marko, None, "marko-1440-light")
-        self.help_flow(DESK, "dark", MARKO, marko, None, "marko-1440-dark")
+        self.help_flow(DESK, "light", MARKO, self.MARKO_SAYS, None, "marko-1440-light")
         for scheme in ("light", "dark"):
             self.console_flow(DESK, scheme, phone=False)
             self.console_flow(PHONE, scheme, phone=True)
@@ -157,6 +157,10 @@ class Run:
         expect(p.locator("#stateBadge")).to_have_class("badge ok", timeout=15000)
         self.shot(p, "help-ava-granted-390-light")
         p.context.close()
+
+    def run_dark(self) -> None:
+        self.help_flow(PHONE, "dark", AVA, None, 1, "ava-390-dark")
+        self.help_flow(DESK, "dark", MARKO, self.MARKO_SAYS, None, "marko-1440-dark")
 
 
 def main() -> int:
@@ -175,6 +179,14 @@ def main() -> int:
                 r.run()
             except Exception as e:  # keep going: one broken variant must not hide the others
                 r.errors.append(f"flow failed: {type(e).__name__}: {str(e)[:400]}")
+            finally:
+                proc.terminate()
+                proc.wait(5)
+            proc, r.url = start_server()
+            try:
+                r.run_dark()
+            except Exception as e:
+                r.errors.append(f"dark help flow failed: {type(e).__name__}: {str(e)[:400]}")
             finally:
                 proc.terminate()
                 proc.wait(5)

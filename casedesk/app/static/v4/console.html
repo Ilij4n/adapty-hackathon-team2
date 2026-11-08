@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101216" media="(prefers-color-scheme: dark)">
+<title>Case Desk console</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/static/v4/fonts/geologica-latin-full.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/v4/base.css">
+<link rel="stylesheet" href="/static/v4/console.css">
+</head>
+<body class="console">
+<header class="top">
+  <a class="brand" href="/help?v=4" title="Open Lumen Help, the subscriber view"><span class="cd">Case Desk</span> <span class="for">for Lumen</span></a>
+  <div class="top-meta" id="topMeta"></div>
+  <span class="live" id="live" aria-live="polite"></span>
+</header>
+
+<section class="gate" id="gate" hidden>
+  <form id="gateForm" class="gate-form">
+    <h1>Console token</h1>
+    <p>Enter the <code translate="no">CONSOLE_TOKEN</code> this server was started with. It stays in this tab only.</p>
+    <label for="tok">Token</label>
+    <input id="tok" type="password" autocomplete="off" spellcheck="false" required>
+    <button class="btn" type="submit">Open the console</button>
+    <p class="err" id="gateErr" role="alert" hidden>That token was not accepted. Check the value the server was started with and try again.</p>
+  </form>
+</section>
+
+<main class="app" id="app" hidden>
+  <div class="bar">
+    <div class="filters" id="filters" role="group" aria-label="Show cases"></div>
+    <p class="shown" id="cCount" aria-live="polite">0</p>
+  </div>
+  <p class="c-empty" id="cEmpty" hidden></p>
+
+  <section class="board" id="board" aria-label="Cases by what they need">
+    <section class="lane" data-lane="ok" aria-labelledby="qH">
+      <h2 class="lane-head" id="qH"><span class="num-clip"><span class="num" id="qCount">0</span></span> <span class="word">Needs your OK</span></h2>
+      <ol class="lane-list" id="queue"></ol>
+      <p class="lane-empty" id="qEmpty">Nothing waiting for your OK. When Case Desk asks to give someone premium, it lands here.</p>
+    </section>
+    <div class="lanes" id="cases"></div>
+  </section>
+
+  <section class="detail" id="detail" aria-live="polite">
+    <div class="placeholder">
+      <h2>Pick a ticket to open the case</h2>
+      <p>It opens here, full width: who wrote in, their subscription in plain words, the conversation, what Case Desk did and whether the reply was checked.</p>
+    </div>
+  </section>
+</main>
+<script src="/static/v4/console.view.js"></script>
+<script src="/static/console.js"></script>
+</body>
+</html>

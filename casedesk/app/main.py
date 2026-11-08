@@ -643,7 +643,7 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
                                                              "access_level_id": a["access_level_id"],
                                                              "expires_at": expires.isoformat(),
                                                              "retry": a["status"] == "failed"})
-        st.add_message(a["case_id"], "system", f"The {APP_NAME} team approved access until {expires.date()}.",
+        st.add_message(a["case_id"], "system", f"The {APP_NAME} team approved access until {expires.day} {expires:%B %Y}.",
                        {"status": "ready", "event": "grant_approved"})
         return {"approval": st.get_approval(approval_id)}
 

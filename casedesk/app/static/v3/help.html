@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#fbfcfa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#19211c" media="(prefers-color-scheme: dark)">
+<title>Lumen Help</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/static/v3/fonts/commissioner-latin-flar.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/v3/base.css">
+<link rel="stylesheet" href="/static/v3/help.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-chev" viewBox="0 0 20 20"><path d="m5.5 8 4.5 4.5L14.5 8"/></symbol>
+  <symbol id="i-out" viewBox="0 0 20 20"><path d="M11.5 4.5h4v4"/><path d="m15.5 4.5-7 7"/><path d="M14 12v2.4a1.6 1.6 0 0 1-1.6 1.6H5.6A1.6 1.6 0 0 1 4 14.4V7.6A1.6 1.6 0 0 1 5.6 6H8"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 20 20"><circle cx="10" cy="10" r="6.8"/><path d="M10 6.3V10l2.6 1.6"/></symbol>
+  <symbol id="i-person" viewBox="0 0 20 20"><circle cx="10" cy="6.6" r="3.1"/><path d="M4.2 16.6c.7-3 3-4.8 5.8-4.8s5.1 1.8 5.8 4.8"/></symbol>
+  <symbol id="i-info" viewBox="0 0 20 20"><circle cx="10" cy="10" r="6.8"/><path d="M10 9.2v4.3M10 6.6v.1"/></symbol>
+  <symbol id="i-back" viewBox="0 0 20 20"><path d="M16 10H4.5M9 5.5 4.5 10 9 14.5"/></symbol>
+</svg>
+
+<div class="stage">
+  <aside class="demo-side" id="demoSide" hidden>
+    <a class="back-home" href="/"><svg class="ic" aria-hidden="true"><use href="#i-back"/></svg>Lumen</a>
+    <h2 class="side-title">Demo subscribers</h2>
+    <p class="demo-note">In the real app the subscriber is signed in already. Here you can switch between seeded Lumen accounts; each one has a different subscription story in Adapty.</p>
+    <div class="profiles" id="profiles" role="radiogroup" aria-label="Demo subscriber"></div>
+    <p class="demo-foot">The developer's side: <a href="/console?v=3" target="_blank" rel="noopener">open the Case Desk console</a> to read cases and approve requests.</p>
+  </aside>
+
+  <div class="phone" id="phone">
+    <section class="widget" aria-label="Lumen subscription help">
+      <header class="w-head">
+        <svg class="w-logo" viewBox="0 0 32 32" aria-hidden="true"><use href="/static/lumen.svg#mark"/></svg>
+        <div class="w-title">
+          <strong data-i18n="title">Lumen Help</strong>
+          <span data-i18n="subtitle">Subscription</span>
+        </div>
+        <label class="demo-select" id="demoSelectWrap" hidden>
+          <span class="sr-only">Demo subscriber</span>
+          <select id="demoSelect"></select>
+        </label>
+      </header>
+
+      <section class="status" id="statusCard" aria-live="polite" hidden>
+        <button class="st-toggle" id="stToggle" type="button" aria-expanded="false" aria-controls="stMore">
+          <span class="st-text">
+            <span class="badge" id="stateBadge"></span>
+            <span class="st-sub" id="stSub"></span>
+          </span>
+          <svg class="ic st-chev" aria-hidden="true"><use href="#i-chev"/></svg>
+        </button>
+        <div class="unfold st-more" id="stMore">
+          <div class="unfold-in">
+            <p class="st-cap" data-i18n="whatWeFound">What we found on your account</p>
+            <dl class="facts" id="facts"></dl>
+          </div>
+        </div>
+      </section>
+
+      <div class="w-body" id="scroller">
+        <div class="intro" id="intro">
+          <h1 data-i18n="introTitle">Hi! What's going on with your subscription?</h1>
+          <p data-i18n="introBody">I can see your Lumen purchases, so I can tell you exactly what's true and what to do next. Write in any language.</p>
+        </div>
+        <ol class="log" id="log" aria-live="polite" aria-relevant="additions"></ol>
+        <div class="chips" id="chips" role="group" aria-label="Suggestions"></div>
+      </div>
+
+      <footer class="w-foot">
+        <form class="composer" id="composer" autocomplete="off">
+          <label for="msg" class="sr-only" data-i18n="placeholder">Describe the problem…</label>
+          <textarea id="msg" dir="auto" rows="1" maxlength="2000" data-i18n-placeholder="placeholder" placeholder="Describe the problem…"></textarea>
+          <button class="send" id="send" type="submit" aria-label="Send">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 15.5V4.5M5.5 9 10 4.5 14.5 9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </form>
+      </footer>
+    </section>
+  </div>
+</div>
+<script src="/static/i18n.js"></script>
+<script src="/static/v3/help.view.js"></script>
+<script src="/static/help.js"></script>
+</body>
+</html>

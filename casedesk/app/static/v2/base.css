@@ -1,0 +1,180 @@
+/* =====================================================================================================================
+   Case Desk, iteration 2: NIGHT SHIFT. Token plan (written and reviewed before any component CSS).
+
+   Subject. 2 a.m., the developer on call for Lumen. The pitch deck's world: a dense, quiet instrument console in the
+   deck's navy, where colour is grammar, not decoration. Dark is the primary design; "day shift" (light) is the same
+   instrument in daylight, fully designed, not inverted.
+
+   Colour (each one has exactly one job)
+     night   #070B14  page            day #EEF1F6
+     navy    #0B1324  panes           day #FFFFFF
+     raised  #101A30  raised step     day #F6F8FB
+     line    #1C2944  1px structure   day #D7DEEA
+     inks    #E8EDF7 / #9AA7C2 / #7D8BA8 (primary, secondary, tertiary)   day #0B1324 / #4A5878 / #5B6884
+     amber   #FFA84C  Case Desk's voice, "needs you", the one primary action      day text #9A5300
+     teal    #3FD0C0  checked, true, the active filter                           day #0A7369
+     coral   #FF7A6B  blocked, contradicted, payment failed                      day #B23A2E
+     Selection and focus use ink, so amber and teal never lose their meaning.
+
+   Type
+     IBM Plex Sans (variable: wght 400 and 600 only; wdth 85 for the status readout): UI and prose.
+     IBM Plex Mono 400: ids, times, fact values, policy codes. Literal values only, never labels.
+     IBM Plex Sans Arabic for Arabic messages. Sentence case everywhere; tabular figures for times and ids.
+     Console scale 12 / 13 / 14 / 17 / 24. Help scale 13 / 15 / 16 / 22.
+
+   Layout
+     console, 1200 and up                                  phone, 390
+     +-top: Case Desk for Lumen ............ live 00:51-+  +-top----------------+
+     | cases 300 | transcript      | inspector 400     |  | cases, filters     |
+     | filters   | Ava    09:12    | status readout    |  | rows               |
+     | rows      | | user words    | What Case Desk did|  +--------------------+
+     |  2 lines  | Case Desk  ok   |   grant state     |  | Ava 00239, turns   |
+     |           | | amber rule    | claims vs facts   |  +--------------------+
+     |           |                 | facts, checks, log|  | inspector          |
+     +==== decision dock: who, what, [Give Ava 3 days of premium] [Deny] =====+  | (padded for dock)  |
+                                                                               +=dock sheet (fixed)=+
+     help: the phone over the deck's night still (blurred, dimmed); the picker on a navy panel.
+     +-phone-------------------+
+     | logo  Lumen Help        |
+     | status instrument band  |  lamp + state in words; facts in two columns, values in Plex Mono
+     | intro, then the turns   |  helper = amber rule, subscriber = raised navy block
+     | tray of action buttons  |
+     | chips, composer         |
+     +-------------------------+
+     Everything left-aligned; numbers right-aligned in columns.
+
+   Principles
+     1. Colour is meaning. Amber needs you, teal is checked, coral is blocked. Nothing else is coloured.
+     2. Boldness in one place: the dock's amber "Give Ava 3 days of premium" is the brightest thing on the screen.
+     3. Panes, not cards. Separation by space, then a background step, then a 1px line. Radius only on controls (6px),
+        the dock sheet and the phone.
+     4. Motion only on change: a changed value flashes once in reverse video (600ms); the dock rises (220ms).
+
+   Review against the AI clusters, and what changed
+     - Cluster 2 (near-black + one acid accent): the brief pins the deck navy, so I kept it but made it navy, not
+       black, with three accents that each carry one meaning and appear sparingly. First draft had teal for selection
+       too; changed to ink so teal keeps meaning "checked".
+     - Cluster 3 (hairlines, zero radius, newspaper columns): panes are app panes with independent scroll; controls
+       keep a 6px radius; the facts sit in a measured table, not columns of prose.
+     - Cluster 4 (SaaS card kit): no cards at all; the inspector is one pane of sections; the only shadow is under
+       things that float (dock sheet on phones, toast, phone frame).
+     - Cluster 5 (template chrome): first draft copied the deck's tracked uppercase mono kickers ("UNDER THE HOOD").
+       Dropped: the user rejected uppercase labels, and mono for labels is a tell. The stock "Ava · 00239" middle dot
+       is replaced by layout. No arrows appended to buttons; the deck's clock glow is not copied (no glow).
+   ===================================================================================================================== */
+
+@import url("fonts/fonts.css");
+
+:root {
+  color-scheme: light;
+  /* day shift */
+  --page: #eef1f6;
+  --pane: #ffffff;
+  --raised: #f6f8fb;
+  --sel: #e7ecf4;
+  --line: #d7deea;
+  --line-2: #bcc7d9;
+  --ink: #0b1324;
+  --ink-2: #4a5878;
+  --ink-3: #5b6884;
+  --amber: #9a5300;          /* text and marks */
+  --amber-fill: #ffa84c;     /* the one bright button */
+  --amber-on: #1f1200;
+  --teal: #0a7369;
+  --coral: #b23a2e;
+  --info: #4a5878;
+  --amber-soft: #fbefdf;
+  --teal-soft: #ddf2ef;
+  --coral-soft: #fbe6e3;
+  --focus: #0b1324;
+  --float: 0 10px 30px rgba(11, 19, 36, .16), 0 2px 6px rgba(11, 19, 36, .08);
+
+  --font-sans: "NS Plex Sans", "NS Plex Arabic", "Geeza Pro", "Noto Sans Arabic", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "NS Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --r-ctl: 6px;
+  --t-xs: 12px; --t-s: 13px; --t-m: 14px; --t-l: 17px; --t-xl: 24px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    /* night shift: the primary design */
+    --page: #070b14;
+    --pane: #0b1324;
+    --raised: #101a30;
+    --sel: #16223d;
+    --line: #1c2944;
+    --line-2: #2a3a5c;
+    --ink: #e8edf7;
+    --ink-2: #9aa7c2;
+    --ink-3: #7d8ba8;
+    --amber: #ffa84c;
+    --amber-fill: #ffa84c;
+    --amber-on: #1f1200;
+    --teal: #3fd0c0;
+    --coral: #ff7a6b;
+    --info: #9aa7c2;
+    --amber-soft: #2a2117;
+    --teal-soft: #0f2b2f;
+    --coral-soft: #2d1a20;
+    --focus: #e8edf7;
+    --float: 0 -1px 0 #2a3a5c, 0 18px 40px rgba(0, 0, 0, .55);
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font: 400 var(--t-m)/1.45 var(--font-sans);
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+h1, h2, h3 { margin: 0; font-weight: 600; text-wrap: balance; }
+p { margin: 0; text-wrap: pretty; }
+ol, ul { list-style: none; margin: 0; padding: 0; }
+a { color: inherit; text-decoration-color: color-mix(in srgb, currentColor 45%, transparent); text-underline-offset: 3px; }
+a:hover { text-decoration-color: currentColor; }
+button, input, select, textarea { font: inherit; color: inherit; letter-spacing: inherit; }
+button { cursor: pointer; }
+code, kbd, .mono { font-family: var(--font-mono); font-weight: 400; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 3px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+[hidden] { display: none !important; }
+
+/* a lamp: the instrument's status mark. Always next to words that say the same thing. */
+.lamp { display: inline-block; flex: none; width: 8px; height: 8px; border-radius: 2px; background: var(--info); }
+.lamp.ok { background: var(--teal); }
+.lamp.warn { background: var(--amber); }
+.lamp.bad { background: var(--coral); }
+.lamp.info { background: var(--ink-3); }
+
+kbd {
+  display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 4px;
+  border: 1px solid var(--line-2); border-bottom-width: 2px; border-radius: 4px;
+  font-size: 11px; line-height: 1; color: var(--ink-2); background: var(--pane);
+}
+
+/* buttons: square-shouldered controls, no lifts */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 40px; padding: 0 14px; border-radius: var(--r-ctl);
+  border: 1px solid var(--line-2); background: var(--pane); color: var(--ink);
+  font-weight: 600; font-size: var(--t-m); line-height: 1.2; text-decoration: none;
+  transition: background-color .12s ease-out, border-color .12s ease-out;
+}
+.btn:hover { border-color: var(--ink-3); }
+.btn[disabled] { opacity: .55; cursor: default; }
+
+/* reverse video: a value that changed on the live refresh flashes once in its own colour, then settles */
+.flash { animation: rv 600ms ease-out; }
+.flash * { animation: rv-ink 600ms ease-out; }
+@keyframes rv { 0%, 40% { background-color: var(--fc, var(--ink)); color: var(--fc-ink, var(--pane)); } }
+@keyframes rv-ink { 0%, 40% { color: var(--fc-ink, var(--pane)); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

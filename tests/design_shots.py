@@ -30,7 +30,7 @@ DESK, PHONE = (1440, 900), (390, 844)
 
 def start_server() -> tuple[subprocess.Popen, str]:
     db = Path(tempfile.mkdtemp()) / "shots.db"
-    env = {**os.environ, "CASEDESK_DEMO": "1", "CASEDESK_LLM": "fake", "CASEDESK_NOW": "2026-11-04T00:12:04Z",
+    env = {**os.environ, "CASEDESK_DEMO": "1", "CASEDESK_LLM": "none", "CASEDESK_NOW": "2026-11-04T00:12:04Z",
            "CASEDESK_DB": str(db), "CASEDESK_CHAT_RATE": "200"}
     subprocess.run([sys.executable, "-m", "casedesk.seed", "--db", str(db)], cwd=ROOT, env=env, check=True,
                    stdout=subprocess.DEVNULL)

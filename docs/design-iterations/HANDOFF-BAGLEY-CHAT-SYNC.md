@@ -122,3 +122,14 @@ for both consoles and 390 dark for both help screens.
   (looks like a stray strip). "Checked" under the reply is good, keep it.
 Not merged into main: waiting for Ilijan's OK, as asked. If he agrees: merge and deploy with `CASEDESK_DESIGN=5`.
 The demo video's console scene is being redrawn with bubbles to match.
+
+## Ilijan's decision (Sun 8 Nov, ~11:55 CET): strips (v6), not bubbles
+
+Ilijan looked at both on desktop and phone and **picked v6 (strips everywhere)**: on a wide screen the bubble console
+does not use the width. **Please draw the video's console scene with strips (v6), not bubbles.**
+
+Coming next on this branch (in progress now):
+1. The team reply box becomes a normal chat composer at the bottom of the transcript (one line that grows, a short
+   hint above it), instead of the large box; placed so it does not fight the decision card / Give button.
+2. A decision on the transcript width when the evidence panel is collapsed (stretch or keep a measured column).
+Then v6 becomes the default (`CASEDESK_DESIGN=6`). Please do not merge this branch into main before Ilijan's OK.

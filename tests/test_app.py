@@ -351,3 +351,22 @@ def test_failed_signatures_rate_limited_per_ip(client, monkeypatch, tmp_path):
         assert chat(good, "lumen_marko", "hi").status_code == 200       # other clients unaffected
         audits = [e for e in app.state.store.audit_log() if e["event"] == "auth_rejected"]
         assert len(audits) == 3                                        # sampled, not one row per attempt
+
+
+def test_design_variant_pages(tmp_path, monkeypatch):
+    """/console?v=N and /help?v=N serve static/vN/; CASEDESK_DESIGN picks the default; ?v=0 and unknown N fall back."""
+    from fastapi.testclient import TestClient
+    from casedesk.app import main
+    monkeypatch.setenv("CASEDESK_DB", str(tmp_path / "v.db"))
+    variants = sorted(int(d.name[1:]) for d in main.STATIC.glob("v[0-9]*") if (d / "help.html").is_file())
+    if not variants:
+        return
+    n = str(variants[0])
+    client = TestClient(main.create_app())
+    want = (main.STATIC / f"v{n}" / "help.html").read_text()
+    assert client.get(f"/help?v={n}").text == want
+    assert client.get("/help?v=0").text == (main.STATIC / "help.html").read_text()
+    assert client.get("/help?v=../x").text == (main.STATIC / "help.html").read_text()
+    monkeypatch.setenv("CASEDESK_DESIGN", n)
+    assert client.get("/help").text == want
+    assert client.get("/help?v=0").text == (main.STATIC / "help.html").read_text()

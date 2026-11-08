@@ -678,7 +678,9 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
         return FileResponse(STATIC / "index.html")
 
     def page(name: str, v: str | None) -> Path:
-        """/help?v=N and /console?v=N serve design variant N (static/vN/) when it exists; else the default page."""
+        """/help?v=N and /console?v=N serve design variant N (static/vN/) when it exists; else the default page.
+        CASEDESK_DESIGN=N makes variant N the default; ?v=0 always shows the original pages."""
+        v = v or os.environ.get("CASEDESK_DESIGN", "")
         if v and v.isdigit() and len(v) <= 2 and (STATIC / f"v{v}" / name).is_file():
             return STATIC / f"v{v}" / name
         return STATIC / name

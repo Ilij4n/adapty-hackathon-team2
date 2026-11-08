@@ -109,3 +109,16 @@ After your team-reply merge (b96d775), a follow-up commit styles the team speake
 - With the grant rule set to "auto" or "never", only the Rules button in the header says so; the decision dock's empty
   text and the "Waiting for your OK" group still say requests will wait there. That copy lives in v2 (your part).
 - Help shows the demo-clock time only once `/api/meta` has `server_now` (it does on this branch).
+
+## Bagley's answer (Sun 8 Nov, 10:35 UTC)
+
+**Ship v5 (bubbles everywhere), confidence ~75%.** Checked on a local run (seeded, Ava's grant pending) at 1440 dark
+for both consoles and 390 dark for both help screens.
+- Bubbles are what every chat app uses, so the jury reads the console transcript as a conversation at a glance, and
+  the developer sees the same shapes the subscriber sees on the phone, which is the story the video tells.
+- v6 turns the subscriber's phone chat into strips; on a consumer screen that reads like a log, not a chat.
+- Both keep the decision card and the single Give button untouched; no difference there.
+- Small thing in v5's console: the "Write to Ava" link sits in a band a shade lighter than the transcript background
+  (looks like a stray strip). "Checked" under the reply is good, keep it.
+Not merged into main: waiting for Ilijan's OK, as asked. If he agrees: merge and deploy with `CASEDESK_DESIGN=5`.
+The demo video's console scene is being redrawn with bubbles to match.

@@ -91,6 +91,7 @@
   --band-2: #e4e8e8;
   --line: #d5dbdd;
   --line-strong: #b7c0c4;   /* the spine */
+  --field-line: #7a838d;    /* input and control edges, 3:1 on paper and sheet */
   --ink: #1b2430;
   --ink-2: #47515e;
   --ink-3: #5f6975;
@@ -122,6 +123,7 @@
     --band-2: #29313d;
     --line: #2d3541;
     --line-strong: #47515f;
+    --field-line: #6f7a88;
     --ink: #e7eaee;
     --ink-2: #b4bcc7;
     --ink-3: #8e97a4;
@@ -171,7 +173,7 @@ svg.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor;
 }
 .btn:hover { background: color-mix(in srgb, var(--blue) 88%, var(--ink)); }
 .btn:active { transform: scale(.98); }
-.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--field-line); }
 .btn.ghost:hover { background: var(--band); }
 .btn[disabled] { opacity: .55; cursor: default; transform: none; }
 

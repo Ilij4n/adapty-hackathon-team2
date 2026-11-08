@@ -43,7 +43,8 @@ window.CaseDeskConsoleView = (h) => {
   }
   const parse = (iso) => new Date(/^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso + "T12:00:00" : iso);
   const hm = (d) => d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-  const dm = (d) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const dm = (d) => `${d.getDate()} ${MON[d.getMonth()]}`;
   function when(iso) { // list times: "just now", "12 min ago", "23:50" today, else "4 Nov"
     const d = parse(iso); if (isNaN(d)) return "";
     const s = (Date.now() - d) / 1000;
@@ -52,19 +53,33 @@ window.CaseDeskConsoleView = (h) => {
     if (new Date().toDateString() === d.toDateString()) return hm(d);
     return h.day(iso);
   }
-  function stamp(iso, withTime) { // the spine's two-line date: "22 Oct" over "2027" or over "23:50"
+  function stamp(iso, withTime) { // the spine's date: "22 Oct", "22 Sep 2027", or "8 Nov" over "23:50"
     const d = parse(iso); if (isNaN(d)) return { d: String(iso || ""), s: "" };
-    return { d: dm(d), s: withTime ? hm(d) : d.getFullYear() !== new Date().getFullYear() ? String(d.getFullYear()) : "" };
+    return { d: dm(d) + (d.getFullYear() !== new Date().getFullYear() ? " " + d.getFullYear() : ""), s: withTime ? hm(d) : "" };
+  }
+  // long URLs break after a slash, never in the middle of a word
+  function breaks(text) {
+    const f = document.createDocumentFragment(); const re = /https?:\/\/[^\s<>"]+/g; let last = 0, m;
+    while ((m = re.exec(text))) {
+      if (m.index > last) f.append(tx(text.slice(last, m.index)));
+      const scheme = m[0].match(/^https?:\/\//)[0];
+      m[0].slice(scheme.length).split(/(?<=\/)/).forEach((part, i) => {
+        if (i) f.append(document.createElement("wbr"));
+        f.append(tx(i ? part : scheme + part));
+      });
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) f.append(tx(text.slice(last)));
+    return f;
   }
   const storeThe = (f) => { const n = (f.store_name || "").replace(/^the /i, ""); return !n ? "the store" : /^google play$/i.test(n) ? n : "the " + n; };
   const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
-  const REASON = { user_requested_human: "they asked for one", privacy_request: "it is a privacy or data request" };
+  const REASON = { user_requested_human: "they asked", privacy_request: "it is a privacy or data request" };
   const reason = (r) => REASON[r] || h.reasonText(r);
-  const actText = (a) => (a.kind === "ESCALATE_TO_HUMAN" ? `Handed it to a person: ${reason(a.params && a.params.reason)}` : h.actionText(a));
-  function stateWords(badge, extra) {
+  const actText = (a) => (a.kind === "ESCALATE_TO_HUMAN" ? `Handed to a person because ${reason(a.params && a.params.reason)}` : h.actionText(a));
+  function stateWords(badge) {
     const s = el("span", "c-state");
-    s.append(el("span", "mk " + ((badge && badge.tone) || "info")), el("span", "ell", (badge && badge.label) || "No status yet"));
-    if (extra) s.append(extra);
+    s.append(el("span", "mk " + ((badge && badge.tone) || "info")), el("span", "st-l", (badge && badge.label) || "No status yet"));
     return s;
   }
 
@@ -82,11 +97,11 @@ window.CaseDeskConsoleView = (h) => {
     b.onclick = () => h.select(a.case_id);
     li.append(b);
     if (a.status === "failed") {
-      const p = el("p", "fail"); p.append(icon("alert"), tx(`Adapty couldn't give it: ${(a.result && a.result.error) || "error"}. Try again or deny.`));
+      const p = el("p", "fail"); p.append(icon("alert"), tx(`Adapty couldn't give it (${(a.result && a.result.error) || "unknown error"}). Try again or deny.`));
       li.append(p);
     }
     const row = el("div", "grant-row");
-    const ok = el("button", "btn approve", a.status === "failed" ? `Try again: give ${nm} ${what}` : `Give ${nm} ${what}`);
+    const ok = el("button", "btn approve", a.status === "failed" ? `Give ${nm} ${what} again` : `Give ${nm} ${what}`);
     ok.type = "button"; ok.onclick = () => h.decide(a.id, "approve", ok);
     const no = el("button", "btn deny", "Deny"); no.type = "button"; no.onclick = () => h.decide(a.id, "deny", no);
     row.append(ok, no);
@@ -96,16 +111,19 @@ window.CaseDeskConsoleView = (h) => {
 
   // the Approved stamp: a slip whose grant was just decided gets stamped, holds a beat, then leaves
   function stampAndLeave(li, a, q) {
-    li.className = "slip-gone" + (a.status === "denied" ? " denied" : "");
-    li.removeAttribute("aria-current");
+    const wrap = el("li", "slip-gone" + (a.status === "denied" ? " denied" : ""));
+    const inner = el("div", "slip-in");
     li.querySelectorAll(".grant-row, .refused, .fail").forEach((n) => n.remove());
     li.querySelectorAll("button").forEach((n) => { n.disabled = true; n.tabIndex = -1; });
+    while (li.firstChild) inner.append(li.firstChild);
     const st = el("span", "stamp", a.status === "approved" ? "Approved" : "Denied");
     st.setAttribute("aria-hidden", "true");
-    li.append(st);
-    q.prepend(li);
-    setTimeout(() => li.classList.add("leaving"), 900);
-    setTimeout(() => { li.remove(); $("#qEmpty").hidden = q.querySelector(".q-item, .slip-gone") != null; }, 1150);
+    inner.append(st); wrap.append(inner); q.prepend(wrap);
+    setTimeout(() => {
+      $("#qEmpty").hidden = q.querySelector(".q-item") != null; // the empty note is in place before the slip folds away
+      wrap.classList.add("leaving");
+    }, 900);
+    setTimeout(() => wrap.remove(), 1130);
   }
 
   function renderList() {
@@ -148,12 +166,12 @@ window.CaseDeskConsoleView = (h) => {
     for (const c of list) {
       const li = el("li"); const b = el("button", "c-item"); b.type = "button";
       b.setAttribute("aria-current", String(c.id === S.selected));
-      const top = el("span", "row-top"); top.append(who(c.customer_user_id), el("time", "c-time", when(c.updated_at)));
-      let flag = null;
-      if (c.pending_approval) flag = el("span", "flag warn", "Waiting for you");
-      else if (c.privacy) flag = el("span", "flag bad", "Privacy");
-      else if (c.escalated) flag = el("span", "flag warn", "Needs a person");
-      b.append(top, h.auto(el("span", "c-msg", c.first_message || "…")), stateWords(c.state_badge, flag));
+      const top = el("span", "row-top"); top.append(who(c.customer_user_id));
+      if (c.pending_approval) top.append(el("span", "flag warn", "Waiting for you"));
+      else if (c.privacy) top.append(el("span", "flag bad", "Privacy"));
+      else if (c.escalated) top.append(el("span", "flag warn", "Needs a person"));
+      top.append(el("time", "c-time", when(c.updated_at)));
+      b.append(top, h.auto(el("span", "c-msg", c.first_message || "…")), stateWords(c.state_badge));
       b.onclick = () => h.select(c.id);
       li.append(b); ul.append(li);
     }
@@ -162,10 +180,8 @@ window.CaseDeskConsoleView = (h) => {
   // ------------------------------------------------------------ the case
   function checkText(meta) {
     const rv = h.realViolations(meta.violations), le = h.llmErrors(meta.violations, meta.llm_error);
-    if (rv.length && !meta.used_fallback) return ["bad", "alert", `Check this reply: ${plural(rv.length, "fact")} did not match the account`];
-    if (meta.used_fallback && rv.length) return ["ok", "check", `The draft had ${plural(rv.length, "unmatched fact")}, so the checked template went out`];
-    if (meta.used_fallback || le.length) return ["ok", "check", "The checked template answered; every fact matches the account"];
-    return ["ok", "check", "Checked against the account"];
+    if (rv.length && !meta.used_fallback) return ["bad", "alert", `${cap(plural(rv.length, "fact"))} in this reply did not match the account`];
+    return ["ok", "check", "Checked against the account", meta.used_fallback || le.length > 0];
   }
   function checkLine(meta, cls = "chk") {
     const [tone, ic, text] = checkText(meta || {});
@@ -190,7 +206,7 @@ window.CaseDeskConsoleView = (h) => {
     } else if (a.status === "denied") {
       const p = el("p", "done no"); p.append(icon("cross"), el("span", null, `You said no. ${cap(nameOf(a.customer_user_id) || "the user")} sees that in Lumen Help.`));
       w.append(p);
-    } else w.append(el("p", "done no", `${cap(what)}: ${a.status}`));
+    } else w.append(el("p", "done no", `${cap(what)}, status ${a.status}`));
     return w;
   }
 
@@ -235,17 +251,20 @@ window.CaseDeskConsoleView = (h) => {
     const appr = d.approvals || [], used = new Set();
     const msgs = d.messages || [];
     const lastA = [...msgs].reverse().find((m) => m.role === "assistant");
-    const cd = []; let wrote = 0;
+    const cd = []; let firstUser = null, follow = null;
     for (const m of msgs) {
       const meta = m.meta || {};
       if (m.role === "user") {
-        cd.push({ kind: "us", text: `${nm || "The user"} ${wrote++ ? "wrote again" : "wrote in"}`, when: stamp(m.created_at, true), jump: m.id });
+        if (!firstUser) firstUser = m; else follow = m;
       } else if (m.role === "assistant") {
         if (meta.status === "pending") { cd.push({ kind: "cd pend", text: "Writing the reply…", when: stamp(m.created_at, true) }); continue; }
         const failed = meta.status === "error";
-        const [tone] = checkText(meta);
+        const [tone, , , viaTemplate] = checkText(meta);
+        const base = follow ? "Answered the follow-up" : "Replied";
         const e = { kind: "cd" + (failed || tone === "bad" ? " bad" : ""), when: stamp(m.created_at, true), jump: m.id, nodes: [],
-          text: failed ? "The reply failed" : tone === "bad" ? "Replied; the check found a problem" : meta.used_fallback ? "Replied with the checked template" : "Replied, checked against the account" };
+          sub: follow ? `${nm || "The user"} wrote again on ${h.day(follow.created_at, true)}` : "",
+          text: failed ? `${base}, but the reply failed` : tone === "bad" ? `${base}, but the check found a problem` : viaTemplate ? `${base} with the checked template` : base };
+        follow = null;
         const acts = meta.actions || (m === lastA ? c.actions || [] : []);
         if (acts.length) {
           const ul = el("ul", "sp-acts");
@@ -280,8 +299,8 @@ window.CaseDeskConsoleView = (h) => {
     let i = 0;
     const row = (cls) => { const li = el("li", "sp " + cls); li.style.setProperty("--i", String(Math.min(i++, 18))); ol.append(li); return li; };
     const heading = (text, cls = "") => { const li = row("sp-h " + cls); li.append(el("span", "sp-when"), el("span", "sp-mk"), el("h3", null, text)); };
-    const group = (items) => {
-      let prev = "";
+    const group = (items, start = "") => {
+      let prev = start;
       for (const e of items) {
         const li = row("sp-e " + e.kind);
         const w = el("span", "sp-when");
@@ -303,7 +322,16 @@ window.CaseDeskConsoleView = (h) => {
       }
     };
     if (past.length) { heading(`Before ${nm || "they"} wrote`); group(past); }
-    heading("What Case Desk did"); group(cd);
+    if (firstUser) {
+      const li = row("sp-h sp-u");
+      const st = stamp(firstUser.created_at, true);
+      const w = el("span", "sp-when"); w.append(el("span", "d", st.d), el("span", "s", st.s));
+      const mk = el("span", "sp-mk"); mk.setAttribute("aria-hidden", "true");
+      const h3 = el("h3"); const b = el("button", "sp-jump", `${nm || "The user"} wrote in`);
+      b.type = "button"; b.title = "Show it in the conversation"; b.onclick = () => jumpTo(firstUser.id);
+      h3.append(b); li.append(w, mk, h3);
+    }
+    heading("What Case Desk did"); group(cd, firstUser ? stamp(firstUser.created_at, true).d : "");
     ahead.sort((x, y) => String(x.sortKey || x.date || "9").localeCompare(String(y.sortKey || y.date || "9")));
     if (ahead.length) { heading("Next on the account", "fut"); group(ahead); }
     ol.lastElementChild.classList.add("last");
@@ -324,7 +352,7 @@ window.CaseDeskConsoleView = (h) => {
         el("time", null, h.day(m.created_at, true)));
       if (meta.status === "error") whoL.append(el("span", "flag bad", "Something went wrong"));
       if (meta.abandoned) whoL.append(el("span", "flag", "Never seen by the user"));
-      const body = h.auto(el("div", "txt", pending ? "Writing the reply…" : m.text));
+      const body = h.auto(el("div", "txt")); body.append(pending ? tx("Writing the reply…") : breaks(m.text));
       if (c.language && m.role !== "system" && !pending) body.lang = c.language; // Serbian Cyrillic gets its own letterforms
       t.append(whoL, body);
       if (m.role === "assistant" && !pending && meta.status !== "error") t.append(checkLine(meta));
@@ -341,36 +369,44 @@ window.CaseDeskConsoleView = (h) => {
     if (note) s.append(el("p", "sub-note", note));
     s.append(...kids); return s;
   }
-  function kv(obj, keyCls) {
-    const t = el("table", "kv"); const tb = el("tbody");
-    for (const [k, v] of Object.entries(obj || {})) {
-      const tr = el("tr"); tr.append(lit("th", keyCls, k), h.auto(el("td", null, typeof v === "string" ? v : JSON.stringify(v)))); tb.append(tr);
+  // each claim is anchored on the first FactSheet row that can confirm or contradict it
+  const CLAIM_ANCHOR = {
+    says_cancelled: ["cancelled_on", "state"], says_charged: ["last_charged_on", "ever_charged", "price"], says_paid: ["ever_charged", "last_charged_on"],
+    claimed_amount: ["price"], wants_refund: ["refund_policy"], wants_to_cancel: ["renews_on", "state"], says_new_device: ["restore_steps_key"],
+  };
+  function claimPlan(c) {
+    const claims = (c.intent && c.intent.claims) || {}, f = c.facts || {};
+    const byFact = {}, loose = [];
+    for (const [k, v] of Object.entries(claims)) {
+      const at = (CLAIM_ANCHOR[k] || []).find((x) => f[x] != null && f[x] !== "");
+      if (at) (byFact[at] = byFact[at] || []).push([k, v]); else loose.push([k, v]);
+    }
+    return { byFact, loose, n: Object.keys(claims).length };
+  }
+  const claimEl = ([k, v]) => { const s = el("span", "cl"); s.append(lit("span", "k", k)); if (v !== true) s.append(h.auto(el("span", "v", String(v)))); return s; };
+  function factTable(f, plan) {
+    const withClaims = Object.keys(plan.byFact).length > 0;
+    const t = el("table", "kv facts" + (withClaims ? " with-claims" : ""));
+    if (withClaims) { const th = el("thead"); const tr = el("tr"); tr.append(el("th", null, "Fact"), el("th", null, "On the account"), el("th", null, "The user claims")); th.append(tr); t.append(th); }
+    const tb = el("tbody");
+    for (const [k, v] of Object.entries(f || {})) {
+      const tr = el("tr", plan.byFact[k] ? "has-claim" : null);
+      const td = h.auto(el("td")); td.append(breaks(typeof v === "string" ? v : JSON.stringify(v)));
+      tr.append(lit("th", null, k), td);
+      if (withClaims) { const td = el("td", "cl-cell"); (plan.byFact[k] || []).forEach((x) => td.append(claimEl(x))); tr.append(td); }
+      tb.append(tr);
     }
     t.append(tb); const w = el("div", "scroll-x"); w.append(t); return w;
   }
-  const CLAIM_FACTS = {
-    says_cancelled: ["cancelled_on", "state"], says_charged: ["last_charged_on", "price"], says_paid: ["ever_charged", "last_charged_on"],
-    claimed_amount: ["price"], wants_refund: ["refund_policy", "store_name"], wants_to_cancel: ["renews_on", "manage_url"],
-    says_new_device: ["restore_steps_key", "store_name"],
-  };
-  function claimsTable(c) {
-    const claims = (c.intent && c.intent.claims) || {}, f = c.facts || {};
-    const keys = Object.keys(claims);
-    if (!keys.length) return el("p", "empty", "No specific claims.");
-    const t = el("table", "claims"); const th = el("thead"); const hr = el("tr");
-    hr.append(el("th", null, "Claim"), el("th", null, "The account says")); th.append(hr);
-    const tb = el("tbody");
-    for (const k of keys) {
-      const tr = el("tr"); const a = el("td");
-      a.append(lit("span", "k", k)); if (claims[k] !== true) a.append(h.auto(el("span", "v", String(claims[k]))));
-      const b = el("td"); const rel = (CLAIM_FACTS[k] || []).filter((x) => f[x] != null && f[x] !== "");
-      if (rel.length) rel.forEach((x) => { const p = el("span", "pair"); p.append(lit("span", "k", x), el("span", "v", String(f[x]))); b.append(p); });
-      else if ((CLAIM_FACTS[k] || []).length) b.append(el("span", "none", "Nothing on record"));
-      else b.append(el("span", "none", "Not a fact to check"));
-      tr.append(a, b); tb.append(tr);
+  function claimsNote(c, plan) {
+    const w = el("div", "claims-w");
+    if (!plan.n) { w.append(el("p", "empty", "No specific claims.")); return w; }
+    const lined = plan.n - plan.loose.length;
+    if (lined) w.append(el("p", null, lined === 1 ? "The claim sits in the FactSheet, on the row that can confirm or contradict it." : `The ${lined} claims sit in the FactSheet, each on the row that can confirm or contradict it.`));
+    if (plan.loose.length) {
+      w.append(el("p", "sub-note", plan.loose.length === 1 ? "Nothing on the account can confirm this one:" : "Nothing on the account can confirm these:"));
+      const ul = el("ul", "loose"); plan.loose.forEach((x) => { const li = el("li"); li.append(claimEl(x)); ul.append(li); }); w.append(ul);
     }
-    t.append(th, tb);
-    const w = el("div", "scroll-x"); w.append(t);
     const contra = (c.actions || []).some((a) => a.params && a.params.claim_contradicted);
     if (contra) { const p = el("p", "contra"); p.append(icon("alert"), el("span", null, "Policy found that the account contradicts a claim; the reply explains what really happened.")); w.append(p); }
     return w;
@@ -458,8 +494,9 @@ window.CaseDeskConsoleView = (h) => {
     }
     const cols = el("div", "rec-cols");
     const left = el("div", "rec-col"), right = el("div", "rec-col");
-    left.append(section("FactSheet", "The only facts a reply may use.", kv(f)));
-    right.append(section("What the user claims", "Each claim beside the facts it can be checked against.", claimsTable(c)));
+    const plan = claimPlan(c);
+    left.append(section("FactSheet", "The only facts a reply may use. The user's claims sit beside the facts that answer them.", factTable(f, plan)));
+    right.append(section("What the user claims", null, claimsNote(c, plan)));
     right.append(section("Actions decided by policy", null, policyList(c.actions || [])));
     right.append(section("Validator", null, verdict(d)));
     if (d.approvals.length) right.append(section("Approval records", null, approvalList(d.approvals)));
@@ -492,20 +529,20 @@ window.CaseDeskConsoleView = (h) => {
     head.append(h2, el("p", "d-meta", bits.join(" ")));
     sheet.append(head);
 
-    const tone = (c.state && c.state.tone) || "info";
-    const st = el("p", "status " + tone); st.append(el("span", "st-mark"), tx(h.stateLine(c.state, f)));
-    sheet.append(st);
+    sheet.append(el("p", "status " + ((c.state && c.state.tone) || "info"), h.stateLine(c.state, f)));
     if (c.validator) {
-      const meta = c.validator; const [t2] = checkText(meta);
-      const line = checkLine(meta, "trust");
-      if (t2 === "bad") line.lastChild.textContent = "Check this reply: the validator found facts it could not match. See the technical record.";
-      else if (!meta.used_fallback) line.lastChild.textContent = "Checked: every fact in the reply matches the account.";
+      const v = c.validator, rv = h.realViolations(v.violations), le = h.llmErrors(v.violations, v.llm_error);
+      let tone = "ok", text = "Every fact in the reply was checked against the account, and it matches.";
+      if (rv.length && !v.used_fallback) { tone = "bad"; text = "The validator found facts in this reply that the account does not support. The technical record lists them."; }
+      else if (rv.length) text = `The first draft had ${plural(rv.length, "fact")} the account does not support, so the checked template went out instead.`;
+      else if (v.used_fallback || le.length) text = "The checked template answered, and every fact in it matches the account.";
+      const line = el("p", "trust " + tone); line.append(icon(tone === "bad" ? "alert" : "check"), el("span", null, text));
       sheet.append(line);
     }
     const alerts = [];
     if (fl.privacy) alerts.push(["bad", "lock", "Privacy or data request. Handle it through your data-protection process."]);
     (fl.escalation_reasons || []).filter((r) => r !== "privacy_request" || !fl.privacy)
-      .forEach((r) => alerts.push(["warn", "person", r === "user_requested_human" ? `Needs a person: ${nm || "they"} asked for one.` : `Needs a person: ${reason(r)}.`]));
+      .forEach((r) => alerts.push(["warn", "person", r === "user_requested_human" ? `${nm || "The user"} asked for a person.` : `A person should answer, because ${reason(r)}.`]));
     if (c.intent && c.intent.injection_suspected) alerts.push(["info", "stop", "The message tried to give Case Desk orders. It was ignored."]);
     if (alerts.length) {
       const ul = el("ul", "alerts");

@@ -26,6 +26,24 @@ window.CaseDeskHelpView = (h) => {
     return s;
   }
   const auto = (n) => { n.dir = "auto"; return n; };
+  // long URLs break after a slash, never mid-word: the text stays the same, only <wbr> break points are added
+  function slashBreaks(bubble) {
+    if (!bubble || bubble.dataset.wbr || !/https?:\/\//.test(bubble.textContent)) return;
+    bubble.dataset.wbr = "1";
+    const text = bubble.textContent, re = /https?:\/\/[^\s<>"]+/g, f = document.createDocumentFragment();
+    let last = 0, m;
+    while ((m = re.exec(text))) {
+      if (m.index > last) f.append(document.createTextNode(text.slice(last, m.index)));
+      const scheme = m[0].match(/^https?:\/\//)[0];
+      m[0].slice(scheme.length).split(/(?<=\/)/).forEach((part, i) => {
+        if (i) f.append(document.createElement("wbr"));
+        f.append(document.createTextNode(i ? part : scheme + part));
+      });
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) f.append(document.createTextNode(text.slice(last)));
+    bubble.textContent = ""; bubble.append(f);
+  }
 
   // ------------------------------------------------------------ the receipt
   function paintStatus(st) {
@@ -72,12 +90,14 @@ window.CaseDeskHelpView = (h) => {
 
   // ------------------------------------------------------------ reply actions: statement rows, notes, the grant slip
   function renderActions(li, actions, facts, pendingApproval) {
+    slashBreaks(li.querySelector(".bubble"));
     h.defaults.renderActions(li, actions, facts, pendingApproval);
     li.querySelectorAll("button.act").forEach((b) => b.append(icon("chev")));
     li.querySelectorAll(".note").forEach((n) => {
       const grant = n.classList.contains("grant");
       const txt = el("span", "note-t"); while (n.firstChild) txt.append(n.firstChild);
-      n.append(icon(grant ? "clock" : txt.textContent === t().escalate ? "person" : "info"), auto(txt));
+      if (grant) { const stub = el("span", "stub"); stub.append(icon("clock")); n.append(stub, auto(txt)); }
+      else n.append(icon(txt.textContent === t().escalate ? "person" : "info"), auto(txt));
     });
   }
 
@@ -98,7 +118,9 @@ window.CaseDeskHelpView = (h) => {
   }
   new MutationObserver((recs) => {
     for (const r of recs) for (const n of r.addedNodes) {
-      if (n.nodeType === 1 && n.matches("li.msg.system")) stampSlips(n.classList.contains("denied"));
+      if (n.nodeType !== 1) continue;
+      if (n.matches("li.msg.system")) stampSlips(n.classList.contains("denied"));
+      if (n.matches("li.msg.user")) slashBreaks(n.querySelector(".bubble"));
     }
   }).observe($("#log"), { childList: true });
 

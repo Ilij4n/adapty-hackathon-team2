@@ -10,6 +10,10 @@
               Ready: teal fill. Sending: "Sending…", the text read-only. Focus: the 2px focus ring around the box.
      Error    the box's border turns coral and a coral strip (coral rule on coral-soft) says it was not sent.
      Heads-up v2's fact-check note (.fc-warn) under the box; Send becomes "Send anyway".
+     Ghost    escalated cases: Bagley's suggested reply as ghost text in the empty box (ink-3, italic), on the same
+              text line and padding as typed text, wrapping like it and shown in full; the hint's keys become
+              "Tab uses the suggested reply, Esc hides it" (on touch or narrow screens: "Tap the suggestion to use it.").
+              v2's suggested-reply box above the conversation is removed by composer.js.
    ===================================================================================================================== */
 
 #detail .tc {
@@ -29,7 +33,12 @@
 #detail .tc-hint b { font-weight: 600; color: var(--teal); }
 #detail .tc-keys { margin-inline-start: auto; color: var(--ink-3); white-space: nowrap; }
 #detail .tc-keys kbd { font-size: .92em; }
-@media (hover: none), (pointer: coarse), (max-width: 560px) { #detail .tc-keys { display: none; } }
+#detail .tc-k-sug, #detail .tc-tap, #detail .tc.ghosting .tc-k-send { display: none; }
+#detail .tc.ghosting .tc-k-sug { display: inline; }
+@media (hover: none), (pointer: coarse), (max-width: 560px) {
+  #detail .tc-keys { display: none; }
+  #detail .tc.ghosting .tc-tap { display: inline; color: var(--ink-2); }
+}
 
 /* the box: a strip waiting to be sent */
 #detail .tc-box {
@@ -41,17 +50,33 @@
   transition: border-color .12s ease-out;
 }
 #detail .tc-box:has(.tc-text:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* the field: the textarea and the ghost text share one grid cell, so the suggestion sits exactly where typing goes */
+#detail .tc-field { flex: 1 1 auto; display: grid; min-width: 0; max-width: var(--chat-text, none); }
+#detail .tc-field:has(.tc-text:dir(rtl)), #detail .tc.ghosting .tc-field:has(.tc-ghost:dir(rtl)) { max-width: none; }   /* Arabic or Hebrew: the words start beside Send, not mid-box */
 #detail .tc-text {
-  flex: 1 1 auto; display: block; min-width: 0; width: 100%; max-width: var(--chat-text, none); margin: 0;
+  grid-area: 1 / 1; display: block; min-width: 0; width: 100%; margin: 0;
   padding: .3em .25em .3em calc(1em - 2px);
   border: 0; border-radius: 0; background: transparent; color: var(--ink);
   font: inherit; font-size: 1em; line-height: 1.5; resize: none; overflow-y: hidden;
   max-height: calc(5 * 1.5em + .6em);
 }
-#detail .tc-text:dir(rtl) { max-width: none; }   /* Arabic or Hebrew typed in: the words start beside Send, not mid-box */
 #detail .tc-text:focus, #detail .tc-text:focus-visible { outline: none; }
 #detail .tc-text::placeholder { color: var(--ink-3); opacity: 1; }
 #detail .tc.busy .tc-text { color: var(--ink-2); }
+#detail .tc.ghosting .tc-text { max-height: none; }   /* the suggestion shows in full; taken, the box is back to five lines */
+
+/* the ghost: a suggestion, not a message. Tertiary ink, italic, same text line, padding and wrap as typed text */
+#detail .tc-ghost {
+  grid-area: 1 / 1; align-self: start; min-width: 0; margin: 0;
+  padding: .3em .25em .3em calc(1em - 2px);
+  font: inherit; font-size: 1em; line-height: 1.5; font-style: italic; color: var(--ink-3);
+  white-space: pre-wrap; overflow-wrap: break-word; word-break: normal;
+  pointer-events: none; user-select: none;   /* a click goes to the textarea under it */
+}
+#detail .tc-ghost[hidden] { display: none; }
+@media (hover: none), (pointer: coarse) {   /* no Tab key: tapping the suggestion takes it */
+  #detail .tc-ghost { pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+}
 
 /* Send: quiet when there is nothing to send, teal when there is (amber stays the Give button's) */
 #detail .tc-send {
@@ -73,6 +98,3 @@
 }
 #detail .tc-err[hidden], #detail .tc-warn[hidden] { display: none; }
 #detail .tc-warn { font-size: var(--t-s); }
-
-/* escalated cases: "Use the draft" beside Copy in the suggested reply's head */
-#detail .tc-sug-acts { display: inline-flex; flex-wrap: wrap; gap: 8px; }

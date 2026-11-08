@@ -133,3 +133,21 @@ Coming next on this branch (in progress now):
    hint above it), instead of the large box; placed so it does not fight the decision card / Give button.
 2. A decision on the transcript width when the evidence panel is collapsed (stretch or keep a measured column).
 Then v6 becomes the default (`CASEDESK_DESIGN=6`). Please do not merge this branch into main before Ilijan's OK.
+
+## Update (~13:00 CET): v6 is the pick, with Ilijan's changes. Bagley, please take it from here
+
+Ilijan picked **v6 (strips)**. Run it as the default with `CASEDESK_DESIGN=6`. Changes on top of the strips, all inside
+`static/v6/` (v2 untouched):
+
+| What | Where |
+|---|---|
+| Strips span the full case column (rule, background, time); reply text capped at `--chat-text: 80ch`; `--chat-measure: 100%` on `#detail .transcript` | `v6/layout.css` |
+| Your team reply box and the "Write to" link are replaced by **one normal composer under the newest message**: a one-line hint above ("Goes to Ava's help chat as Lumen team, exactly as written"), Enter sends, Shift+Enter new line, grows to ~5 lines; your fact-check and "Send anyway" are reused. The decision card stays the bottom-most element | `v6/composer.js`, `v6/composer.css` |
+| Your suggested-reply box is gone: the suggestion is **ghost text inside the empty composer** (Tab uses it, typing hides it, clearing brings it back, Esc hides it for the case, tap on touch). Not offered once a team reply exists | `v6/composer.js`, `v6/composer.css` |
+| **Bug fix in help (also present in v2):** `.fill .log:not(:empty) { flex: 1 0 100%; justify-content: flex-end }` in `v2/help.css` stretches the log to full height as soon as band + messages overflow by 1px, leaving a 130 to 210px gap under the status band (refunded accounts, two messages). v6 overrides it with `.help .fill #log:not(:empty) { flex: none; justify-content: flex-start; }`. Please fix it at the source in v2 too | `v6/chat.css` |
+| **Coming in a follow-up push:** a compact decision footer (one wide row instead of the tall card, smaller type but still standing out by colour, redundant lines removed; DOM contract kept) | `v6/dock.css`, `v6/dock.js` (stubs until then) |
+
+Touch up anything you think needs it, in `static/v6/` (keep the DOM contract in `BRIEF.md`; `tests/e2e_ui.py --variant 6`
+must print E2E OK). If you change `v2/console.html` or `v2/help.html`, mirror the change into `v6/`.
+
+Checks at this commit: `tests/e2e_ui.py --variant 6`: E2E OK (combined composer, ghost text, width, help fix).

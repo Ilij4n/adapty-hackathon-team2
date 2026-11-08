@@ -84,6 +84,15 @@
 @keyframes chat-blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { #detail .typing .dots i, #log .typing .dots i { animation: none; opacity: .7; } }
 
+/* ------------------------------------------------------------ help only: the conversation follows the status band
+   v2 (help.css, ".fill .log:not(:empty) { flex: 1 0 100%; justify-content: flex-end }") stretches the log to the full
+   view height, bottom-anchored, as soon as band + turns overflow by a single pixel. A tall band (refunded: six facts)
+   plus two short exchanges overflows by a little, so the log became a view-high box with the turns at its foot and
+   up to ~210px of empty ground between the band and the first turn. Here the log keeps its own height and sits right
+   under the band; a long conversation is unchanged (it is taller than the view either way), and scrolled to the end
+   the band scrolls away as in any chat (the compact state bar still takes over once it is gone). */
+.help .fill #log:not(:empty) { flex: none; justify-content: flex-start; }
+
 /* ------------------------------------------------------------ help only: what sits inside the Case Desk strip */
 #log > .msg > .actions { margin-top: .3em; }
 #log > .msg > .note { padding: 0; border: 0; font-size: .875em; }

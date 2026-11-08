@@ -58,7 +58,7 @@ And watch for three users: Marko, who writes in Serbian, then Lucía and Ava."""
 
 dict(id="watch", bg="live", secs=5, html="""
 <h1 class="mega sm">Watch it.</h1>
-<p class="lead">Three minutes.</p>
+<p class="lead">Three minutes, twenty seconds.</p>
 """, notes="""That's all you need. Three minutes.
 [→ starts the video right here: same frame, it pulls into focus]"""),
 

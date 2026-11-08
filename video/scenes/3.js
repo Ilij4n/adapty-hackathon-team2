@@ -164,7 +164,7 @@ function s3_shot(cam,list,t,T){/* list = [[time,key],...] ascending; glide 1.4 s
 const s3_SR='Naplatili ste mi nakon što sam otkazao!';
 function s3_pose(o,t,c,i,T,A){o.lp.pose(T);
   const wW=A(0,'writes'),wH=A(0,'help'),wP=A(1,'profile'),wC=A(1,'code'),wT=A(1,'true'),wCl=A(1,'claude'),wWo=A(1,'words'),
-    wCh=A(2,'checker'),wB=A(2,'blocks'),wPr=A(2,'premium'),wR=A(2,'request');
+    wCh=A(2,'checker'),wB=A(2,'blocks'),wPr=A(2,'premium'),wR=A(2,'approve');
   const zin=s3_E(wH-.6,wH+.2,t);/* 0 → 1 as the camera leaves the wide shot for the phone */
   s3_shot(o.camera,[[-1e9,'wide'],[wH-.6,'phone'],[c(1)-.5,'prof'],[wCl-1.0,'claude'],[wWo+.5,'gate'],[wPr-.6,'con']],t,T);
   const cq=o.camera.quaternion;
@@ -223,13 +223,13 @@ return rfRun({base:(g,t,c,T,i,A)=>X3.draw(g,S3,o=>s3_pose(o,t,c,i,T,A),t),
   (g,p,d,T,W)=>{const wc=W('claude');
     rfChip(g,640,140,'facts: Adapty profile + plain code',{c:rfGO,fs:17,pop:P(p,W('true')-.1,.4)*(1-P(p,wc-.5,.3))});},
   /* 2: the checker bounces an unstamped fact; giving away premium = a request → Approve */
-  (g,p,d,T,W)=>{const wB=W('blocks'),wPr=W('premium'),wR=W('request'),out=1-P(p,wPr-.5,.35);
+  (g,p,d,T,W)=>{const wB=W('blocks'),wPr=W('premium'),wR=W('approve'),out=1-P(p,wPr-.5,.35);
     rfChip(g,420,150,'checker',{c:rfGO,fs:17,pop:P(p,W('checker')-.15,.3),a:1-P(p,wB-.05,.15)});rfChip(g,420,150,'checker: a fact the code didn’t supply → blocked',{c:rfRED,fs:17,pop:P(p,wB-.05,.3),a:out});
     const a=P(p,wB+.1,.35)*out;if(a>0){g.save();g.globalAlpha*=a;const bx=420,by=212;g.beginPath();g.roundRect(bx-170,by-30,340,60,14);g.fillStyle='rgba(16,30,54,.95)';g.fill();g.lineWidth=1.6;g.strokeStyle=`rgba(${rfRED},.9)`;g.stroke();
       txt(g,bx,by-9,'“…and we’ll refund you.”',{fs:16,c:PA});txt(g,bx,by+12,'not in the facts · no stamp, no entry',{fs:13,c:'176,188,214'});ic(g,'cross',bx+160,by-28,11,rfRED);g.restore()}
     /* the envelope label and the Approve card */
     const ea=P(p,wPr-.15,.35);if(ea>0){g.save();g.globalAlpha*=ea;const ex=330,ey=170;g.beginPath();g.roundRect(ex-150,ey-28,300,56,12);g.fillStyle='rgba(16,30,54,.95)';g.fill();g.lineWidth=1.6;g.strokeStyle=`rgba(${rfDESK},.95)`;g.stroke();
-      txt(g,ex-72,ey,'PREMIUM?',{fs:22,w:800,m:1,c:rfGOLD});ic(g,'right',ex+30,ey,12,PA);txt(g,ex+92,ey,'request',{fs:22,w:700,c:rfDESK});g.restore()}
-    rfApprove(g,330,370,{who:'Marko · u00009',what:'premium request',why:'only a person can give premium away',pop:P(p,W('only')-.1,.45),click:.0001+.75*s3_E(wR,wR+1.2,p),T})}
+      txt(g,ex-72,ey,'PREMIUM?',{fs:22,w:800,m:1,c:rfGOLD});ic(g,'right',ex+30,ey,12,PA);txt(g,ex+92,ey,'your OK',{fs:22,w:700,c:rfDESK});g.restore()}
+    rfApprove(g,330,370,{who:'Marko · u00009',what:'premium request',why:'only you, or a rule you set, can give premium',pop:P(p,W('only')-.1,.45),click:.0001+.75*s3_E(wR,wR+1.2,p),T})}
  ]},3)
 })()

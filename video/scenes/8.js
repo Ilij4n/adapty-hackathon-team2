@@ -1,4 +1,4 @@
-/* Scene 8 — "For Adapty" (REVISION 2 + rules beat, the extended sales scene, 7 beats). Stage A: the Adapty pricing studio (plan card, add-ons shelf,
+/* Scene 8 — "For Adapty" (REVISION 2 + rules beat + sign-off, the extended sales scene, 8 beats). Stage A: the Adapty pricing studio (plan card, add-ons shelf,
    a ticket conveyor into the ADAPTY box). Stage B: the shared Belgrade night (rfNight) for the closer.
    Beats:
      0 "Now, the business." — wide studio, big title card "The business" (kicker FOR ADAPTY).
@@ -15,7 +15,12 @@
      5 the ADAPTY box: "What Adapty sees" — already: charges · renewals · refunds; new from Case Desk: the complaint,
        what the subscriber said, what fixed it.
      6 closer (callback to S1): 02:00 in the night stage, Marko's one-star review draft (App Store) turns into a question in
-       Lumen Help and gets a true answer; the founder is still asleep (office dark, z's, clock at 2). End: "Case Desk".
+       Lumen Help ("question"), answered ("answered", "in seconds" chip on "seconds"); the founder is still asleep (office dark,
+       z's, clock at 2). In the last 0.5 s the phone flies home into Marko's hands and the chips fade.
+     7 sign-off "That's Case Desk.": the camera rises and pulls back over the street (eased, settles at ~1.15 s), the
+       wordmark lands on the START of "Case" (scale-in, "Case" white / "Desk" amber, one amber glow sweep + underline),
+       tagline "The answer at 2 a.m. · built on Adapty", row "Lumen Help · Console · Rules · MCP", then the 02:00 chip
+       ticks to 02:01 with a check and Bagley nods once. All in by ~1.1 s of a 1.53 s beat: the end card is the freeze frame.
    Light beat: Bagley rings on the Case Desk drop, and dozes with the founder at the end.
    Scene-local helpers are prefixed s8_. */
 (()=>{
@@ -108,18 +113,23 @@ const s8_pose=(o,t,c,i,T,w)=>{const p=t-c(i);o.lp.pose(T);for(const a of o.alive
 
 /* ================= stage B: the Belgrade night closer ================= */
 const S8N=rfNight();
-const s8_NSH=[[-1.2,2.4,8.2,-1.6,1.0,-1.0],[0,2.7,10.2,0,1.15,-1.2]];
-const s8_night=(o,p,T,w)=>{const q=sm(cl(p/4.5)),k=s8_NSH[0].map((v,j)=>L(v,s8_NSH[1][j],q));
-  K3.look(o.camera,k[0]+Math.sin(T*.2)*.05,k[1],k[2],k[3],k[4],k[5]);
-  const ans=p>w(6,'and')+.2;
+const s8_NSH=[[-1.2,2.4,8.2,-1.6,1.0,-1.0],[0,2.7,10.2,0,1.15,-1.2],[0,3.75,12.4,0,1.62,-1.2]];
+/* p = time since beat 6 starts; p7 = time since beat 7 ("That's") starts, or -1 before it */
+const s8_night=(o,p,T,w,p7)=>{const q=sm(cl(p/4.5)),k=s8_NSH[0].map((v,j)=>L(v,s8_NSH[1][j],q));
+  /* the sign-off: a slow rise and pull-back over the street, eased out so it settles well before the clip ends */
+  const r=p7>0?1-Math.pow(1-cl(p7/1.15),3):0,k2=k.map((v,j)=>L(v,s8_NSH[2][j],r));
+  K3.look(o.camera,k2[0]+Math.sin(T*.2)*.05*(1-r),k2[1],k2[2],k2[3],k2[4],k2[5]);
+  const ans=p>w(6,'answered')-.05;
   rfNightPose(o,T,{litB:0,phone:1,marko:{face:ans?'smile':'neutral',look:-.1},founder:{pose:'sit',face:'neutral'},mon:{n:0},
     help:ans?{lang:'EN',key:'s8-ans',msgs:[{me:1,text:s8_REV},{text:s8_ANS}]}:{lang:'EN',key:'s8-q',msgs:[{me:1,text:s8_REV}]}});
   /* asleep: eyes shut, slumped over the desk */
   o.founder.userData.pose(T,{pose:'sit',w:1,face:'neutral',blink:1,look:0,hand:1});PLACE3.atDesk(o.founder,o.desk,o.chair);
   const b=o.founder.userData.bones||{},br=Math.sin(T*1.1)*.03;if(b.chest)b.chest.rotateX(.32+br);if(b.head)b.head.rotateX(.42);
   /* the clock reads 2:00 */
-  o.hHand.rotation.z=-(2/12)*Math.PI*2;o.mHand.rotation.z=-(T*.004)%(Math.PI*2)*.0;
-  rfBag(o.bag,T,{sleep:p>w(6,'gets')?1:0,rings:p>w(6,'and')&&p<w(6,'and')+1.1?1:0})};
+  o.hHand.rotation.z=-(2/12)*Math.PI*2;o.mHand.rotation.z=0;
+  /* Bagley dozes with the founder, rings once on the answer, and at the sign-off gives one small nod */
+  if(p7>0){const nd=P(p7,.78,.22)*(1-P(p7,1.0,.3));rfBag(o.bag,T,{tilt:.14*nd})}
+  else rfBag(o.bag,T,{sleep:p>w(6,'question')?1:0,rings:p>w(6,'answered')&&p<w(6,'answered')+1.1?1:0})};
 
 /* ---- 2D pieces */
 const s8_title=(g,x,y,big,kick,o={})=>{const a=o.a??1;if(a<=0)return;
@@ -192,12 +202,38 @@ const s8_rules=(g,x,y,w,h,o)=>{const {a=1,sel=0,hot=0,dayHot=0,lock=1,lockHot=0}
   txt(g,24,414,'By design: Case Desk hands these over and never decides them.',{fs:14.5,al:'left',c:'176,188,214'});
   g.restore();g.restore()};
 
+/* the 2 a.m. phone: q<0 = the review draft (typed to dq), else Lumen Help with the question, typing q, answer ans */
+const s8_endPhone=(g,cx,cy,a,pop,T,q,ans,dq)=>s8_phone(g,cx,cy,296,384,{a,pop,glow:.6,body:(g,W2,H2)=>{
+  if(q<0)s8_draft(g,W2,H2,dq,T);
+  else rfHelpPaint(g,W2,H2,{u:W2/320,fs:16.5,lang:'EN',T,typing:q,msgs:[{me:1,text:s8_REV},{text:s8_ANS,a:ans,pop:ans}]})}});
+/* z's over the sleeping founder + an optional "still asleep" chip */
+const s8_zzz=(g,T,z,ch)=>{if(!ON)return;const [fx,fy]=X3.at(S8N,ON.pt.founderHead());
+  for(let k=0;k<3;k++){const u=((T*.45+k/3)%1);txt(g,fx+18+u*30+k*6,fy-30-u*60,'z',{fs:18+k*5,d:1,w:800,c:'200,210,255',a:z*Math.sin(u*Math.PI)})}
+  if(ch>0)rfChip(g,Math.min(1120,fx+40),Math.max(200,fy-130),'founder · still asleep',{c:'200,210,255',fs:16,pop:ch})};
+/* the end wordmark: "Case" white, "Desk" amber, scale-in (pop) + one soft amber glow sweep (sw 0..1) */
+const s8_word=(g,x,y,pop,sw,T)=>{if(pop<=0)return;const a=cl(pop*1.6);
+  g.save();g.globalAlpha*=a;const gr=g.createLinearGradient(0,y-150,0,y+190);gr.addColorStop(0,'rgba(8,14,32,0)');gr.addColorStop(.42,'rgba(8,14,32,.7)');gr.addColorStop(.7,'rgba(8,14,32,.62)');gr.addColorStop(1,'rgba(8,14,32,0)');g.fillStyle=gr;g.fillRect(0,y-150,1280,340);g.restore();
+  g.save();g.globalAlpha*=a;g.translate(x,y);const sc=L(1.35,1,1-Math.pow(1-cl(pop),3))*(1+.025*Math.sin(Math.PI*cl(sw)));g.scale(sc,sc);
+  g.font=F({fs:104,w:800,d:1});g.textBaseline='middle';g.textAlign='left';
+  const w1=g.measureText('Case ').width,w2=g.measureText('Desk').width,x0=-(w1+w2)/2;
+  g.shadowColor=`rgba(${rfDESK},${.35+.4*Math.sin(Math.PI*cl(sw))})`;g.shadowBlur=26+30*Math.sin(Math.PI*cl(sw));
+  g.fillStyle='#ffffff';g.fillText('Case',x0,0);g.fillStyle=`rgb(${rfDESK})`;g.fillText('Desk',x0+w1,0);g.shadowColor='transparent';
+  if(sw>0&&sw<1){const c0=x0-60+(w1+w2+120)*sw,lg=g.createLinearGradient(c0-90,0,c0+90,0);
+    lg.addColorStop(0,'rgba(255,214,150,0)');lg.addColorStop(.5,'rgba(255,240,210,.85)');lg.addColorStop(1,'rgba(255,214,150,0)');
+    g.fillStyle=lg;g.fillText('Case',x0,0);g.fillText('Desk',x0+w1,0)}
+  g.fillStyle=`rgba(${rfDESK},.9)`;g.fillRect(-(w1+w2)/2*cl(sw),52,(w1+w2)*cl(sw),3);
+  g.restore()};
+/* the product row under the tagline */
+const s8_row=(g,x,y,a)=>{if(a<=0)return;const it=['Lumen Help','Console','Rules','MCP'];g.save();g.globalAlpha*=a;g.font=F({fs:18,w:600});
+  const ws=it.map(t=>g.measureText(t).width),gap=34,tot=ws.reduce((s,v)=>s+v,0)+gap*(it.length-1);let cx=x-tot/2;g.restore();
+  it.forEach((t,k)=>{txt(g,cx+ws[k]/2,y+(1-a)*8,t,{fs:18,w:600,c:'176,188,214',a});cx+=ws[k];if(k<it.length-1){txt(g,cx+gap/2,y+(1-a)*8,'·',{fs:18,w:800,c:rfDESK,a});cx+=gap}})};
+
 let ON=null;
 return rfRun({base:(g,t,c,T,i,A2)=>{const w=(j,s)=>A2(j,s)-c(j),p=t-c(i);
-  const dis=i===6?P(p,-.1,.6):0;
+  const dis=i===6?P(p,-.1,.6):i>6?1:0;
   if(dis<1)X3.draw(g,S8,o=>s8_pose(o,t,c,Math.min(i,5),T,w),t);
   /* the founder's desk lamp (bulb + halo) stays dark; hidden only for this render and restored right after (seek-safe) */
-  if(dis>0){let hid=[];X3.draw(g,S8N,o=>{ON=o;s8_night(o,p,T,w);o.dl.traverse(m=>{if(m!==o.dl&&m.visible&&(m.isLight||m.isSprite||(m.isMesh&&m.material&&!m.material.isMeshLambertMaterial)))hid.push(m)});hid.forEach(m=>m.visible=false)},t,{a:dis});
+  if(dis>0){let hid=[];X3.draw(g,S8N,o=>{ON=o;s8_night(o,t-c(6),T,w,i===7?t-c(7):-1);o.dl.traverse(m=>{if(m!==o.dl&&m.visible&&(m.isLight||m.isSprite||(m.isMesh&&m.material&&!m.material.isMeshLambertMaterial)))hid.push(m)});hid.forEach(m=>m.visible=false)},t,{a:dis});
     hid.forEach(m=>m.visible=true)}},
  b:[
   /* 0 title card */
@@ -266,21 +302,26 @@ return rfRun({base:(g,t,c,T,i,A2)=>{const w=(j,s)=>A2(j,s)-c(j),p=t-c(i);
       rfBub(g,30,304,w-60,'I cancelled on the app, but it still tried to charge me after.',{me:1,fs:18,maxW:.9,pop:P(p,W('said')-.2,.35)});
       txt(g,30,388,'what fixed it',{fs:15,c:'176,188,214',al:'left',a:P(p,W('fixed')-.35,.3)});
       rfChip(g,30+188,416,'explained · granted · escalated',{c:rfGO,fs:18,pop:P(p,W('fixed')-.25,.35),mk:'v'})}})},
-  /* 6 the closer: 02:00, the review becomes a question and gets an answer; the founder sleeps */
-  (g,p,d,T,W)=>{const sw=P(p,W('becomes')-.1,.5),fl=Math.abs(1-2*sw),ans=P(p,W('and')-.05,.35),e=P(p,W('it')-.15,.45);
-    rfChip(g,180,150,'02:00',{c:rfLUMG,fs:20,pop:P(p,W('two')-.15,.35),hot:P(p,W('two'),.3)*(1-P(p,W('two')+.9,.4)),a:1-e});
-    const ph={w:296,h:384},pcx=640,pcy=378;
-    g.save();g.translate(pcx,0);g.scale(Math.max(.02,fl),1);g.translate(-pcx,0);
-    s8_phone(g,pcx,pcy,ph.w,ph.h,{pop:P(p,.25,.45),glow:.6,body:(g,W2,H2)=>{
-      if(sw<.5)s8_draft(g,W2,H2,P(p,.35,1.5),T);
-      else{const u=W2/320;rfHelpPaint(g,W2,H2,{u,fs:16.5,lang:'EN',T,typing:P(p,W('question')+.15,.2)*(1-ans),
-        msgs:[{me:1,text:s8_REV},{text:s8_ANS,a:ans,pop:ans}]})}}});
-    g.restore();
-    rfChip(g,pcx-250,330,'one-star review',{c:rfRED,fs:18,pop:P(p,W('onestar')-.2,.35),a:1-sw,k:0});
-    rfChip(g,pcx-250,330,'a question',{c:rfLUM,fs:18,pop:P(p,W('question')-.2,.35),a:1-e});
-    rfChip(g,pcx+246,440,'a true answer',{c:rfGO,fs:18,mk:'v',pop:ans,a:1});
-    if(ON){const [fx,fy]=X3.at(S8N,ON.pt.founderHead());const z=P(p,.6,.5);
-      for(let k=0;k<3;k++){const u=((T*.45+k/3)%1);txt(g,fx+18+u*30+k*6,fy-30-u*60,'z',{fs:18+k*5,d:1,w:800,c:'200,210,255',a:z*Math.sin(u*Math.PI)})}
-      rfChip(g,Math.min(1120,fx+40),Math.max(200,fy-130),'founder · still asleep',{c:'200,210,255',fs:16,pop:P(p,W('morning')-.1,.35)})}
-    s8_title(g,640,126,'Case Desk','',{a:e,fs:58})}
- ]},7)})()
+  /* 6 the closer: 02:00, the one-star review becomes a question, answered in seconds; the founder sleeps */
+  (g,p,d,T,W)=>{const sw=P(p,W('becomes')-.1,.5),fl=Math.abs(1-2*sw),ans=P(p,W('answered')-.05,.35);
+    rfChip(g,180,150,'02:00',{c:rfLUMG,fs:20,pop:P(p,W('two')-.15,.35),hot:P(p,W('two'),.3)*(1-P(p,W('two')+.9,.4))});
+    /* at the end of the beat the phone flies home into Marko's hands and the chips fade, leaving the street clear for the sign-off */
+    const hf=sm(P(p,d-.5,.42)),[mx,my]=ON?X3.at(S8N,ON.pt.phone()):[300,420],hs=L(1,.12,hf);
+    g.save();g.translate(L(640,mx,hf),L(378,my,hf));g.scale(Math.max(.02,fl)*hs,hs);
+    s8_endPhone(g,0,0,1-hf*hf,P(p,.25,.45),T,sw<.5?-1:P(p,W('question')+.15,.2)*(1-ans),ans,P(p,.35,1.5));
+    g.restore();g.save();g.globalAlpha*=1-hf;
+    rfChip(g,360,330,'one-star review',{c:rfRED,fs:18,pop:P(p,W('review')-.2,.35),a:1-sw});
+    rfChip(g,360,330,'a question',{c:rfLUM,fs:18,pop:P(p,W('question')-.2,.35)});
+    rfChip(g,886,420,'answered',{c:rfGO,fs:18,mk:'v',pop:ans});
+    rfChip(g,886,468,'in seconds',{c:rfDESK,fs:18,pop:P(p,W('seconds')-.2,.35),hot:P(p,W('seconds'),.3)*(1-P(p,W('seconds')+.6,.3))});
+    s8_zzz(g,T,P(p,.6,.5),P(p,W('am')-.05,.35));g.restore()},
+  /* 7 the sign-off: the camera rises over the street, the wordmark lands on "Case", tagline + row, 02:00 ticks to 02:01 */
+  (g,p,d,T,W)=>{const ca=W('case');
+    s8_zzz(g,T,1,0);
+    s8_word(g,640,262,P(p,ca-.06,.42),P(p,ca+.04,.75),T);
+    txt(g,640,346,'The answer at 2 a.m.  ·  built on Adapty',{fs:24,w:600,c:'226,232,246',a:P(p,ca+.24,.3)});
+    s8_row(g,640,392,P(p,ca+.42,.3));
+    /* the flourish: the 02:00 chip ticks to 02:01 with a small check */
+    const tk=P(p,ca+.62,.28);
+    rfChip(g,180,150,tk>.5?'02:01':'02:00',{c:tk>.5?rfGO:rfLUMG,fs:20,mk:tk>.5?'v':0,s:1+.12*Math.sin(Math.PI*tk),hot:tk*(1-P(p,ca+1.0,.3))*.8})}
+ ]},8)})()

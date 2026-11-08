@@ -35,7 +35,7 @@
    "narration": [
     "Meet Case Desk: the app's own help screen, where the user just writes, in any language.",
     "It reads that user's Adapty profile, plain code decides what's true, and Claude only writes the words.",
-    "A checker blocks any fact the code didn't supply, and giving away premium is only ever a request."
+    "A checker blocks any fact the code didn't supply, and the AI never gives away premium on its own: only you, or a rule you set, can approve it."
    ],
    "audio": "audio/scene3.wav"
   },
@@ -94,7 +94,8 @@
     "For the developer, a ticket answered in seconds can be a refund or a one-star review that never happens.",
     "And you decide what it does on its own: ask me, automatic up to a few days, or never.",
     "Adapty finally sees the complaint itself: what the subscriber said, and what fixed it.",
-    "So at two in the morning, the one-star review becomes a question, and it gets an answer."
+    "So the one-star review at two a.m. becomes a question, answered in seconds.",
+    "That's Case Desk."
    ],
    "audio": "audio/scene8.wav"
   }

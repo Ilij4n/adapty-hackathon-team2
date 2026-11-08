@@ -708,8 +708,10 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
                                                          "access_level_id": a["access_level_id"],
                                                          "expires_at": expires.isoformat(),
                                                          "retry": a["status"] == "failed", "approved_by": approved_by})
-        who = "your rule" if approved_by.startswith("rule:") else f"The {APP_NAME} team"
-        st.add_message(a["case_id"], "system", f"{who[0].upper() + who[1:]} approved access until {expires.day} {expires:%B %Y}.",
+        said = (f"Given automatically by your rule: access until {expires.day} {expires:%B %Y}."
+                if approved_by.startswith("rule:") else
+                f"The {APP_NAME} team approved access until {expires.day} {expires:%B %Y}.")
+        st.add_message(a["case_id"], "system", said,
                        {"status": "ready", "event": "grant_approved", "approved_by": approved_by})
         return {"approval": st.get_approval(approval_id)}
 

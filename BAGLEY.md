@@ -75,3 +75,5 @@ uv run python tests/e2e_ui.py            # and: --variant 5
 - `.bagley/LEARNINGS.md`: what earlier agent turns learned the hard way. Add one dated bullet when a turn teaches
   you something.
 - `docs/reports/`: the head-to-head with the closest competitor (Resolve), three UI reviews, and the other teams.
+- **Open request (Ilijan, Sun 8 Nov ~13:30):** re-cut the demo video on the final v6 design (strips, compact footer,
+  composer with ghost text). Details: `docs/design-iterations/HANDOFF-BAGLEY-CHAT-SYNC.md`, section "Video request".

@@ -1,0 +1,31 @@
+Real Claude Code 2.1.319 runs against Case Desk's MCP server (hackathon box, demo server on port 8108, CASEDESK_LLM=none,
+seeded console + Ava 00239's live grant request). claude -p "<prompt>" --allowedTools "mcp__casedesk__*" --output-format stream-json --verbose.
+Raw event streams: claude-code-run1.jsonl, claude-code-run2.jsonl.
+
+=== Prompt: What is waiting for my OK in Case Desk?
+[tool_use] ToolSearch {"query": "select:mcp__casedesk__waiting_for_my_ok", "max_results": 1}
+[tool_result] 
+[tool_use] mcp__casedesk__waiting_for_my_ok {}
+[tool_result] {"summary":"1 grant waiting for your OK:\nAva · 00239: 3 days of Premium. Paid, then the App Store couldn't take the renewal on 22 Oct 2026 (Lumen Premium Weekly, App Store). Asked just now. (approval a_9e239e83ac)","waiting":[{"approval_id":"a_9e239e83ac","case_id":"c_4392b97d41","who":"Ava · 00239","customer_user_id":"lumen_demo_00239","what":"3 days of Premium","days":3,"access_level":"premium","why":"Paid, then the App Store couldn't take the renewal on 22 Oct 2026 (Lumen Premium Weekly, App Store).","asked":"just now","status":"pending"}]}
+[assistant text] One courtesy grant is waiting for your OK:
+
+- **Who:** Ava (00239), user ID `lumen_demo_00239`
+- **What:** 3 days of Premium
+- **Why:** Ava paid before, then the App Store couldn't take the renewal on 22 Oct 2026. The plan is Lumen Premium Weekly, billed through the App Store.
+- **Asked:** just now
+- **Approval ID:** `a_9e239e83ac` (case `c_4392b97d41`)
+
+I haven't approved or denied it. Tell me which you want and I'll do it.
+[result] {"subtype": "success", "is_error": false, "num_turns": 3, "duration_ms": 5422, "total_cost_usd": 0.0097996}
+
+=== Prompt: Approve Ava's grant
+[tool_use] ToolSearch {"query": "select:mcp__casedesk__waiting_for_my_ok,mcp__casedesk__approve_grant", "max_results": 5}
+[tool_result] 
+[tool_use] mcp__casedesk__waiting_for_my_ok {}
+[tool_result] {"summary":"1 grant waiting for your OK:\nAva · 00239: 3 days of Premium. Paid, then the App Store couldn't take the renewal on 22 Oct 2026 (Lumen Premium Weekly, App Store). Asked just now. (approval a_9e239e83ac)","waiting":[{"approval_id":"a_9e239e83ac","case_id":"c_4392b97d41","who":"Ava · 00239","customer_user_id":"lumen_demo_00239","what":"3 days of Premium","days":3,"access_level":"premium","why":"Paid, then the App Store couldn't take the renewal on 22 Oct 2026 (Lumen Premium Weekly, App Store).","asked":"just now","status":"pending"}]}
+[tool_use] mcp__casedesk__approve_grant {"approval_id": "a_9e239e83ac", "confirm": true}
+[tool_result] {"summary":"Premium given to Ava until 7 Nov 2026. (Case Desk's clock reads 4 Nov 2026, a demo clock; the grant runs from then.)","done":true,"approval_id":"a_9e239e83ac","status":"approved","granted_until":"7 Nov 2026","case_desk_clock":"4 Nov 2026"}
+[assistant text] I approved Ava's grant (approval `a_9e239e83ac`). Ava now has 3 days of Premium, running until 7 Nov 2026.
+
+Case Desk's clock reads 4 Nov 2026, which is a demo clock, so the grant counts from that date. It differs from today's date of 8 Nov.
+[result] {"subtype": "success", "is_error": false, "num_turns": 4, "duration_ms": 6574, "total_cost_usd": 0.0157955}

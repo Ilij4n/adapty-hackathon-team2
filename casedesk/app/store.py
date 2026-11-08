@@ -122,11 +122,11 @@ class Store:
 
     def list_cases(self, limit: int = 200) -> list[dict]:
         return [self._decode_case(r) for r in
-                self._all("SELECT * FROM cases ORDER BY updated_at DESC, created_at DESC LIMIT ?", (limit,))]
+                self._all("SELECT * FROM cases ORDER BY updated_at DESC, created_at DESC, rowid DESC LIMIT ?", (limit,))]
 
     def user_cases(self, customer_user_id: str) -> list[dict]:
         return [self._decode_case(r) for r in self._all(
-            "SELECT * FROM cases WHERE customer_user_id=? ORDER BY created_at", (customer_user_id,))]
+            "SELECT * FROM cases WHERE customer_user_id=? ORDER BY created_at, rowid", (customer_user_id,))]
 
     @staticmethod
     def _decode_case(r: dict) -> dict:
@@ -178,7 +178,7 @@ class Store:
         with self._lock:
             # A failed grant (Adapty error) is still an open request the team can retry: reuse it too.
             rows = self._all("SELECT id FROM approvals WHERE customer_user_id=? AND status IN ('pending', 'failed') "
-                             "ORDER BY created_at DESC LIMIT 1", (customer_user_id,))
+                             "ORDER BY created_at DESC, rowid DESC LIMIT 1", (customer_user_id,))
             if rows:
                 return rows[0]["id"], False
             return self.create_approval(case_id, customer_user_id, access_level_id, days, expires_at, at), True
@@ -189,18 +189,18 @@ class Store:
 
     def list_approvals(self, status: str | None = None) -> list[dict]:
         if status:
-            rows = self._all("SELECT * FROM approvals WHERE status=? ORDER BY created_at DESC", (status,))
+            rows = self._all("SELECT * FROM approvals WHERE status=? ORDER BY created_at DESC, rowid DESC", (status,))
         else:
-            rows = self._all("SELECT * FROM approvals ORDER BY created_at DESC")
+            rows = self._all("SELECT * FROM approvals ORDER BY created_at DESC, rowid DESC")
         return [self._decode_appr(r) for r in rows]
 
     def user_approvals(self, customer_user_id: str) -> list[dict]:
         return [self._decode_appr(r) for r in self._all(
-            "SELECT * FROM approvals WHERE customer_user_id=? ORDER BY created_at", (customer_user_id,))]
+            "SELECT * FROM approvals WHERE customer_user_id=? ORDER BY created_at, rowid", (customer_user_id,))]
 
     def case_approvals(self, case_id: str) -> list[dict]:
         return [self._decode_appr(r) for r in self._all(
-            "SELECT * FROM approvals WHERE case_id=? ORDER BY created_at", (case_id,))]
+            "SELECT * FROM approvals WHERE case_id=? ORDER BY created_at, rowid", (case_id,))]
 
     def decide_approval(self, aid: str, status: str, result: dict | None = None, at: str | None = None,
                         from_statuses: tuple[str, ...] = ("pending",)) -> bool:

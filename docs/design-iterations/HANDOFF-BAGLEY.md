@@ -139,7 +139,10 @@ uv run python tests/design_shots.py --variants 2 --out /tmp/shots # 26 shots, 0 
 
 ## Known issues
 
-- **Demo clock (all designs, including the current one):** Adapty data and grant expiry use the frozen demo clock
+- **Demo clock: FIXED on branch bagley/demo-clock.** One clock (`casedesk/clock.py`): the demo starts at
+  CASEDESK_NOW and ticks at real speed; messages, cases, audit and approvals all use it, and the console shifts its own
+  "now" to the server's (`/api/console/meta` server_now). Ava's grant window closes 27 h 41 min after server start.
+  Was: Adapty data and grant expiry use the frozen demo clock
   (4 Nov 2026), chat messages use real time. On stage a fresh grant reads "Premium given until 7 Nov" next to a message
   from 8 Nov, and some views show the approval as requested on "4 Nov". A backend fix (stamp messages with the same
   clock) or a line in the pitch.

@@ -9,7 +9,8 @@ so: activity is derived from expires_at vs `now` (as Adapty's docs instruct); pr
 platform, locale and placement/flow come from an optional "extras" table (for the Lumen demo: the seed's
 createProfile payload and transaction prices, written by seed_loader into data/profiles_raw.json.gz).
 
-Clock: `now` defaults to env CASEDESK_NOW (ISO) if set, else the real UTC time. The seeded data is a
+Clock: `now` defaults to casedesk.clock: env CASEDESK_NOW (ISO) if set — frozen, or ticking from it at real speed
+with CASEDESK_CLOCK=ticking (the demo) — else the real UTC time. The seeded data is a
 snapshot as of its meta.now (replay end + 1 day = 2026-11-04T00:12:04Z); set CASEDESK_NOW to that for demos.
 """
 from __future__ import annotations

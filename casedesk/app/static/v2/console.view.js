@@ -15,7 +15,9 @@ window.CaseDeskConsoleView = (h) => {
     const s = document.createElementNS(SVG, "svg"); s.setAttribute("viewBox", "0 0 16 16"); s.setAttribute("aria-hidden", "true");
     s.setAttribute("class", "ic ic-" + kind);
     const p = document.createElementNS(SVG, "path");
-    p.setAttribute("d", { tick: "M3.5 8.5 6.5 11.5 12.5 4.5", cross: "M4.5 4.5 11.5 11.5M11.5 4.5 4.5 11.5", down: "M8 3.5v8.5M4.5 8.5 8 12l3.5-3.5" }[kind]);
+    p.setAttribute("d", { tick: "M3.5 8.5 6.5 11.5 12.5 4.5", cross: "M4.5 4.5 11.5 11.5M11.5 4.5 4.5 11.5", down: "M8 3.5v8.5M4.5 8.5 8 12l3.5-3.5",
+      person: "M8 7.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM3.5 13.5c.6-2.3 2.4-3.6 4.5-3.6s3.9 1.3 4.5 3.6",
+      chev: "M6 4l4 4-4 4" }[kind]);
     p.setAttribute("fill", "none"); p.setAttribute("stroke", "currentColor"); p.setAttribute("stroke-width", "1.6");
     p.setAttribute("stroke-linecap", "round"); p.setAttribute("stroke-linejoin", "round");
     s.append(p); return s;
@@ -95,49 +97,166 @@ window.CaseDeskConsoleView = (h) => {
   const rowSig = new Map();
   const seenQ = new Set();
   let navFocus = false;
+  const given = new Map();       // approval id -> when it was given from this page (its green line stays a moment)
+  const GIVEN_MS = 4500;
+  const why = new Map();         // case id -> the status sentence, learnt when the case was open
+  const orders = new Map();      // case id -> the message tried to give Case Desk orders (from the case itself)
+  const asked = new Set();
+  let featured = null;           // the approval shown as the big decision card
 
-  function renderList() {
-    const byCase = Object.fromEntries(S.cases.map((c) => [c.id, c]));
-    const pend = S.approvals.filter((a) => a.status === "pending" || a.status === "failed");
+  // escalated: the reason in words, never amber. Dylan "tried to give orders" (known once his case is read)
+  function personReason(c) {
+    if (orders.get(c.id)) return "tried to give orders";
+    if (c.privacy || (c.escalation_reasons || []).includes("privacy_request")) return "privacy request";
+    if ((c.escalation_reasons || []).includes("user_requested_human")) return "asked for a person";
+    return "needs a person";
+  }
+  function learnOrders(cases) {
+    for (const c of cases) {
+      if (!c.escalated || asked.has(c.id)) continue;
+      asked.add(c.id);
+      h.api("/api/cases/" + encodeURIComponent(c.id)).then((d) => {
+        if (d && d.case && d.case.intent && d.case.intent.injection_suspected) { orders.set(c.id, true); h.rerenderList(); }
+      }).catch(() => asked.delete(c.id));
+    }
+  }
+
+  function decideBtn(a, ok, label, busy) {
+    ok.onclick = () => {
+      given.set(a.id, Date.now());
+      setTimeout(() => h.rerenderList(), GIVEN_MS + 50);
+      ok.closest(".q-item").classList.add("deciding");
+      ok.textContent = busy;
+      Promise.resolve(h.decide(a.id, "approve", ok)).finally(() => { if (!ok.disabled) { ok.textContent = label; given.delete(a.id); } });
+    };
+  }
+
+  function bigCard(a, c) { // the one-click moment: who, what, why, what changes, then the amber button
+    const name = h.nameOf(a.customer_user_id) || "them";
+    const days = a.days || 3, what = `${days} days of premium`;
+    const li = el("li", "q-item big" + (a.status === "failed" ? " failed" : ""));
+    li.setAttribute("aria-current", String(a.case_id === S.selected));
+    const kick = el("p", "q-kick");
+    kick.append(lamp("warn"), el("span", null, a.status === "failed" ? "Adapty refused the last try" : "Case Desk asks you to confirm"), timeEl(a.created_at));
+    const b = el("button", "q-open"); b.type = "button"; b.title = "Open the case";
+    const want = el("span", "q-want", what);
+    const l1 = el("span", "q-l1"); l1.append(who(a.customer_user_id), want);
+    b.append(l1);
+    b.onclick = () => h.select(a.case_id);
+    const body = el("div", "q-body");
+    body.append(b);
+    const sentence = why.get(a.case_id) || devLabel(c.state_badge && c.state_badge.label);
+    if (sentence) body.append(el("p", "q-why", sentence));
+    body.append(el("p", "q-change", `${cap(name)} gets premium for ${days} days. Nothing else changes.`));
+    li.append(kick, body);
+    if (a.status === "failed") li.append(el("p", "fail", "Adapty couldn't give it: " + ((a.result && a.result.error) || "error") + ". Nothing changed for " + name + "."));
+    const row = el("div", "grant-row");
+    const label = a.status === "failed" ? `Try again: give ${name} ${what}` : `Give ${name} ${what}`;
+    const ok = el("button", "btn approve big", label); ok.type = "button";
+    decideBtn(a, ok, label, `Giving ${name} ${what}…`);
+    const no = el("button", "btn deny", "Deny"); no.type = "button";
+    no.onclick = () => h.decide(a.id, "deny", no);
+    row.append(ok, no);
+    li.append(row, el("p", "hint", "Nothing is granted until you approve."));
+    return { li, want };
+  }
+
+  function rowItem(a) { // a compact row with its own small Give / Deny
+    const name = h.nameOf(a.customer_user_id) || "them";
+    const days = a.days || 3, what = `${days} days of premium`;
+    const li = el("li", "q-item row" + (a.status === "failed" ? " failed" : ""));
+    li.setAttribute("aria-current", String(a.case_id === S.selected));
+    const b = el("button", "q-open"); b.type = "button"; b.title = "Open the case";
+    const want = el("span", "q-want", what);
+    const l1 = el("span", "q-l1"); l1.append(who(a.customer_user_id), want);
+    b.append(l1, timeEl(a.created_at));
+    b.onclick = () => h.select(a.case_id);
+    li.append(b);
+    if (a.status === "failed") li.append(el("p", "fail", "Adapty refused the last try."));
+    const row = el("div", "grant-row");
+    const label = a.status === "failed" ? `Try again: give ${name} ${what}` : `Give ${name} ${what}`;
+    const ok = el("button", "btn approve", a.status === "failed" ? "Try again" : `Give ${days} days`); ok.type = "button";
+    ok.setAttribute("aria-label", label); ok.title = label;
+    decideBtn(a, ok, ok.textContent, "Giving…");
+    const no = el("button", "btn deny", "Deny"); no.type = "button"; no.setAttribute("aria-label", `Deny ${name} ${what}`);
+    no.onclick = () => h.decide(a.id, "deny", no);
+    row.append(ok, no);
+    li.append(row, el("p", "hint sr-only", "Nothing is granted until you approve."));
+    return { li, want };
+  }
+
+  function renderDock(byCase) {
+    const pend = S.approvals.filter((a) => a.status === "pending" || a.status === "failed")
+      .sort((x, y) => String(x.created_at).localeCompare(String(y.created_at)));
+    const now = Date.now();
+    const done = S.approvals.filter((a) => a.status === "approved" && given.has(a.id) && now - given.get(a.id) < GIVEN_MS);
     const dock = $("#dock");
-    $("#qCount").textContent = pend.length; $("#qEmpty").hidden = pend.length > 0;
-    const rises = dock && pend.length > 0 && dock.classList.contains("is-empty"); // the dock rises when a grant arrives
-    if (dock) dock.classList.toggle("is-empty", !pend.length);
-    document.body.classList.toggle("has-pending", pend.length > 0);
+    const days = pend.reduce((n, a) => n + (a.days || 3), 0);
+    $("#qCount").textContent = pend.length;
+    $("#qWord").textContent = pend.length ? "waiting for your OK" : "nothing waiting";
+    $("#qDays").textContent = pend.length ? `${days} ${days === 1 ? "day" : "days"} of premium asked for` : "";
+    $("#qEmpty").hidden = pend.length > 0 || done.length > 0;
+    const busy = pend.length > 0 || done.length > 0;
+    const rises = dock && busy && dock.classList.contains("is-empty"); // the dock rises when a grant arrives
+    if (dock) { dock.classList.toggle("is-empty", !busy); dock.classList.toggle("all-done", !pend.length && busy); }
+    document.body.classList.toggle("has-pending", busy);
     if (rises) {
       dock.classList.remove("rising"); void dock.offsetWidth; dock.classList.add("rising");
       dock.addEventListener("animationend", () => dock.classList.remove("rising"), { once: true });
     }
 
-    // the dock: the ONE Give / Deny for each grant lives here
     const q = $("#queue"); q.textContent = "";
-    for (const a of pend) {
-      const c = byCase[a.case_id] || {};
-      const name = h.nameOf(a.customer_user_id) || "them";
-      const what = `${a.days || 3} days of premium`;
-      const li = el("li", "q-item" + (a.status === "failed" ? " failed" : "") + (S.selected && S.selected !== a.case_id ? " other" : ""));
-      li.setAttribute("aria-current", String(a.case_id === S.selected));
-      const b = el("button", "q-open"); b.type = "button"; b.title = "Open the case";
-      const want = el("span", "q-want", "wants " + what);
-      const l1 = el("span", "q-l1"); l1.append(who(a.customer_user_id), want);
-      const l2 = el("span", "q-l2");
-      const tone = c.state_badge && c.state_badge.tone;
-      l2.append(lamp(tone), el("span", "ell", devLabel(c.state_badge && c.state_badge.label) || "No status yet"), timeEl(a.created_at));
-      b.append(l1, l2);
-      b.onclick = () => h.select(a.case_id);
-      li.append(b);
-      if (a.status === "failed") li.append(el("p", "fail", "Adapty couldn't give it: " + ((a.result && a.result.error) || "error") + ". Nothing changed for " + name + "."));
-      const row = el("div", "grant-row");
-      const label = a.status === "failed" ? `Try again: give ${name} ${what}` : `Give ${name} ${what}`;
-      const ok = el("button", "btn approve", label); ok.type = "button";
-      ok.onclick = () => { ok.textContent = `Giving ${name} ${what}…`; Promise.resolve(h.decide(a.id, "approve", ok)).finally(() => { if (!ok.disabled) ok.textContent = label; }); };
-      const no = el("button", "btn deny", "Deny"); no.type = "button";
-      no.onclick = () => h.decide(a.id, "deny", no);
-      row.append(ok, no);
-      li.append(row, el("p", "hint", "Nothing is granted until you approve."));
-      q.append(li);
-      if (!seenQ.has(a.id)) { seenQ.add(a.id); if (!rises && !firstList) requestAnimationFrame(() => flash(want, "warn")); }
+    // the green line a decided card collapses into
+    for (const a of done) {
+      const li = el("li", "q-done"); const p = el("p", "done");
+      const until = a.result && a.result.expires_at ? " until " + human(a.result.expires_at) : "";
+      const t = el("span", null, `Premium given to ${h.nameOf(a.customer_user_id) || "them"}${until}`);
+      p.append(icon("tick"), t); li.append(p); q.append(li);
+      if (!seenQ.has("g" + a.id)) { seenQ.add("g" + a.id); requestAnimationFrame(() => flash(t, "ok")); }
     }
+    featured = pend.find((a) => a.case_id === S.selected) || pend[0] || null;
+    q.classList.toggle("has-rest", pend.length > 1);
+    if (featured) {
+      const { li, want } = bigCard(featured, byCase[featured.case_id] || {});
+      q.append(li);
+      if (!seenQ.has(featured.id)) { seenQ.add(featured.id); if (!rises && !firstList) requestAnimationFrame(() => flash(want, "warn")); }
+    }
+    const rest = pend.filter((a) => a !== featured);
+    if (rest.length) {
+      const box = el("li", "q-rest"); box.setAttribute("role", "presentation");
+      const hd = el("h3", "q-rest-h", "Also waiting"); hd.append(document.createTextNode(" "), mono("n", String(rest.length)));
+      const ol = el("ol", "q-rows");
+      for (const a of rest) {
+        const { li, want } = rowItem(a); ol.append(li);
+        if (!seenQ.has(a.id)) { seenQ.add(a.id); if (!rises && !firstList) requestAnimationFrame(() => flash(want, "warn")); }
+      }
+      box.append(hd, ol); q.append(box);
+    }
+  }
+
+  function caseRow(c) {
+    const li = el("li"); const b = el("button", "c-item" + (c.escalated ? " esc" : "")); b.type = "button";
+    b.setAttribute("aria-current", String(c.id === S.selected)); b.dataset.id = c.id;
+    const st = c.state_badge || {};
+    const r1 = el("span", "r1"); r1.append(who(c.customer_user_id), timeEl(c.updated_at));
+    const r2 = el("span", "r2"); r2.append(auto(el("span", "c-msg", c.first_message || "…")));
+    const flags = el("span", "flags");
+    if (c.pending_approval) flags.append(el("span", "flag", "waiting for your OK"));
+    if (c.escalated) flags.append(el("span", "flag person", personReason(c)));
+    if (flags.children.length) r2.append(flags);
+    if (c.escalated) {
+      const m = icon("person"); m.setAttribute("role", "img"); m.setAttribute("aria-label", "Needs a person"); m.removeAttribute("aria-hidden");
+      b.append(m, r1, r2);
+    } else b.append(lamp(st.tone, devLabel(st.label) || "No status yet"), r1, r2);
+    b.onclick = () => h.select(c.id);
+    li.append(b);
+    return { li, b };
+  }
+
+  function renderList() {
+    const byCase = Object.fromEntries(S.cases.map((c) => [c.id, c]));
+    learnOrders(S.cases);
+    renderDock(byCase);
 
     // filters: plain words with counts; the active one in teal
     const fb = $("#filters"); fb.textContent = "";
@@ -146,13 +265,16 @@ window.CaseDeskConsoleView = (h) => {
       const b = el("button", "filt"); b.type = "button";
       b.setAttribute("aria-pressed", String(S.filter === key));
       b.append(el("span", "fl", label), document.createTextNode(" "), el("span", "fn", String(n)));
-      if (key !== "all" && n) b.classList.add("has");
+      if (key !== "all" && n) b.classList.add("has", key === "waiting" ? "amber" : "person");
       b.onclick = () => { S.filter = key; S.sig.list = ""; renderList(); };
       fb.append(b);
     }
 
     const f = h.FILTERS.find((x) => x[0] === S.filter) || h.FILTERS[0];
-    shown = S.cases.filter(f[2]);
+    const matched = S.cases.filter(f[2]);
+    // "Needs a person" is pinned above the rest: a group of its own, in its own ink
+    const people = matched.filter((c) => c.escalated), others = matched.filter((c) => !c.escalated);
+    shown = [...people, ...others];
     $("#cCount").textContent = shown.length === S.cases.length ? String(S.cases.length) : `${shown.length} of ${S.cases.length}`;
     const empty = $("#cEmpty");
     empty.hidden = shown.length > 0;
@@ -172,22 +294,16 @@ window.CaseDeskConsoleView = (h) => {
 
     const list = $("#cases"); list.textContent = "";
     let current = null;
-    for (const c of shown) {
-      const li = el("li"); const b = el("button", "c-item"); b.type = "button";
-      b.setAttribute("aria-current", String(c.id === S.selected)); b.dataset.id = c.id;
-      if (c.id === S.selected) current = b;
-      const st = c.state_badge || {};
-      const r1 = el("span", "r1"); r1.append(who(c.customer_user_id), timeEl(c.updated_at));
-      const r2 = el("span", "r2"); r2.append(auto(el("span", "c-msg", c.first_message || "…")));
-      const flags = el("span", "flags");
-      if (c.pending_approval) flags.append(el("span", "flag", "waiting"));
-      if (c.privacy) flags.append(el("span", "flag", "privacy"));
-      else if (c.escalated) flags.append(el("span", "flag", "needs a person"));
-      if (flags.children.length) r2.append(flags);
-      b.append(lamp(st.tone, devLabel(st.label) || "No status yet"), r1, r2);
-      b.onclick = () => h.select(c.id);
-      li.append(b); list.append(li);
-    }
+    const group = (cls, title, n) => {
+      const g = el("li", "c-group " + cls); g.setAttribute("role", "presentation");
+      const hd = el("h3"); if (cls === "person") hd.append(icon("person"));
+      hd.append(el("span", null, title), document.createTextNode(" "), mono("n", String(n)));
+      g.append(hd); list.append(g);
+    };
+    if (people.length) group("person", "Needs a person", people.length);
+    for (const c of people) { const { li, b } = caseRow(c); if (c.id === S.selected) current = b; list.append(li); }
+    if (people.length && others.length) group("rest", "Other cases", others.length);
+    for (const c of others) { const { li, b } = caseRow(c); if (c.id === S.selected) current = b; list.append(li); }
     // a row whose state, flags or message count changed since the last refresh: its time flashes
     const now = new Map();
     for (const c of S.cases) now.set(c.id, [c.state_badge && c.state_badge.code, c.pending_approval, c.escalated, c.privacy, c.messages].join("|"));
@@ -249,8 +365,8 @@ window.CaseDeskConsoleView = (h) => {
     if (a.status === "pending" || a.status === "failed") {
       const p = el("p", "waiting");
       p.append(icon("down"), el("span", null, a.status === "failed"
-        ? `Giving ${name} ${what} failed. Try again in the decision bar below.`
-        : `Waiting for your OK on ${what} for ${name}. Give it or deny it in the decision bar below.`));
+        ? `Giving ${name} ${what} failed. Try again in the decision card below.`
+        : `Waiting for your OK on ${what} for ${name}. Give it or deny it in the decision card below.`));
       w.append(p);
     } else if (a.status === "approved") {
       const p = el("p", "done");
@@ -327,6 +443,9 @@ window.CaseDeskConsoleView = (h) => {
     return { text: bits.join(", ") + ".", bad: rv.length > 0 || meta.status === "error", rv, le };
   }
 
+  const EV_KEY = "casedesk.v2.evidence";
+  let evOpen = false;
+  try { evOpen = localStorage.getItem(EV_KEY) === "open"; } catch { /* default: collapsed */ }
   const prev = { id: null, vals: new Map() };
   function renderDetail(d) {
     const box = $("#detail");
@@ -346,7 +465,13 @@ window.CaseDeskConsoleView = (h) => {
     add("Store", f.store_name || "No purchase");
     add("Plan", f.product_name);
     add("Opened", clock(c.created_at), "mono");
-    head.append(h2, meta);
+    const evb = el("button", "ev-toggle"); evb.type = "button"; evb.id = "evToggle";
+    evb.setAttribute("aria-controls", "evidence"); evb.setAttribute("aria-expanded", String(evOpen));
+    evb.title = (evOpen ? "Hide" : "Show") + " the evidence: claims, facts, reply check, records, audit log (e)";
+    evb.append(el("span", null, "Evidence"), icon("chev"), el("kbd", null, "e"));
+    evb.lastChild.setAttribute("aria-hidden", "true");
+    evb.onclick = () => setEvidence(!evOpen);
+    head.append(h2, meta, evb);
     tr.append(head);
 
     const tone = (c.state && c.state.tone) || "info";
@@ -356,16 +481,27 @@ window.CaseDeskConsoleView = (h) => {
     rlt.dataset.k = "status"; rlt.dataset.v = (c.state && c.state.code) + "|" + h.stateLine(c.state, f); rlt.dataset.tone = tone;
     rl.append(lamp(tone), rlt);
     ro.append(rl, el("p", "ro-line", h.stateLine(c.state, f)), verdictLine(c));
-    const alerts = [];
-    if (fl.privacy) alerts.push(["warn", "Privacy or data request. Handle it through your data-protection process."]);
-    (fl.escalation_reasons || []).filter((r) => r !== "privacy_request" || !fl.privacy).forEach((r) => alerts.push(["warn", "Needs a person, because " + h.reasonText(r) + "."]));
-    if (c.intent && c.intent.injection_suspected) alerts.push(["bad", "The message tried to give Case Desk orders. It was ignored."]);
-    if (alerts.length) {
-      const ul = el("ul", "alerts");
-      alerts.forEach(([t, text]) => { const li = el("li", "alert " + t); li.append(lamp(t), el("span", null, text)); ul.append(li); });
-      ro.append(ul);
-    }
     tr.append(ro);
+    // escalated: Case Desk could not help, so no button can settle it. Its own ink, not amber (amber asks you to confirm).
+    const injected = !!(c.intent && c.intent.injection_suspected);
+    if (injected !== !!orders.get(c.id)) { orders.set(c.id, injected); setTimeout(() => h.rerenderList(), 0); }
+    if (fl.escalated || fl.privacy) {
+      const pn = el("section", "person-note"); pn.setAttribute("aria-label", "Needs a person");
+      const ph = el("h3"); ph.append(icon("person"), el("span", null, "A person needs to answer this"));
+      const nm = cap(h.nameOf(c.customer_user_id) || "the user");
+      const lines = [];
+      if (injected) lines.push(["bad", "The message tried to give Case Desk orders. It was ignored; nothing was granted or changed."]);
+      if ((fl.escalation_reasons || []).includes("user_requested_human")) lines.push(["person", `${nm} asked for a person. Case Desk said a person will reply.`]);
+      if (fl.privacy) lines.push(["person", "Privacy or data request. Handle it through your data-protection process."]);
+      (fl.escalation_reasons || []).filter((r) => r !== "privacy_request" && r !== "user_requested_human").forEach((r) => lines.push(["person", "Escalated because " + h.reasonText(r) + "."]));
+      const ul = el("ul", "alerts");
+      lines.forEach(([t, text]) => { const li = el("li", "alert " + t); li.append(lamp(t === "bad" ? "bad" : "person"), el("span", null, text)); ul.append(li); });
+      pn.append(ph, ul, el("p", "pn-note", "Nothing here to approve. Reply from your support inbox."));
+      tr.append(pn);
+    } else if (injected) {
+      const ul = el("ul", "alerts solo"); const li = el("li", "alert bad");
+      li.append(lamp("bad"), el("span", null, "The message tried to give Case Desk orders. It was ignored.")); ul.append(li); tr.append(ul);
+    }
 
     const turns = el("ol", "turns");
     for (const m of d.messages) {
@@ -414,7 +550,7 @@ window.CaseDeskConsoleView = (h) => {
     tr.append(did);
 
     // ================= the evidence column
-    const ins = el("section", "inspector scroll"); ins.setAttribute("aria-label", "Evidence");
+    const ins = el("section", "inspector scroll"); ins.setAttribute("aria-label", "Evidence"); ins.id = "evidence";
 
     const cl = sub("What the user claims");
     cl.append(el("p", "sec-note", "Each claim beside the fact it was checked against."), claimsBlock(c));
@@ -517,6 +653,10 @@ window.CaseDeskConsoleView = (h) => {
     }
 
     box.append(tr, ins);
+    box.classList.toggle("ev-open", evOpen);
+    // the decision card reads the status sentence of the case it is about
+    const sentence = h.stateLine(c.state, f);
+    if (sentence && why.get(c.id) !== sentence) { why.set(c.id, sentence); if (S.approvals.some((a) => a.case_id === c.id && (a.status === "pending" || a.status === "failed"))) setTimeout(() => h.rerenderList(), 0); }
     if (keep) { box.scrollTop = keep[0]; box.querySelectorAll(".scroll").forEach((n, i) => { n.scrollTop = keep[i + 1] || 0; }); }
 
     // reverse video for whatever changed on this case since the last refresh (labels only)
@@ -550,13 +690,20 @@ window.CaseDeskConsoleView = (h) => {
     setTimeout(() => t.remove(), Math.min(ms, 5200));
   }
 
-  // ------------------------------------------------------------ keyboard: j / k move through the shown cases
+  // ------------------------------------------------------------ keyboard: j / k move, e evidence, a give / d deny the big card
   document.addEventListener("keydown", (e) => {
-    if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
-    if (e.key !== "j" && e.key !== "k") return;
+    if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+    if (!/^[jkead]$/.test(e.key)) return;
     const t = e.target;
     if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
-    const app = $("#app"); if (!app || app.hidden || !shown.length) return;
+    const app = $("#app"); if (!app || app.hidden) return;
+    if (e.key === "e") { if ($("#detail").classList.contains("has-case")) { e.preventDefault(); setEvidence(!evOpen); } return; }
+    if (e.key === "a" || e.key === "d") {
+      const b = document.querySelector("#queue .q-item.big " + (e.key === "a" ? ".btn.approve" : ".btn.deny"));
+      if (b && !b.disabled) { e.preventDefault(); b.click(); }
+      return;
+    }
+    if (!shown.length) return;
     const i = shown.findIndex((c) => c.id === S.selected);
     const j = i < 0 ? 0 : Math.max(0, Math.min(shown.length - 1, i + (e.key === "j" ? 1 : -1)));
     if (j === i) return;
@@ -564,6 +711,16 @@ window.CaseDeskConsoleView = (h) => {
     navFocus = !!(document.activeElement && document.activeElement.closest && document.activeElement.closest("#cases")) || matchMedia("(min-width: 980px)").matches;
     h.select(shown[j].id);
   });
+
+  // the evidence column: collapsed by default, the reader's choice remembered
+  function setEvidence(open) {
+    evOpen = open;
+    try { localStorage.setItem(EV_KEY, open ? "open" : "closed"); } catch { /* private mode: still toggles */ }
+    const box = $("#detail"); box.classList.toggle("ev-open", open);
+    const b = $("#evToggle");
+    if (b) { b.setAttribute("aria-expanded", String(open)); b.title = (open ? "Hide" : "Show") + " the evidence: claims, facts, reply check, records, audit log (e)"; }
+    if (open && !matchMedia("(min-width: 1200px)").matches) { const ev = $("#evidence"); if (ev) ev.scrollIntoView({ behavior: "smooth", block: "start" }); }
+  }
 
   // the dock is a fixed sheet on phones: the page is padded by its height so it never hides the end of the page
   const dock = document.getElementById("dock");

@@ -96,6 +96,8 @@
   --amber-soft: #fbefdf;
   --teal-soft: #ddf2ef;
   --coral-soft: #fbe6e3;
+  --person: #1c5a8c;         /* "needs a person": its own ink, never amber (amber asks you to confirm) */
+  --person-soft: #e4eef8;
   --focus: #0b1324;
   --float: 0 10px 30px rgba(11, 19, 36, .16), 0 2px 6px rgba(11, 19, 36, .08);
 
@@ -127,6 +129,8 @@
     --amber-soft: #2a2117;
     --teal-soft: #0f2b2f;
     --coral-soft: #2d1a20;
+    --person: #9cc8f2;
+    --person-soft: #102238;
     --focus: #e8edf7;
     --float: 0 -1px 0 #2a3a5c, 0 18px 40px rgba(0, 0, 0, .55);
   }
@@ -161,6 +165,7 @@ code, kbd, .mono { font-family: var(--font-mono); font-weight: 400; }
 .lamp.warn { background: var(--amber); }
 .lamp.bad { background: var(--coral); }
 .lamp.info { background: var(--ink-3); }
+.lamp.person { background: var(--person); border-radius: 50%; }
 
 kbd {
   display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 4px;

@@ -47,12 +47,16 @@
     <div class="idle">
       <h2>No case open</h2>
       <p>Pick a case to see who wrote in, their subscription in plain words, the conversation, and what Case Desk checked before it answered.</p>
-      <p class="keys"><kbd>j</kbd><kbd>k</kbd> move through the cases</p>
+      <p class="keys"><kbd>j</kbd><kbd>k</kbd> move through the cases, <kbd>e</kbd> shows the evidence</p>
     </div>
   </section>
 
   <aside class="dock is-empty" id="dock" aria-labelledby="qH">
-    <div class="dock-head"><h2 id="qH">Needs your decision</h2><span class="count" id="qCount">0</span></div>
+    <div class="dock-head">
+      <h2 id="qH"><span class="q-n" id="qCount">0</span> <span id="qWord">waiting for your OK</span></h2>
+      <span class="q-days" id="qDays"></span>
+      <span class="keys" aria-hidden="true"><kbd>a</kbd> give <kbd>d</kbd> deny <kbd>j</kbd><kbd>k</kbd> move</span>
+    </div>
     <ol class="q-list" id="queue"></ol>
     <p class="empty" id="qEmpty">Nothing to decide. When Case Desk asks to give someone premium, the request waits here.</p>
   </aside>

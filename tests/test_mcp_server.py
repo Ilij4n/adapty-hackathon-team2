@@ -153,7 +153,9 @@ def test_approve_needs_confirm_then_grants(app_client):
         == "pending"
     res = call(app_client, "approve_grant", approval_id=aid, confirm=True)
     assert res["done"] is True and res["status"] == "approved"
-    assert res["summary"] == "Premium given to Ava until 7 Nov 2026."
+    assert res["summary"].startswith("Premium given to Ava until 7 Nov 2026.")
+    # the demo runs on a frozen clock (4 Nov 2026); the answer says so instead of looking already expired
+    assert res["case_desk_clock"] == "4 Nov 2026" and "demo clock" in res["summary"]
     # the console's own refusal comes back in words
     again = call(app_client, "approve_grant", approval_id=aid, confirm=True)
     assert again["done"] is False and again["summary"] == "Case Desk refused to approve: Approval is already approved."

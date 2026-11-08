@@ -468,6 +468,11 @@ def build_server(api: CaseDesk | None = None) -> FastMCP:
             until = day((new.get("result") or {}).get("expires_at") or new.get("expires_at"))
             summary = f"{access_name(new.get('access_level_id'))} given to {nm} until {until}."
             out = {"granted_until": until}
+            clock = _parse(new.get("decided_at"))
+            if clock and abs((clock - datetime.now(timezone.utc)).total_seconds()) > 86400:
+                # A demo server runs on a frozen clock: say so, or "until 7 Nov" reads as already over.
+                summary += f" (Case Desk's clock reads {day(clock.isoformat())}, a demo clock; the grant runs from then.)"
+                out["case_desk_clock"] = day(clock.isoformat())
         else:
             summary = f"Denied: {nm} gets no extra access. Case Desk tells them the team reviewed the request."
             out = {}

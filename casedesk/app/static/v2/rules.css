@@ -1,0 +1,55 @@
+/* Night Shift: the Rules drawer (static/v2/rules.js). Calm: one pane, no colour except meaning.
+   Amber stays "needs you"; the active choice is a teal outline (like the active filter); locked rows are ink. */
+
+.rules-btn { min-height: 32px; padding: 0 12px; font-size: var(--t-s); gap: 8px; background: transparent; }
+.rules-btn .rb-mode { font-weight: 400; color: var(--ink-3); }
+.rules-btn[aria-expanded="true"] { border-color: var(--ink-2); }
+
+.rules-backdrop { position: fixed; inset: 0; z-index: 40; background: color-mix(in srgb, var(--page) 55%, transparent); }
+.rules-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 41; width: min(520px, 100vw); overflow: auto;
+  background: var(--pane); border-left: 1px solid var(--line); box-shadow: -12px 0 32px rgba(0, 0, 0, .28);
+  padding: 18px 24px 32px; display: grid; gap: 14px; align-content: start;
+}
+.rules-backdrop[hidden], .rules-drawer[hidden] { display: none; }
+.rules-head { display: flex; align-items: center; gap: 12px; }
+.rules-head h2 { font-size: var(--t-xl); flex: 1; }
+.rules-close { min-height: 32px; padding: 0 12px; font-size: var(--t-s); background: transparent; }
+.rules-lead { color: var(--ink-2); font-size: var(--t-m); max-width: 52ch; }
+
+.rules-list { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 0; }
+.rule { display: grid; gap: 10px; padding: 18px 0; border-top: 1px solid var(--line); }
+.rule h3 { font-size: var(--t-m); font-weight: 600; }
+.rule-say { color: var(--ink-2); font-size: var(--t-s); max-width: 60ch; }
+
+.seg { display: flex; flex-wrap: wrap; gap: 0; border: 1px solid var(--line-2); border-radius: var(--r-ctl); width: fit-content; max-width: 100%; }
+.seg-b {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border: 0; background: transparent;
+  color: var(--ink-2); font: inherit; font-size: var(--t-s); font-weight: 600; cursor: pointer; border-radius: 0;
+}
+.seg-b + .seg-b { border-left: 1px solid var(--line-2); }
+.seg-b:first-child { border-radius: var(--r-ctl) 0 0 var(--r-ctl); }
+.seg-b:last-child { border-radius: 0 var(--r-ctl) var(--r-ctl) 0; }
+.seg-b[aria-checked="true"] { color: var(--teal); background: var(--teal-soft); box-shadow: inset 0 0 0 1px var(--teal); }
+.seg-b:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.seg-days {
+  height: 28px; padding: 0 4px; border-radius: 4px; border: 1px solid var(--line-2); background: var(--pane); color: var(--ink);
+  font: 400 var(--t-s) var(--font-mono); font-variant-numeric: tabular-nums;
+}
+
+.rule-fixed { display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 7px 12px;
+  border-radius: var(--r-ctl); background: var(--sel); color: var(--ink); font-weight: 600; font-size: var(--t-s); }
+.rule-fixed .ic { width: 16px; height: 16px; color: var(--ink-2); }
+
+/* a grant the owner's rule gave: teal, not amber (nothing is waiting for anyone) */
+.grant.by-rule { background: var(--teal-soft); color: var(--teal); }
+.grant.by-rule .rule-note { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-top: 4px; font-weight: 400; color: var(--ink-2); }
+.grant.by-rule .rule-switch { color: var(--ink); font-size: var(--t-s); }
+.flag.auto { color: var(--teal); }
+
+@media (max-width: 640px) {
+  .rules-drawer { padding: 14px 16px 28px; }
+  .seg { width: 100%; }
+  .seg-b { flex: 1 1 auto; justify-content: center; min-height: 44px; }
+  .rules-btn .rb-mode { display: none; }
+}

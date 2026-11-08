@@ -247,6 +247,8 @@ window.CaseDeskConsoleView = (h) => {
     const r2 = el("span", "r2"); r2.append(auto(el("span", "c-msg", c.first_message || "…")));
     const flags = el("span", "flags");
     if (c.pending_approval) flags.append(el("span", "flag", "waiting for your OK"));
+    // rules hook: a grant the owner's rule gave (static/v2/rules.js)
+    else if (window.CaseDeskRules && S.approvals.some((a) => a.case_id === c.id && window.CaseDeskRules.byRule(a))) flags.append(el("span", "flag auto", "given automatically"));
     if (c.escalated) flags.append(el("span", "flag person", personReason(c)));
     if (flags.children.length) r2.append(flags);
     if (c.escalated) {
@@ -373,6 +375,14 @@ window.CaseDeskConsoleView = (h) => {
         ? `Giving ${name} ${what} failed. Try again in the decision card below.`
         : `Waiting for your OK on ${what} for ${name}. Give it or deny it in the decision card below.`));
       w.append(p);
+    } else if (window.CaseDeskRules && window.CaseDeskRules.byRule(a)) { // rules hook: given by the owner's rule, teal
+      w.classList.add("by-rule");
+      const p = el("p", "done");
+      p.append(icon("tick"), el("span", null, "Given automatically by your rule · up to " + (window.CaseDeskRules.ruleDays(a) || a.days) + " days" +
+        (a.result.expires_at ? ", premium until " + human(a.result.expires_at) : "")));
+      const note = el("p", "rule-note");
+      note.append(el("span", null, `Nothing waited for you: ${a.days || 3} days, inside the limits.`), window.CaseDeskRules.switchLink());
+      w.append(p, note);
     } else if (a.status === "approved") {
       const p = el("p", "done");
       p.append(icon("tick"), el("span", null, "Premium given" + (a.result && a.result.expires_at ? " until " + human(a.result.expires_at) : "")));
@@ -543,7 +553,7 @@ window.CaseDeskConsoleView = (h) => {
       for (const a of acts) {
         const li = el("li", a.requires_approval ? "needs" : null);
         const body = el("div", "did-b");
-        const t = el("span", "did-t", h.actionText(a)); t.title = a.kind;
+        const t = el("span", "did-t", a.params && a.params.given_by_rule ? `Gave a ${a.params.days || 3}-day courtesy extension on its own (your rule)` : h.actionText(a)); t.title = a.kind;
         body.append(t);
         if (a.kind === "PROPOSE_GRANT") grants.splice(0).forEach((g) => body.append(g));
         li.append(a.requires_approval ? lamp("warn") : icon("tick"), body);

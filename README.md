@@ -97,10 +97,38 @@ Claude Desktop (`claude_desktop_config.json`):
 
 `demo-console` is the demo token. Against a real deployment, use its `CONSOLE_TOKEN`.
 
+## Rules: you choose what Case Desk does on its own
+
+The console's **Rules** button (Night Shift, top right) opens three rows:
+
+- **Courtesy premium**: *Ask me* (default: every grant waits for your OK, as above), *Automatic up to N days*
+  (1–7), or *Never*. Automatic grants go through the same approve path as the console button (Adapty re-read, policy
+  re-check, Adapty grant) and are recorded as approved by `rule: auto up to N days`; the user is told the extension
+  is active. The code only allows it for a user who paid, was never refunded and is in a state policy already grants
+  in (payment failed, at most 14 days ago), once per user per 90 days. A longer grant, anything outside those limits,
+  or a failed re-check / Adapty error stays a normal pending request. *Never* drops the proposal before the reply is
+  written, so the reply doesn't mention it.
+- **Privacy, attacks and "I want a person"**: always a person, by design (not configurable).
+- **Answers about status, charges, cancelling, restore**: automatic, every reply checked (not configurable).
+
+Grants a rule gave show in teal in the case and the list ("Given automatically by your rule"), with a one-click
+"Switch rule to Ask me". Every rule change is in the audit log (`rules changed: grants ask → auto (3 days)`).
+
+API (console token in `X-Console-Token`, or the demo console cookie), ready for an MCP `set_grant_rule` tool:
+
+```bash
+curl -H "X-Console-Token: $CONSOLE_TOKEN" localhost:8100/api/rules
+curl -X PUT -H "X-Console-Token: $CONSOLE_TOKEN" -H 'content-type: application/json' \
+     -d '{"courtesy_grants": "auto", "max_days": 3}' localhost:8100/api/rules
+```
+
+`courtesy_grants` is `ask | auto | off`, `max_days` 1–7; both optional (a partial PUT keeps the other); any other
+key is a 422. Both calls return `{"rules": {...}, "limits": {...}, "locked": [...]}`. Code: `casedesk/app/rules.py`.
+
 ## Tests
 
 ```bash
-uv run pytest -q                                      # 571 tests; 2 skip without the organisers' seed repo
+uv run pytest -q                                      # 595 tests; 2 skip without the organisers' seed repo
 uv run playwright install chromium && uv run python tests/e2e_ui.py   # UI end-to-end
 uv run python eval/run_eval.py --backend claude-cli --concurrency 4  # live eval with real Claude
 ```

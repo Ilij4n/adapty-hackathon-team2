@@ -30,7 +30,7 @@ from pydantic import BaseModel, Field
 
 from casedesk.adapty.models import Profile
 from casedesk import clock
-from casedesk.app import auth, deps
+from casedesk.app import auth, deps, rules
 from casedesk.app.store import Store
 
 log = logging.getLogger("casedesk.app")
@@ -349,6 +349,29 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
                 return st, a["id"]
         return None, None
 
+    def auto_approve(approval_id: str, case_id: str, rule: dict, days: Any, state: Any, history: list[dict],
+                     now: datetime) -> tuple[int, datetime] | None:
+        """rules "auto": code-enforced limits (rules.auto_block), then approve_core on the server's event loop. Any
+        refusal or failure leaves a normal pending request. Returns (days, expires) when the grant went through."""
+        st = S()
+        why = rules.auto_block(rule, days, state, history, now)
+        if why:
+            st.audit("rule", "auto_grant_skipped", case_id, {"approval_id": approval_id, "reason": why})
+            return None
+        loop = getattr(app.state, "loop", None)
+        try:
+            if loop is None or not loop.is_running():
+                raise RuntimeError("no event loop for the approve path")
+            out = asyncio.run_coroutine_threadsafe(
+                approve_core(approval_id, actor="rule", approved_by=rules.label(rule)), loop).result(timeout=60)
+            exp = _parse_dt(((out.get("approval") or {}).get("result") or {}).get("expires_at"))
+            return int(days), exp or now + timedelta(days=int(days))
+        except Exception as e:  # noqa: BLE001 — HTTPException (re-check refused / Adapty failed) or anything else
+            detail = str(getattr(e, "detail", "") or type(e).__name__)[:200]
+            rules.reset_to_pending(st, approval_id, detail)
+            st.audit("rule", "auto_grant_failed", case_id, {"approval_id": approval_id, "reason": detail})
+            return None
+
     def phase2(cuid: str, case_id: str, msg_id: int, message: str, locale: str | None, state: Any, facts: Any,
                history: list[dict], convo: list[dict] | None = None, user_msg_id: int | None = None,
                now: datetime | None = None) -> dict:
@@ -364,9 +387,14 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
             facts.fields["grant_request"] = g_status
         actions = list(deps.get("engine_policy").decide(state, intent, facts, history) or [])
         language = getattr(intent, "language", None) or (locale or "en").split("-")[0]
-        rep = call_compat(deps.get("ai_compose").reply, intent, state, facts, actions, language, history=convo)
-        acts = dump(actions)
+        # --- rules hook 1/2 (casedesk/app/rules.py): "off" drops the grant before the reply is written.
+        rule = rules.get(st)
+        if rule["courtesy_grants"] == "off" and any(a.kind == "PROPOSE_GRANT" for a in actions):
+            actions = rules.drop_grants(actions)
+            st.audit("rule", "grant_dropped_by_rule", case_id, {"rule": "off"})
+        # --- end rules hook 1/2
         approval_id = None
+        auto_given = None   # (days, expires) when the owner's rule approved the grant right away
         for a in actions:
             if a.kind == "PROPOSE_GRANT":
                 p = dict(a.params or {})
@@ -377,9 +405,25 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
                 if created:
                     st.audit("system", "approval_requested", case_id,
                              {"approval_id": approval_id, "params": dump(p)})
+                    # --- rules hook 2/2: "auto" approves through approve_core, the console's own path.
+                    if rule["courtesy_grants"] == "auto":
+                        auto_given = auto_approve(approval_id, case_id, rule, p.get("days"), state, history,
+                                                  now or now_utc())
+                    # --- end rules hook 2/2
+        compose_actions = rules.drop_grants(actions) if auto_given else actions
+        rep = call_compat(deps.get("ai_compose").reply, intent, state, facts, compose_actions, language, history=convo)
+        acts = dump(actions)
+        if auto_given:
+            for x in acts:
+                if x.get("kind") == "PROPOSE_GRANT":
+                    x["requires_approval"] = False
+                    x["params"] = {**(x.get("params") or {}), "given_by_rule": rules.label(rule)}
         if approval_id is None and g_status == "pending":
             approval_id = g_id  # asked again while the earlier request is still under review
-        pending = approval_id is not None
+        pending = approval_id is not None and not auto_given
+        reply_text = rep.text
+        if auto_given:  # said only after Adapty confirmed the grant; the validated reply above never mentions it
+            reply_text = (rules.active_sentence(language, *auto_given) + " " + rep.text.strip()).strip()
         raw = list(getattr(rep, "violations", []) or [])
         validator = {"used_fallback": bool(getattr(rep, "used_fallback", False)),
                      "violations": [v for v in raw if not str(v).startswith("llm_error")],
@@ -389,18 +433,23 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
         abandoned = bool(((st.get_message(msg_id) or {}).get("meta") or {}).get("abandoned"))
         st.update_case(case_id, language=language, intent=dump(intent), actions=acts, validator=validator,
                        facts=dict(facts.fields))
-        st.update_message(msg_id, rep.text, {"status": "ready", **validator, "actions": acts, "language": language,
-                                             "approval_id": approval_id, "grant_request": g_status if not
-                                             any(a.kind == "PROPOSE_GRANT" for a in actions) else "pending",
-                                             "abandoned": abandoned})
+        user_acts = [x for x in acts if not (auto_given and x.get("kind") == "PROPOSE_GRANT")]
+        st.update_message(msg_id, reply_text, {"status": "ready", **validator, "actions": user_acts,
+                                               "language": language, "approval_id": None if auto_given else approval_id,
+                                               "grant_request": "approved" if auto_given else g_status if not
+                                               any(a.kind == "PROPOSE_GRANT" for a in actions) else "pending",
+                                               "abandoned": abandoned,
+                                               **({"auto_grant_id": approval_id} if auto_given else {})})
         st.audit("system", "reply_ready", case_id, {"intent": getattr(intent, "type", None),
                                                     "injection_suspected": getattr(intent, "injection_suspected",
                                                                                    False),
                                                     "actions": [x["kind"] for x in acts],
                                                     "escalations": escalations, "abandoned": abandoned,
                                                     **validator})
-        return {"reply": rep.text, "reply_status": "ready", "language": language, "actions": acts,
-                "pending_approval": pending, "approval_id": approval_id, "intent": getattr(intent, "type", None)}
+        return {"reply": reply_text, "reply_status": "ready", "language": language, "actions": user_acts,
+                "pending_approval": pending, "approval_id": None if auto_given else approval_id,
+                "intent": getattr(intent, "type", None),
+                **({"auto_granted": {"approval_id": approval_id, "rule": rules.label(rule)}} if auto_given else {})}
 
     def phase2_safe(*args) -> dict:
         cuid, case_id, msg_id = args[0], args[1], args[2]
@@ -433,6 +482,7 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
             return JSONResponse({"detail": "Too many messages. Please wait a minute and try again."},
                                 status_code=429, headers={"Retry-After": "60"})
         st = S()
+        app.state.loop = asyncio.get_running_loop()   # rules: auto-approve runs approve_core on this loop
         now = now_utc()
         profile = await load_profile(cuid)
         state, facts, block = status_block(profile, now, history_for(cuid))
@@ -461,6 +511,8 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
         except asyncio.TimeoutError:
             result = {"reply": None, "reply_status": "pending", "actions": [], "pending_approval": False,
                       "language": None, "approval_id": None, "intent": None}
+        if result.get("auto_granted"):  # rules: the grant is already live, so the status card shows it now
+            _, _, block = status_block(await load_profile(cuid), now_utc())
         return {"case_id": case_id, "message_id": msg_id, **block, **result,
                 "approvals": approvals_view(cuid)}
 
@@ -615,6 +667,10 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
 
     @app.post("/api/approvals/{approval_id}/approve", dependencies=[console])
     async def approve(approval_id: str):
+        return await approve_core(approval_id)
+
+    async def approve_core(approval_id: str, actor: str = "console", approved_by: str = "console") -> dict:
+        """The one approve path: the console button and an automatic rule (casedesk/app/rules.py) both use it."""
         st = S()
         a = st.get_approval(approval_id)
         if not a:
@@ -624,8 +680,8 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
         now = now_utc()
         ok, reason = await eligibility_now(a, now)
         if not ok:
-            st.audit("console", "grant_refused_ineligible", a["case_id"], {"approval_id": approval_id,
-                                                                            "reason": reason})
+            st.audit(actor, "grant_refused_ineligible", a["case_id"], {"approval_id": approval_id,
+                                                                        "reason": reason})
             raise HTTPException(status_code=409, detail=f"Not eligible any more: {reason}. Deny the request, or "
                                                         "leave it pending.")
         if not st.decide_approval(approval_id, "approved", at=_iso(now), from_statuses=("pending", "failed")):
@@ -640,20 +696,24 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
             res = await A().grant_access_level(a["customer_user_id"], a["access_level_id"], expires)
         except Exception as e:  # noqa: BLE001
             st.set_approval_result(approval_id, "failed", {"error": f"{type(e).__name__}: {e}"[:300]})
-            st.audit("console", "grant_failed", a["case_id"], {"approval_id": approval_id,
-                                                                "error": type(e).__name__})
+            st.audit(actor, "grant_failed", a["case_id"], {"approval_id": approval_id,
+                                                            "error": type(e).__name__})
             raise HTTPException(status_code=502, detail="Adapty grant failed. The request is marked failed; "
                                                         "you can retry it.")
         # Keep a receipt, not the whole profile Adapty returns.
         result = {"adapty": "granted", "access_level_id": a["access_level_id"], "expires_at": expires.isoformat(),
-                  "adapty_profile_id": (res.get("data") or {}).get("profile_id") if isinstance(res, dict) else None}
+                  "adapty_profile_id": (res.get("data") or {}).get("profile_id") if isinstance(res, dict) else None,
+                  "approved_by": approved_by}
         st.set_approval_result(approval_id, "approved", result)
-        st.audit("console", "grant_approved", a["case_id"], {"approval_id": approval_id,
-                                                             "access_level_id": a["access_level_id"],
-                                                             "expires_at": expires.isoformat(),
-                                                             "retry": a["status"] == "failed"})
-        st.add_message(a["case_id"], "system", f"The {APP_NAME} team approved access until {expires.day} {expires:%B %Y}.",
-                       {"status": "ready", "event": "grant_approved"})
+        st.audit(actor, "grant_approved", a["case_id"], {"approval_id": approval_id,
+                                                         "access_level_id": a["access_level_id"],
+                                                         "expires_at": expires.isoformat(),
+                                                         "retry": a["status"] == "failed", "approved_by": approved_by})
+        said = (f"Given automatically by your rule: access until {expires.day} {expires:%B %Y}."
+                if approved_by.startswith("rule:") else
+                f"The {APP_NAME} team approved access until {expires.day} {expires:%B %Y}.")
+        st.add_message(a["case_id"], "system", said,
+                       {"status": "ready", "event": "grant_approved", "approved_by": approved_by})
         return {"approval": st.get_approval(approval_id)}
 
     @app.post("/api/approvals/{approval_id}/deny", dependencies=[console])
@@ -668,6 +728,17 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
         st.add_message(a["case_id"], "system", f"The {APP_NAME} team reviewed the request and didn't add access.",
                        {"status": "ready", "event": "grant_denied"})
         return {"approval": st.get_approval(approval_id)}
+
+    # --- rules API (casedesk/app/rules.py): what Case Desk may do on its own. MCP: set_grant_rule -> PUT /api/rules.
+    @app.get("/api/rules", dependencies=[console])
+    async def get_rules():
+        return rules.view(rules.get(S()))
+
+    @app.put("/api/rules", dependencies=[console])
+    async def put_rules(body: rules.RulesIn):
+        rules.put(S(), body)
+        return rules.view(rules.get(S()))
+    # --- end rules API
 
     @app.get("/api/console/meta", dependencies=[console])
     async def console_meta():

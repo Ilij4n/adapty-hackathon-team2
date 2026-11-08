@@ -201,12 +201,16 @@ def test_bad_token_and_no_server_are_clear_errors(app_client):
     assert r.isError and "Can't reach Case Desk" in r.content[0].text
 
 
-def test_no_tool_talks_to_subscribers():
-    """Read-mostly by construction: the only POSTs are the console's approve/deny endpoints."""
+def test_only_reply_to_user_talks_to_subscribers():
+    """Read-mostly by construction: the only POSTs are approve/deny, the team reply (+ its dry-run fact check) and
+    resolve. Nothing writes as the subscriber or through the chat API."""
     import inspect
     src = inspect.getsource(M)
     assert "/api/chat" not in src
-    assert src.count("cd.post(") == 1 and "/api/approvals/{a['id']}/{verb}" in src
+    assert src.count("cd.post(") == 4
+    for path in ("/api/approvals/{a['id']}/{verb}", "/api/cases/{cid}/fact-check", "/api/cases/{cid}/reply",
+                 "/api/cases/{cid}/resolve"):
+        assert path in src
 
 
 def test_plain_english_helpers():

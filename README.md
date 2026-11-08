@@ -17,6 +17,8 @@ It is white-labelled for the app ("Lumen Help" in the demo; Lumen is Adapty's ha
 
 <p align="center"><img src="docs/img/request-flow.svg" width="100%" alt="One message step by step: status card at once, checked reply after, and where an injection stops"></p>
 
+**Demo video (1:50):** https://youtu.be/mA5L2-kM8Ag
+
 ## Who it's for
 
 - **Subscribers** of an app that sells subscriptions through Adapty. They get a true answer about a charge, a

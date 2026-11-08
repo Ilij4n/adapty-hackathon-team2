@@ -48,7 +48,7 @@ In the video, the app is Lumen, Adapty's own test app. Watch for Marko, who writ
 
 dict(id="watch", bg="live", secs=5, html="""
 <h1 class="mega sm">And now, something special.</h1>
-<p class="lead">Our demo, told by our own AI. Three minutes, twenty seconds.</p>
+<p class="lead">Our demo, told by our own AI.</p>
 """, notes="""And now you'll see something special. Our demo, told by our own AI: Bagley built this video, start to finish.
 [→ starts the video right here: same frame, it pulls into focus]"""),
 

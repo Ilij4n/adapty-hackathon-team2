@@ -1,6 +1,6 @@
 # Screen-capture demo (1:50, no sound)
 
-On YouTube: https://youtu.be/uBp6_sqRI8c
+On YouTube: https://youtu.be/uBp6_sqRI8c (backup). The team's main submission video is https://www.youtube.com/watch?v=prcExF8JmP0
 
 `case-desk-demo.mp4` is a backup video for the submission form (limit 2:00). It shows real clicks in the real app,
 with real Claude replies, recorded on a separate demo server with the same code as `main`. The time spent waiting

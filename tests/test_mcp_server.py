@@ -181,7 +181,7 @@ def test_deny_needs_confirm(app_client):
 
 def test_daily_summary(app_client):
     ava_asks(app_client)
-    res = call(app_client, "daily_summary")
+    res = call(app_client, "daily_summary", hours=1)  # server clock: seeded 1-3 Nov cases fall outside the last hour
     assert res["cases"] == 1 and res["waiting_for_ok"] == 1 and res["intent"] == {"PAID_NO_ACCESS": 1}
     wide = call(app_client, "daily_summary", hours=24 * 30)
     assert wide["cases"] == 17 and wide["needs_a_person"] >= 3 and "sr-Cyrl" in wide["language"]

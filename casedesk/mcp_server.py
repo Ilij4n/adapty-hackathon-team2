@@ -67,11 +67,25 @@ def day(iso: Any) -> str:
     return f"{d.day} {d:%b %Y}" if d else (str(iso) if iso else "")
 
 
+_NOW_FN = None  # set by build_server: the Case Desk server's clock (the demo clock under CASEDESK_NOW)
+
+
+def _now() -> datetime:
+    if _NOW_FN:
+        try:
+            n = _NOW_FN()
+            if n:
+                return n
+        except Exception:
+            pass
+    return datetime.now(timezone.utc)
+
+
 def ago(iso: Any, now: datetime | None = None) -> str:
     d = _parse(iso)
     if not d:
         return "unknown"
-    s = ((now or datetime.now(timezone.utc)) - d).total_seconds()
+    s = ((now or _now()) - d).total_seconds()
     if s < 90:
         return "just now"
     for unit, n in (("day", 86400), ("hour", 3600), ("minute", 60)):
@@ -281,6 +295,15 @@ def _clip(s: str, n: int) -> str:
 # ------------------------------------------------------------------ the server
 def build_server(api: CaseDesk | None = None) -> FastMCP:
     cd = api or CaseDesk()
+    global _NOW_FN
+
+    def _server_now() -> datetime | None:
+        # ages and "last 24 h" use the server's clock, so a demo server on its demo clock reads consistently
+        try:
+            return _parse((cd.get("/api/console/meta") or {}).get("server_now"))
+        except Exception:
+            return None
+    _NOW_FN = _server_now
     mcp = FastMCP("casedesk", instructions=INSTRUCTIONS)
     ro = ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False)
 
@@ -425,7 +448,7 @@ def build_server(api: CaseDesk | None = None) -> FastMCP:
         """Counts of cases updated in the last `hours` (default 24): by account state, by what people wrote about
         (intent) and by language, plus how many need a person or wait for your OK."""
         hours = max(1, min(int(hours or 24), 24 * 30))
-        cut = datetime.now(timezone.utc) - timedelta(hours=hours)
+        cut = _now() - timedelta(hours=hours)
         recent = [c for c in cd.cases() if (_parse(c.get("updated_at")) or cut) >= cut]
         by: dict[str, dict[str, int]] = {"state": {}, "intent": {}, "language": {}}
         for c in recent:
@@ -469,7 +492,7 @@ def build_server(api: CaseDesk | None = None) -> FastMCP:
             summary = f"{access_name(new.get('access_level_id'))} given to {nm} until {until}."
             out = {"granted_until": until}
             clock = _parse(new.get("decided_at"))
-            if clock and abs((clock - datetime.now(timezone.utc)).total_seconds()) > 86400:
+            if clock and abs((clock - datetime.now(timezone.utc)).total_seconds()) > 86400:  # real date vs demo clock
                 # A demo server runs on a frozen clock: say so, or "until 7 Nov" reads as already over.
                 summary += f" (Case Desk's clock reads {day(clock.isoformat())}, a demo clock; the grant runs from then.)"
                 out["case_desk_clock"] = day(clock.isoformat())

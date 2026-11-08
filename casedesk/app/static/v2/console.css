@@ -111,6 +111,7 @@
 .who-name .uid { font-size: var(--t-xs); font-weight: 400; color: var(--ink-3); }
 .who-name .uid.solo { font-size: var(--t-s); color: var(--ink); }
 .t { font-size: var(--t-xs); color: var(--ink-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.t.late { color: var(--amber); }
 .c-msg { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-2); }
 .flags { flex: none; display: flex; gap: 8px; }
 .flag { color: var(--amber); font-size: var(--t-xs); font-weight: 600; }

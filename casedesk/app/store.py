@@ -163,6 +163,16 @@ class Store:
         rows[0]["meta"] = json.loads(rows[0]["meta"] or "{}")
         return rows[0]
 
+    def message_summary(self, case_ids: list[str]) -> dict[str, tuple[int, str]]:
+        """case id -> (message count, first user message), for the case list in one query."""
+        if not case_ids:
+            return {}
+        marks = ",".join("?" * len(case_ids))
+        rows = self._all(f"SELECT case_id, COUNT(*) AS n, (SELECT text FROM messages u WHERE u.case_id = m.case_id "
+                         f"AND u.role = 'user' ORDER BY u.id LIMIT 1) AS first FROM messages m "
+                         f"WHERE case_id IN ({marks}) GROUP BY case_id", tuple(case_ids))
+        return {r["case_id"]: (int(r["n"]), r["first"] or "") for r in rows}
+
     def messages(self, case_id: str) -> list[dict]:
         out = self._all("SELECT * FROM messages WHERE case_id=? ORDER BY id", (case_id,))
         for m in out:
@@ -201,6 +211,14 @@ class Store:
             rows = self._all("SELECT * FROM approvals WHERE status=? ORDER BY created_at DESC", (status,))
         else:
             rows = self._all("SELECT * FROM approvals ORDER BY created_at DESC")
+        return [self._decode_appr(r) for r in rows]
+
+    def console_approvals(self, recent: int = 50) -> list[dict]:
+        """Open requests (pending, failed) plus the `recent` most recently decided ones, newest first."""
+        rows = self._all("SELECT * FROM approvals WHERE status IN ('pending', 'failed') ORDER BY created_at DESC")
+        rows += self._all("SELECT * FROM approvals WHERE status NOT IN ('pending', 'failed') "
+                          "ORDER BY decided_at DESC, created_at DESC LIMIT ?", (recent,))
+        rows.sort(key=lambda r: r["created_at"] or "", reverse=True)
         return [self._decode_appr(r) for r in rows]
 
     def user_approvals(self, customer_user_id: str) -> list[dict]:

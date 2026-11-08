@@ -51,20 +51,30 @@ window.CaseDeskConsoleView = (h) => {
     if (ISO_TS.test(v)) { const d = new Date(v); return isNaN(d) ? v : dmy(d) + " " + hm(d); }
     return v;
   }
-  function short(iso) {
+  function short(iso) { // age, not clock time: "now", "12 min", "3 h", "2 d"
     const d = new Date(iso); if (isNaN(d)) return "";
-    const s = (Date.now() - d) / 1000;
+    const s = Math.max(0, (Date.now() - d) / 1000);
     if (s < 60) return "now";
     if (s < 3600) return Math.floor(s / 60) + " min";
-    return d.toDateString() === new Date().toDateString() ? hm(d) : dm(d);
+    if (s < 86400) return Math.floor(s / 3600) + " h";
+    return Math.floor(s / 86400) + " d";
   }
   function timeEl(iso, mode, sameDayAs) {
     let text = short(iso);
+    if (mode === "wait") return waitEl(iso);
     if (mode === "full") text = clock(iso);
     if (mode === "turn") { const d = new Date(iso), o = new Date(sameDayAs); text = !isNaN(d) && !isNaN(o) && d.toDateString() === o.toDateString() ? hm(d) : clock(iso); }
     const t = el("time", "mono t", text); t.dateTime = iso || ""; t.title = clock(iso); return t;
   }
   const words = (k) => String(k).replace(/_/g, " ");
+  // how long a request has waited; amber past an hour
+  // a request cannot predate its case: if it seems to, its stamp is on the engine (demo) clock, so use the case's
+  const since = (a) => { const c = S.cases.find((x) => x.id === a.case_id); return c && String(c.created_at) > String(a.created_at) ? c.created_at : a.created_at; };
+  function waitEl(iso) {
+    const d = new Date(iso);
+    const t = el("time", "mono t" + (!isNaN(d) && Date.now() - d > 3600e3 ? " late" : ""), short(iso));
+    t.dateTime = iso || ""; t.title = "Waiting since " + clock(iso); return t;
+  }
 
   // reverse video, label-sized: the element gets a chip in its own colour for 700ms
   const TONE_C = { ok: "var(--teal)", warn: "var(--amber)", bad: "var(--coral)", info: "var(--ink)", amber: "var(--amber)" };
@@ -135,7 +145,7 @@ window.CaseDeskConsoleView = (h) => {
     const li = el("li", "q-item big" + (a.status === "failed" ? " failed" : ""));
     li.setAttribute("aria-current", String(a.case_id === S.selected));
     const kick = el("p", "q-kick");
-    kick.append(lamp("warn"), el("span", null, a.status === "failed" ? "Adapty refused the last try" : "Case Desk asks you to confirm"), timeEl(a.created_at));
+    kick.append(lamp("warn"), el("span", null, a.status === "failed" ? "Adapty refused the last try" : "Case Desk asks you to confirm"), timeEl(since(a), "wait"));
     const b = el("button", "q-open"); b.type = "button"; b.title = "Open the case";
     const want = el("span", "q-want", what);
     const l1 = el("span", "q-l1"); l1.append(who(a.customer_user_id), want);
@@ -167,7 +177,7 @@ window.CaseDeskConsoleView = (h) => {
     const b = el("button", "q-open"); b.type = "button"; b.title = "Open the case";
     const want = el("span", "q-want", `${days} ${days === 1 ? "day" : "days"}`);
     const l1 = el("span", "q-l1"); l1.append(who(a.customer_user_id), want);
-    b.append(l1, timeEl(a.created_at));
+    b.append(l1, timeEl(since(a), "wait"));
     b.onclick = () => h.select(a.case_id);
     li.append(b);
     if (a.status === "failed") li.append(el("p", "fail", "Adapty refused the last try."));
@@ -245,7 +255,8 @@ window.CaseDeskConsoleView = (h) => {
     const li = el("li"); const b = el("button", "c-item" + (esc && !wait ? " esc" : "") + (wait ? " wait" : "")); b.type = "button";
     b.setAttribute("aria-current", String(c.id === S.selected)); b.dataset.id = c.id;
     const st = c.state_badge || {};
-    const r1 = el("span", "r1"); r1.append(who(c.customer_user_id), timeEl(c.updated_at));
+    const wa = wait && S.approvals.find((a) => a.case_id === c.id && (a.status === "pending" || a.status === "failed"));
+    const r1 = el("span", "r1"); r1.append(who(c.customer_user_id), wa ? timeEl(since(wa), "wait") : timeEl(c.updated_at));
     const r2 = el("span", "r2"); r2.append(auto(el("span", "c-msg", c.first_message || "…")));
     const flags = el("span", "flags");
     if (c.pending_approval) flags.append(el("span", "flag", "waiting for your OK"));
@@ -290,7 +301,8 @@ window.CaseDeskConsoleView = (h) => {
     const people = matched.filter((c) => !waits.includes(c) && c.escalated && c.status !== "resolved");
     const others = matched.filter((c) => !waits.includes(c) && !people.includes(c));
     shown = [...waits, ...people, ...others];
-    $("#cCount").textContent = shown.length === S.cases.length ? String(S.cases.length) : `${shown.length} of ${S.cases.length}`;
+    const capped = S.total > S.cases.length ? `${S.cases.length} newest of ${S.total}` : String(S.cases.length);
+    $("#cCount").textContent = shown.length === S.cases.length ? capped : `${shown.length} of ${capped}`;
     const empty = $("#cEmpty");
     empty.hidden = shown.length > 0;
     if (!shown.length) {

@@ -9,6 +9,8 @@
               time at the inline end (Plex Mono 400, .86em, ink-3, 24h HH:MM). Text under it: 1em, line-height 1.5.
      Who      subscriber: ink-3 rule on the --chat-you step, name in ink (help: t().you; console: their name).
               Case Desk: amber rule, no fill, name in amber (help: t().helper; console: "Case Desk").
+              The app's team (a person): teal rule, no fill, name in teal (help: span.team-who "Lumen team";
+              console: "You (Lumen team)"). Teal because a person decided; amber stays Case Desk's voice.
               Event (grant given or denied): teal rule on teal-soft (ink-3 on sel when denied), one 600 line that
               names who acted, the time at the end, no speaker. Error: coral rule on coral-soft, name in coral.
               Typing: the Case Desk strip with three amber squares and the progress words in ink-2.
@@ -35,6 +37,7 @@
 }
 #detail .turns > .turn.user, #log > .msg.user { background: var(--chat-you); }
 #detail .turns > .turn.assistant, #log > .msg.bot { border-inline-start-color: var(--amber); }
+#detail .turns > .turn.team, #log > .msg.team { border-inline-start-color: var(--teal); }
 #detail .turns > .turn.error, #log > .msg.error { border-inline-start-color: var(--coral); background: var(--coral-soft); }
 
 /* the head: name, flags, time */
@@ -43,6 +46,8 @@
 #detail .turn-head > .turn-who, #log .turn-head > .turn-who { font-size: .93em; font-weight: 600; color: var(--ink); }
 #detail .turn.assistant .turn-who, #log > .msg.bot .turn-who { color: var(--amber); }
 #detail .turn.error .turn-who, #log > .msg.error .turn-who { color: var(--coral); }
+#detail .turn.team .turn-who, #log > .msg.team .turn-who { color: var(--teal); letter-spacing: normal; }
+#log > .msg.team .team-who::before { content: none; }
 #detail .turn-head > .t, #log .turn-head > .t, #detail .turn.system .t, #log > .msg.system > .t {
   margin-inline-start: auto; font-family: var(--font-mono); font-weight: 400; font-size: .86em; line-height: 1.3;
   color: var(--ink-3); font-variant-numeric: tabular-nums; white-space: nowrap;
@@ -84,3 +89,12 @@
 #log > .msg > .note { padding: 0; border: 0; font-size: .875em; }
 #log > .msg > .note.grant { padding: .5em .75em; border-radius: var(--r-ctl); }
 #log > .msg > .steps { border-radius: var(--r-ctl); }
+
+/* ------------------------------------------------------------ console only: the "Write to" reply box under the strips
+   It sits in the strip column: the same measure, its link on the turns' text line, and open it is a strip itself
+   (2px ink-3 rule, 1em in, end corners rounded), so the developer's draft reads as the next turn. */
+#detail .write-to { max-width: calc(72ch + 1.75em + 2px); font-size: var(--chat-fs); padding-inline-start: calc(1em + 2px); }
+#detail .write-to.open {
+  padding-block: .75em; padding-inline: 1em .75em; border-inline-start-width: 2px;
+  border-radius: 0; border-start-end-radius: var(--r-ctl); border-end-end-radius: var(--r-ctl);
+}

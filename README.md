@@ -17,6 +17,16 @@ It is white-labelled for the app ("Lumen Help" in the demo; Lumen is Adapty's ha
 
 <p align="center"><img src="docs/img/request-flow.svg" width="100%" alt="One message step by step: status card at once, checked reply after, and where an injection stops"></p>
 
+## Who it's for
+
+- **Subscribers** of an app that sells subscriptions through Adapty. They get a true answer about a charge, a
+  cancellation, a refund or missing premium, in their own language, inside the app, at 2 a.m.
+- **The app's developer or support team**: usually one person at a small app. The developer only steps in for money
+  (a courtesy grant), unless they set a rule, and for anything that needs a person. A suggested reply, a reply box
+  and the MCP server cut that work to a click.
+- **Adapty**: a natural add-on next to Refund Saver, and a labelled record of what subscribers complain about and
+  what fixed it.
+
 ## Install and run (uv)
 
 ```bash
@@ -165,6 +175,44 @@ curl -X POST -H "X-Console-Token: $CONSOLE_TOKEN" -H 'content-type: application/
 `case_resolved`). `POST /api/cases/{id}/fact-check` runs the same advisory check without sending. The widget reads the
 team's messages with `GET /api/messages?customer_user_id=…&signature=…&after=<message id>` (signed like `/api/status`).
 The author label is `<CASEDESK_APP_NAME> team`.
+
+## What's real vs mocked
+
+| Real | Mocked or stand-in |
+|---|---|
+| Claude writes every reply live (`claude-cli`), and every reply passes the validator | The Adapty API is a local mock server that serves Adapty's Lumen hackathon seed data in the real server-side API v2 shapes |
+| The state engine, FactSheet, policy table, rules, approvals, audit log and console | We haven't run against a live Adapty account yet. The client targets the real API, and switching is `ADAPTY_API_BASE` + `ADAPTY_SECRET_KEY` |
+| The MCP server, tested with real Claude Code | The 16 seeded console cases: scripted text, but state, facts and actions come from the real engine, and no LLM is called |
+| 730 tests, the UI end-to-end run, and a live eval with real Claude (116 tickets, 12 languages) | The demo runs on a demo clock (4 Nov 2026, ticking from start-up) so the seed data's dates hold |
+| Signed user ids, console token, rate limits | The demo users in `/help` are picked from a list; a real app would sign the id itself |
+
+## What we'd do next
+
+- Connect a real Adapty app: keys, webhooks for state changes, and a "Case Desk" tab in the Adapty dashboard.
+- Search, paging and assignment ("someone is on this") for bigger support teams. The scale review is in
+  `docs/reports/ui-review-scale.md`.
+- Price it as an add-on like Refund Saver. That's Adapty's call.
+- Give Adapty the complaint signal across apps: what subscribers misunderstand, and which fixes work.
+- Test more languages live, and add bulk approve with per-grant eligibility re-checks.
+
+## Built during the hackathon (and what existed before)
+
+All the code in this repository was written during the event. The first commit is Sat 7 Nov 2026, 16:17 UTC (rule 1).
+What existed before, or isn't ours:
+- **Adapty's Lumen seed data** (`data/`, from the organisers' `kpotehin/adapty-seed-data-hack`) and Adapty's API docs.
+- **Open-source libraries**: FastAPI, pydantic, httpx, uvicorn, the MCP Python SDK, pytest and Playwright.
+- **Team tooling used to make the pitch, not part of the product**:
+  - the 3D video engine behind `video/` (Bagley's own video toolkit, built before the event);
+  - the agent setup (Bagley, Claude Code).
+
+## Team
+
+- **Ilijan Kojović**: the Case Desk idea and its case in the idea contest; the console design work (four design
+  directions, the Night Shift fixes he asked for, the v5/v6 chat sync).
+- **Andrija Milikić**: idea validation and research, with independent Claude and Codex sessions voting in the
+  debate; the pitch storyline.
+- **Mateja Subin**: team lead and presenter; ran the Bagley agent fleet (architecture, builders, evals, merges,
+  deployment, video and slides).
 
 ## Tests
 

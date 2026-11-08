@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f5f6f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12161c" media="(prefers-color-scheme: dark)">
+<title>Case Desk console</title>
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="preload" href="/static/v1/fonts/source-serif-4-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/static/v1/fonts/source-sans-3-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/v1/base.css">
+<link rel="stylesheet" href="/static/v1/console.css">
+</head>
+<body>
+<header class="top">
+  <a class="mark" href="/" title="Back to the Lumen landing page">
+    <svg class="mark-i" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 2.5v15" /><circle cx="6" cy="5" r="1.9" /><circle cx="6" cy="10" r="1.9" /><rect x="4.2" y="13.2" width="3.6" height="3.6" rx=".6" /><path d="M10 5h7.5M10 10h5.5M10 15h6.5" /></svg>
+    <span class="cd">Case Desk</span><span class="for">for Lumen</span>
+  </a>
+  <div class="top-meta" id="topMeta"></div>
+  <a class="top-link" href="/help?v=1" target="_blank" rel="noopener">Open Lumen Help</a>
+  <span class="live" id="live" aria-live="polite"></span>
+</header>
+
+<section class="gate" id="gate" hidden>
+  <form id="gateForm" class="gate-slip">
+    <h1>Open the console</h1>
+    <p>Enter the console token this server was started with (<code translate="no">CONSOLE_TOKEN</code>).</p>
+    <label class="gate-l" for="tok">Console token</label>
+    <input id="tok" type="password" autocomplete="off" required>
+    <button class="btn" type="submit">Open the console</button>
+    <p class="err" id="gateErr" hidden>That token was not accepted. Check it and try again.</p>
+  </form>
+</section>
+
+<main class="layout" id="app" hidden>
+  <aside class="side">
+    <section class="queue" aria-labelledby="qH">
+      <div class="sec-head"><h2 id="qH">Needs your OK</h2><span class="count" id="qCount"></span></div>
+      <ol class="q-list" id="queue"></ol>
+      <p class="empty" id="qEmpty">Nothing to approve. When Case Desk asks you for a courtesy grant, it waits here as a slip.</p>
+    </section>
+    <section class="cases" aria-labelledby="cH">
+      <div class="sec-head"><h2 id="cH">Cases</h2><span class="count" id="cCount"></span></div>
+      <div class="filters" id="filters" role="group" aria-label="Filter cases"></div>
+      <ol class="c-list" id="cases"></ol>
+      <p class="empty" id="cEmpty">No cases here. Open <a href="/help?v=1" target="_blank" rel="noopener">Lumen Help</a> as a subscriber and send a message; the case appears here a moment later.</p>
+    </section>
+  </aside>
+  <section class="detail" id="detail" aria-live="polite">
+    <div class="placeholder">
+      <h2>Pick a case</h2>
+      <p>Each case reads like a statement: what the store did and when, what the subscriber wrote, what Case Desk answered and checked, and anything waiting for your OK.</p>
+    </div>
+  </section>
+</main>
+<script src="/static/v1/console.view.js"></script>
+<script src="/static/console.js"></script>
+</body>
+</html>

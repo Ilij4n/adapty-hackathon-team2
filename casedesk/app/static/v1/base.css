@@ -1,0 +1,188 @@
+/* =====================================================================================================
+   Case Desk, iteration 1: "Statement"
+   -----------------------------------------------------------------------------------------------------
+   IDEA  A subscription problem is a question about a statement: what was charged, when, by whom, what
+         happened next. The case reads like an account statement: one dated spine that merges the
+         store's own events, the conversation, what Case Desk did, the check and the grant request.
+
+   COLOUR (light / dark). Every colour has one job.
+     paper     #F5F6F4 / #12161C   the desk. Cool grey-green, deliberately not cream.
+     sheet     #FFFFFF / #1A2029   a document lying on the desk (the case, the receipt, a slip)
+     ink       #1B2430 / #E7EAEE   type. Secondary #47515E / #B4BCC7, tertiary #5F6975 / #8E97A4
+     prussian  #1D3E66 / #8FB2E0   the one accent: primary action, selection, focus, the user's voice
+     stamp     #2D6B4A / #7CC79E   checked, true, given (the stamp's colour). Status only.
+     ochre     #875700 / #E3B25A   waiting for you. Status only.
+     red       #A8322B / #F08A80   failed, blocked, privacy. Status only.
+     Status colours always travel with words; never colour alone. Tinted text on tinted fills.
+
+   TYPE  Source Serif 4 (variable, optical sizes 8 to 60) speaks for the account and for Case Desk:
+         the status sentence (display opsz), headings, Case Desk's replies (text opsz).
+         Source Sans 3 (variable) runs the interface. Two weights: 400 and 600. Sentence case.
+         Figures are tabular by default in both families (dates and amounts line up).
+         Console scale 13 / 14 / 16 / 20 / 34.  Help scale 13 / 15 / 17 / 20 / 26.
+         No mono except literal JSON in the audit log. No uppercase labels, no eyebrows.
+
+   LAYOUT  Console at 1440:
+     +--------------------------------------------------------------------------------------------+
+     | |: Case Desk  for Lumen     Demo mode   Lumen Help                     o Updated 12:41:07   |
+     +----------------------------+---------------------------------------------------------------+
+     | Needs your OK          1   |  +---------------------------------------------------------+  |
+     | .------------------------. |  | Ava 00239                                               |  |
+     | | Ava 00239       4 Nov  | |  | Writes in English. Bought on the App Store.             |  |
+     | | Wants 3 days of premium| |  |                                                         |  |
+     | | o Ended: payment ...   | |  | App Store couldn't take the renewal on 22 Oct           |  | serif 34
+     | | [Give Ava 3 days ] Deny| |  | / Every fact in the reply matches the account           |  |
+     | o- - - - - perforation - o |  |                                                         |  |
+     | | Nothing is granted ... | |  | Before Ava wrote          | Conversation                |  |
+     | '------------------------' |  | 12 Oct  o Bought ... 6.99 | [Ava, blue block          ] |  |
+     |                            |  | 22 Oct  o App Store ...   | Serif reply text, measured  |  |
+     | Cases  16                  |  | What Case Desk did        | / Checked against account   |  |
+     | All 16, Escalated 3,       |  |  7 Nov  o Ava wrote in    |                             |  |
+     | Privacy 1, Waiting 1       |  |  23:50  # Replied         |                             |  |
+     |                            |  |           . Sent link     |                             |  |
+     | Oliver 03873        4 Nov  |  |           . Asked for 3 d |                             |  |
+     | I cancelled the free ...   |  |             waiting       |                             |  |
+     | o Trial cancelled ...      |  | Next on the account       |                             |  |
+     |                            |  |  ...  dashed rule         |                             |  |
+     |                            |  +---------------------------------------------------------+  |
+     |                            |    > Technical record   FactSheet, policy, validator, ...     |
+     +----------------------------+---------------------------------------------------------------+
+   Help on a phone (the widget is the screen); from 720px a light device frame beside an index:
+     +-------------------------------+
+     | [L] Lumen Help      [Ava v]   |
+     | +---------------------------+ |
+     | | What we found on account  | |   the receipt: item and price, dates on a mini spine,
+     | | Lumen Premium Weekly 6.99 | |   the status as the bottom line, a torn lower edge
+     | | o Payment failed  22 Oct  | |
+     | | = Ended: the payment ...  | |
+     | +/\/\/\/\/\/\/\/\/\/\/\/\/\-+ |
+     |            [ I paid but ... ] |   the user: Prussian-blue blocks
+     | Serif reply on the paper,     |   Lumen Help: serif text on paper, no bubble
+     | no bubble, no tail.           |
+     | | Update payment method   ^ | |   actions: full-width statement rows
+     | .- - - - - - - - - - - - - -. |   the grant: a perforated slip, stamped when approved
+     +-------------------------------+
+
+   PRINCIPLES
+     1. Time is the structure. Group by when, not by panel. Dates sit in a right-aligned column.
+     2. Boldness lives in one place per screen: the status sentence (console), the receipt (help).
+     3. Space first, then a background step, then a line. The spine is the only structural rule.
+     4. Paper on paper only for things you tear off or keep: the queue slip, the receipt, the grant slip.
+     5. Motion answers a change: the Approved stamp lands, the spine draws in once per opened case.
+
+   REVIEW AGAINST THE AI CLUSTERS (what changed and why)
+     - Cluster 1 (cream + serif display + terracotta): the serif display is the brief's, so the paper
+       moved cool (grey-green #F5F6F4, not #F4F1EA) and the accent is Prussian blue. No warm clay anywhere.
+     - Cluster 3 (broadsheet hairlines, zero radius): a statement invites hairline tables. Rows use a
+       background band instead of rules, sheets keep a 12px radius, slips 8px, controls 6px.
+     - Cluster 4 (card kit): one sheet for the case; list entries are not cards (space + selection band);
+       the slip is the only object with a shadow besides the toast and the device frame.
+     - Cluster 5 (template chrome): no eyebrows, no "A . B . C" meta strings (the line under the name is
+       written as sentences), mono only for raw JSON, no arrows appended to buttons, no pill badges.
+     - The first plan had the user's claims as a pill row; replaced with a two-column table that lines
+       each claim up with the facts it can be checked against.
+   ===================================================================================================== */
+@import url("fonts/fonts.css");
+
+:root {
+  --paper: #f5f6f4;
+  --sheet: #ffffff;
+  --band: #edf0ef;          /* hover, zebra, the quiet background step */
+  --band-2: #e4e8e8;
+  --line: #d5dbdd;
+  --line-strong: #b7c0c4;   /* the spine */
+  --ink: #1b2430;
+  --ink-2: #47515e;
+  --ink-3: #5f6975;
+  --blue: #1d3e66;
+  --blue-ink: #ffffff;      /* text on a blue fill */
+  --blue-soft: #e4eaf2;
+  --blue-block: #1d3e66;    /* the user's message block */
+  --blue-block-ink: #ffffff;
+  --ok: #2d6b4a;   --ok-soft: #e3efe7;
+  --warn: #875700; --warn-soft: #f6ebd5;
+  --bad: #a8322b;  --bad-soft: #f8e4e1;
+  --info: #47515e; --info-soft: #edf0ef;
+  --shadow-slip: 0 1px 1px rgba(27, 36, 48, .06), 0 3px 10px rgba(27, 36, 48, .07);
+  --shadow-float: 0 2px 6px rgba(27, 36, 48, .10), 0 18px 48px rgba(27, 36, 48, .16);
+
+  --serif: "Source Serif 4", "Noto Naskh Arabic", "Geeza Pro", "Times New Roman", serif;
+  --sans: "Source Sans 3", "Noto Sans Arabic", "Geeza Pro", "Segoe UI", Tahoma, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --r-sheet: 12px; --r-slip: 8px; --r-ctl: 6px;
+  --ease-out: cubic-bezier(.2, .7, .2, 1);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #12161c;
+    --sheet: #1a2029;
+    --band: #222934;
+    --band-2: #29313d;
+    --line: #2d3541;
+    --line-strong: #47515f;
+    --ink: #e7eaee;
+    --ink-2: #b4bcc7;
+    --ink-3: #8e97a4;
+    --blue: #8fb2e0;
+    --blue-ink: #12161c;
+    --blue-soft: #1e2b3d;
+    --blue-block: #24456e;
+    --blue-block-ink: #eef3fa;
+    --ok: #7cc79e;   --ok-soft: #17271f;
+    --warn: #e3b25a; --warn-soft: #2b2414;
+    --bad: #f08a80;  --bad-soft: #331c1b;
+    --info: #b4bcc7; --info-soft: #222934;
+    --shadow-slip: 0 1px 1px rgba(0, 0, 0, .35), 0 4px 14px rgba(0, 0, 0, .35);
+    --shadow-float: 0 2px 6px rgba(0, 0, 0, .45), 0 20px 56px rgba(0, 0, 0, .5);
+    color-scheme: dark;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 14px/1.45 var(--sans);
+  -webkit-font-smoothing: antialiased;
+  font-optical-sizing: auto;
+}
+h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 600; }
+p { margin: 0; text-wrap: pretty; }
+ol, ul { list-style: none; margin: 0; padding: 0; }
+a { color: var(--blue); text-underline-offset: .18em; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 4px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+svg.i { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 40px; padding: 8px 14px;
+  border: 1px solid transparent; border-radius: var(--r-ctl);
+  background: var(--blue); color: var(--blue-ink);
+  font-weight: 600; line-height: 1.2; text-decoration: none; text-align: center;
+  transition: background-color .12s ease, transform .12s ease;
+}
+.btn:hover { background: color-mix(in srgb, var(--blue) 88%, var(--ink)); }
+.btn:active { transform: scale(.98); }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+.btn.ghost:hover { background: var(--band); }
+.btn[disabled] { opacity: .55; cursor: default; transform: none; }
+
+/* the status mark: a small square in the tone's colour, always next to words */
+.mk { display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: var(--ink-3); flex: none; }
+.mk.ok { background: var(--ok); }
+.mk.warn { background: var(--warn); }
+.mk.bad { background: var(--bad); }
+.mk.info { background: var(--ink-3); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+[hidden] { display: none !important; }

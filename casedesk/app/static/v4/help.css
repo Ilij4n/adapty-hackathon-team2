@@ -19,7 +19,7 @@ body.help { overflow: hidden; font-size: 16px; line-height: 1.45; }
 }
 .w-logo { width: 36px; height: 36px; flex: none; }
 .w-title { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
-.w-title strong { font-size: 17px; font-weight: 600; color: var(--black); }
+.w-title strong { font-size: 17px; font-weight: 600; color: var(--black); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .w-title span { font-size: 13px; color: var(--ink-3); }
 .demo-select { margin-left: auto; min-width: 0; }
 .demo-select select {
@@ -81,11 +81,11 @@ body.help { overflow: hidden; font-size: 16px; line-height: 1.45; }
 .actions { display: grid; gap: var(--s2); }
 .act {
   display: flex; align-items: center; justify-content: space-between; gap: var(--s3); width: 100%; min-height: 52px;
-  padding: 12px var(--s4); border: 0; border-radius: 10px; background: var(--black); color: var(--on-black);
+  padding: 12px var(--s4); border: 0; border-radius: 10px; background: var(--slab); color: var(--on-black);
   font-size: 16px; font-weight: 600; line-height: 1.25; text-align: start; text-decoration: none;
   transition: background-color .12s ease-out;
 }
-.act:hover { background: color-mix(in srgb, var(--black) 82%, var(--paper)); }
+.act:hover { background: color-mix(in srgb, var(--slab) 84%, var(--paper)); }
 .act svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 button.act svg { transition: transform .15s ease-out; }
 button.act[aria-expanded="true"] svg { transform: rotate(180deg); }
@@ -132,9 +132,11 @@ button.act[aria-expanded="true"] svg { transform: rotate(180deg); }
 }
 .composer textarea::placeholder { color: var(--ink-3); }
 .composer textarea:focus { outline: 2px solid var(--blue); outline-offset: -1px; border-color: transparent; }
-.send { flex: none; width: 48px; height: 48px; display: grid; place-items: center; border: 0; border-radius: 10px; background: var(--black); color: var(--on-black); }
+.send { flex: none; width: 48px; height: 48px; display: grid; place-items: center; border: 0; border-radius: 10px; background: var(--slab); color: var(--on-black); }
 .send .i { width: 20px; height: 20px; stroke-width: 1.75; }
 .send[disabled] { opacity: .4; cursor: default; }
+
+@media (max-width: 400px) { .demo-select select { max-width: 150px; } }
 
 /* ------------------------------------------------------------------ desktop: device outline + typographic picker */
 @media (min-width: 720px) {
@@ -169,4 +171,9 @@ button.act[aria-expanded="true"] svg { transform: rotate(180deg); }
   .w-body { padding: 18px 20px; }
   .w-foot { padding: 10px 18px 26px; }
   .chips { margin: 0 -18px; padding: 0 18px; }
+}
+/* dark desktop: the page sits below the phone, so the device reads as the lit object */
+@media (prefers-color-scheme: dark) and (min-width: 720px) {
+  body.help { background: #0c0f15; }
+  .phone { --paper: #15181e; }
 }

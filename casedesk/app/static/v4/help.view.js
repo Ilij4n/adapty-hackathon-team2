@@ -17,6 +17,18 @@ window.CaseDeskHelpView = (h) => {
     ru: ["Запрошено", "Команда проверяет", "Добавлено", "Не добавлено"],
   };
   const steps = () => STEPS[S.lang] || STEPS.en;
+  // the sentence under a resolved tracker: given, not given
+  const RESOLVED = {
+    en: ["Premium is active now.", "The team decided not to add access this time."],
+    sr: ["Premium je sada aktivan.", "Tim je odlučio da ovog puta ne doda pristup."],
+    "sr-Cyrl": ["Premium је сада активан.", "Тим је одлучио да овог пута не дода приступ."],
+    es: ["Premium ya está activo.", "El equipo decidió no añadir acceso esta vez."],
+    de: ["Premium ist jetzt aktiv.", "Das Team hat diesmal entschieden, keinen Zugang hinzuzufügen."],
+    pt: ["O Premium já está ativo.", "A equipe decidiu não adicionar acesso desta vez."],
+    ru: ["Premium уже активен.", "Команда решила в этот раз не добавлять доступ."],
+  };
+  // real apostrophes at display size ("didn’t"), in any script
+  const curl = (x) => String(x).replace(/(\p{L})'(\p{L})/gu, "$1\u2019$2");
 
   const NS = "http://www.w3.org/2000/svg";
   function icon(d) {
@@ -28,13 +40,17 @@ window.CaseDeskHelpView = (h) => {
   function paintStatus(st, card) {
     h.defaults.paintStatus(st, card);
     card.dataset.tone = (st.state_badge && st.state_badge.tone) || "info";
+    const b = document.getElementById("stateBadge"); b.textContent = curl(b.textContent); // class stays "badge <tone>"
   }
 
   // ------------------------------------------------------------ grant tracker
   function labelTracker(note) {
-    const L = steps(); const b = note.querySelectorAll(".step b");
+    const L = steps(); const b = note.querySelectorAll(".step b"); const st = note.dataset.state;
     if (b.length !== 3) return;
-    b[0].textContent = L[0]; b[1].textContent = L[1]; b[2].textContent = note.dataset.state === "denied" ? L[3] : L[2];
+    b[0].textContent = L[0]; b[1].textContent = L[1]; b[2].textContent = st === "denied" ? L[3] : L[2];
+    // the sentence follows the tracker: "nothing changes until they decide" only while it is still open
+    const R = RESOLVED[S.lang] || RESOLVED.en; const p = note.querySelector(".note-text");
+    if (p) p.textContent = curl(st === "approved" ? R[0] : st === "denied" ? R[1] : h.t().grantNote);
   }
   function makeTracker(note) {
     if (note.querySelector(".tracker")) return;
@@ -43,7 +59,7 @@ window.CaseDeskHelpView = (h) => {
     const tr = el("div", "tracker"); tr.setAttribute("aria-hidden", "true"); // the sentence below says it in words
     const track = el("span", "track"); track.append(el("span", "fill")); tr.append(track);
     for (let i = 1; i <= 3; i++) { const s = el("span", "step s" + i); s.append(el("i"), el("b")); tr.append(s); }
-    note.append(tr, el("p", "note-text", msg));
+    note.append(tr, el("p", "note-text", curl(msg)));
     labelTracker(note);
   }
   function resolveTrackers(state) {
@@ -78,7 +94,10 @@ window.CaseDeskHelpView = (h) => {
     b.append(top, el("span", "p-scn", u.scenario));
   }
 
-  function onLang() { document.querySelectorAll("#log .note.grant").forEach(labelTracker); }
+  function onLang() {
+    document.querySelectorAll("[data-i18n], .chip").forEach((n) => { if (n.children.length === 0) n.textContent = curl(n.textContent); });
+    document.querySelectorAll("#log .note.grant").forEach(labelTracker);
+  }
 
   return { paintStatus, renderActions, fillProfile, onLang };
 };

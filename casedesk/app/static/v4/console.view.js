@@ -4,10 +4,10 @@
    Motion: when a ticket changes lane it travels there (FLIP, 280ms); a lane numeral ticks when its count changes. */
 window.CaseDeskConsoleView = (h) => {
   "use strict";
-  const { S, $, el, fmtTime, day, stateLine, actionText, langName, nameOf, shortId, realViolations, llmErrors,
+  const { S, $, el, day, stateLine, actionText, langName, nameOf, shortId, realViolations, llmErrors,
     reasonText, FILTERS, auto, cap, select, decide } = h;
   const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const curly = (s) => String(s).replace(/(\w)'(\w)/g, "$1’$2"); // our own sentences get real apostrophes
+  const curly = (s) => String(s).replace(/(\p{L})'(\p{L})/gu, "$1’$2"); // our own sentences get real apostrophes
   const text = (s) => document.createTextNode(s);
 
   // ---------------------------------------------------------------- icons: one family, 16px, 1.5 stroke, round joins
@@ -17,6 +17,7 @@ window.CaseDeskConsoleView = (h) => {
     alert: "M8 4.5v4.2M8 11.2v.3M2.5 13.5h11L8 2.5z",
     up: "M8 13.5V3M3.8 7.2 8 3l4.2 4.2",
     chev: "M6 3.5 10.5 8 6 12.5",
+    down: "M4 6l4 4 4-4",
     person: "M8 8a2.6 2.6 0 1 0 0-5.2A2.6 2.6 0 0 0 8 8zM3 13.6c.6-2.4 2.6-3.8 5-3.8s4.4 1.4 5 3.8",
   };
   function icon(name) {
@@ -44,12 +45,13 @@ window.CaseDeskConsoleView = (h) => {
     return day(iso);
   }
   function timeEl(iso, short) {
-    const t = el("time", "tk-time", short ? when(iso) : day(iso, true)); t.dateTime = iso; t.title = fmtTime(iso); return t;
+    const t = el("time", "tk-time", short ? when(iso) : day(iso, true)); t.dateTime = iso; t.title = day(iso, true); return t;
   }
   const REASONS = { user_requested_human: "Asked for a person", privacy_request: "Privacy or data request" };
   const reasonLine = (c) => (c.escalation_reasons || []).map((r) => REASONS[r] || cap(reasonText(r))).join(". ") || "Handed to a person";
-  function stateEl(tone, label) {
-    const s = el("span", "tk-state"); s.append(el("i", "tm " + (tone || "info")), el("span", "ell", label)); return s;
+  function stateEl(tone, label, settled) {
+    const mark = settled && (tone === "bad" || tone === "warn") ? "out" : tone || "info";
+    const s = el("span", "tk-state"); s.append(el("i", "tm " + mark), el("span", "ell", curly(label))); return s;
   }
 
   // ---------------------------------------------------------------- the board
@@ -74,7 +76,39 @@ window.CaseDeskConsoleView = (h) => {
     }
     L.ok = { sec: $("#queue").closest(".lane"), num: $("#qCount"), ol: $("#queue"), empty: $("#qEmpty") };
     L.ok.num.textContent = "";
+    for (const x of Object.values(L)) {
+      const cue = el("button", "lane-more"); cue.type = "button"; cue.hidden = true;
+      cue.append(el("span", "lm-t"), icon("down"));
+      cue.onclick = () => x.ol.scrollBy({ top: x.ol.clientHeight, behavior: reduced() ? "auto" : "smooth" });
+      x.ol.after(cue); x.cue = cue;
+      x.ol.addEventListener("scroll", () => countBelow(x), { passive: true });
+    }
+    const ro = new ResizeObserver(() => { cancelAnimationFrame(fitAll.raf); fitAll.raf = requestAnimationFrame(fitAll); });
+    ro.observe($("#board"));
+    if (document.fonts) document.fonts.ready.then(fitAll);
   }
+  // a lane shows whole tickets only: it ends on the last one that fits, and counts the rest under it
+  function fit(x) {
+    const list = x.ol, cue = x.cue, items = [...list.children];
+    list.style.maxHeight = "";
+    if (!items.length) { cue.hidden = true; return; }
+    cue.hidden = false; // its line is reserved while measuring
+    const room = list.clientHeight, pad = 2;
+    if (list.scrollHeight <= room + cue.offsetHeight) { cue.hidden = true; return; }
+    let bottom = 0;
+    for (const it of items) { const b = it.offsetTop + it.offsetHeight; if (b + pad > room) break; bottom = b; }
+    if (bottom) list.style.maxHeight = bottom + pad + "px";
+    countBelow(x);
+  }
+  function countBelow(x) {
+    if (!x.cue || x.cue.hidden) return;
+    const list = x.ol, edge = list.scrollTop + list.clientHeight + 1;
+    const n = [...list.children].filter((it) => it.offsetTop + it.offsetHeight > edge).length;
+    x.cue.querySelector(".lm-t").textContent = n ? `${n} more below` : "End of lane";
+    x.cue.classList.toggle("end", !n);
+    x.cue.disabled = !n;
+  }
+  function fitAll() { for (const x of Object.values(L)) fit(x); }
   // the numeral ticks like a counter: the new figure rolls in from below (count up) or above (count down)
   function setNum(key, n, animate) {
     const { num, sec } = L[key]; const prev = num.textContent; const next = String(n);
@@ -121,7 +155,7 @@ window.CaseDeskConsoleView = (h) => {
     li.dataset.key = a.case_id; li.dataset.lane = "ok";
     li.setAttribute("aria-current", String(a.case_id === S.selected));
     const b = el("button", "q-open"); b.type = "button"; b.title = "Open the case";
-    const top = el("span", "tk-top"); top.append(who(a.customer_user_id), timeEl(a.created_at, true));
+    const top = el("span", "tk-top"); top.append(who(a.customer_user_id), timeEl((c && c.updated_at) || a.created_at, true));
     b.append(top, el("span", "tk-ask", failed ? `Giving ${what} failed` : `Case Desk suggests ${what}`));
     if (c && c.state_badge) b.append(stateEl(c.state_badge.tone, c.state_badge.label));
     b.onclick = () => select(a.case_id);
@@ -144,7 +178,7 @@ window.CaseDeskConsoleView = (h) => {
     const msg = auto(el("span", "tk-msg", c.first_message || "…"));
     const st = lane === "person" || lane === "privacy"
       ? stateEl("bad", reasonLine(c))
-      : stateEl(c.state_badge && c.state_badge.tone, (c.state_badge && c.state_badge.label) || "No status yet");
+      : stateEl(c.state_badge && c.state_badge.tone, (c.state_badge && c.state_badge.label) || "No status yet", true);
     b.append(top, msg, st);
     b.onclick = () => select(c.id);
     li.append(b);
@@ -162,13 +196,13 @@ window.CaseDeskConsoleView = (h) => {
     const pred = (FILTERS.find((f) => f[0] === S.filter) || FILTERS[0])[2];
     const passes = (c) => S.filter === "all" || !c || pred(c);
 
-    // filters: plain words with a counter; the active one is underlined
+    // filters: quiet words with a counter; the active one gets ink and a small leading mark
     const fb = $("#filters"); fb.textContent = "";
     for (const [key, label, p] of FILTERS) {
       const n = key === "waiting" ? S.cases.filter((c) => p(c) || queued.has(c.id)).length : S.cases.filter(p).length;
       const b = el("button", "filt"); b.type = "button";
       b.setAttribute("aria-pressed", String(S.filter === key));
-      b.append(el("span", "f-word", label), el("span", "f-n", String(n)));
+      b.append(el("i", "f-mark"), el("span", "f-word", label), el("span", "f-n", String(n)));
       b.onclick = () => { S.filter = key; S.sig.list = ""; renderList(); };
       fb.append(b);
     }
@@ -203,7 +237,8 @@ window.CaseDeskConsoleView = (h) => {
     } else if (!shown.length && !qShown.length) ce.append(text("Nothing matches this filter right now."));
     ce.hidden = !ce.textContent;
 
-    for (const [k, top] of Object.entries(keep)) L[k].ol.scrollTop = top;
+    fitAll();
+    for (const [k, top] of Object.entries(keep)) { L[k].ol.scrollTop = top; countBelow(L[k]); }
     if (prev && !reduced()) {
       document.querySelectorAll("#board [data-key]").forEach((n) => {
         const p = prev.get(n.dataset.key);
@@ -257,8 +292,8 @@ window.CaseDeskConsoleView = (h) => {
     if (a.status === "pending" || a.status === "failed") {
       const p = el("p", "waiting"); p.append(icon("up"));
       p.append(el("span", null, a.status === "failed"
-        ? `Giving ${whoN} ${what} failed. Try again in Needs your OK, on the board above.`
-        : `Waiting for your OK on ${what} for ${whoN}. Give or deny it in Needs your OK, on the board above.`));
+        ? `Giving ${whoN} ${what} failed. Try again in the first lane.`
+        : "Waiting for your OK. Give or deny it in the first lane."));
       w.append(p);
     } else if (a.status === "approved") {
       const p = el("p", "done"); p.append(icon("check"), el("span", "big", "Premium given"));
@@ -299,12 +334,13 @@ window.CaseDeskConsoleView = (h) => {
     // the evidence column: the facts, the actions policy chose, and whether the reply was checked
     const ev = el("section", "evidence"); ev.setAttribute("aria-label", "The account and what Case Desk did");
     const tone = (c.state && c.state.tone) || "info";
-    const status = el("p", "status " + tone); status.append(text(curly(stateLine(c.state, f))));
+    const waiting = d.approvals.some((a) => a.status === "pending" || a.status === "failed");
+    // the bar above the status: coral only while the case needs you, green when the account is fine
+    const bar = waiting || fl.escalated || fl.privacy ? "need" : tone === "ok" ? "ok" : "quiet";
+    const status = el("p", "status " + bar); status.append(text(curly(stateLine(c.state, f))));
     const sg = el("div", "state-group"); sg.append(status);
     if (f.product_name) sg.append(el("p", "plan", f.product_name));
-    const fm = factsMini(f); if (fm) sg.append(fm);
     ev.append(sg);
-    for (const a of d.approvals) ev.append(grantEl(a, c));
 
     const alerts = [];
     if (fl.privacy) alerts.push("Privacy or data request. Handle it through your data-protection process.");
@@ -316,6 +352,7 @@ window.CaseDeskConsoleView = (h) => {
       alerts.forEach((t) => { const li = el("li"); li.append(icon(/person/.test(t) ? "person" : "alert"), el("span", null, t)); ul.append(li); });
       ev.append(ul);
     }
+    for (const a of d.approvals) ev.append(grantEl(a, c));
 
     const v = c.validator || null;
     const ver = el("p", "verdict");
@@ -324,7 +361,9 @@ window.CaseDeskConsoleView = (h) => {
       const okp = v.used_fallback || !rv.length; // a rejected draft is replaced by the checked template
       ver.classList.add(okp ? "ok" : "bad"); ver.append(icon(okp ? "check" : "alert"));
       let msg = okp ? "Checked against the account. Every fact in the reply matches." : `${rv.length} ${rv.length === 1 ? "fact in this reply does" : "facts in this reply do"} not match the account. The technical record lists ${rv.length === 1 ? "it" : "them"}.`;
-      if (okp && v.used_fallback) msg = (le.length ? "The model was unreachable" : "The draft broke a rule") + ", so the checked template answered. Every fact matches the account.";
+      if (okp && v.used_fallback) msg = le.length ? "The model was unreachable, so the checked template answered. Every fact matches the account."
+        : rv.length ? "The draft broke a rule, so the checked template answered. Every fact matches the account."
+        : "Answered with the checked template. Every fact matches the account.";
       else if (le.length) msg += " The model was unreachable for part of it.";
       ver.append(el("span", null, msg));
     } else { ver.classList.add("soft"); ver.append(el("span", null, "The reply is still being written…")); }
@@ -335,14 +374,18 @@ window.CaseDeskConsoleView = (h) => {
     const acts = c.actions || [];
     if (acts.length) {
       const ul = el("ul");
-      acts.forEach((a) => { const li = el("li", a.requires_approval ? "needs" : null); li.append(a.requires_approval ? el("i", "tm bad") : icon("check"), el("span", null, curly(didText(a)))); ul.append(li); });
+      acts.forEach((a) => {
+        const open = a.requires_approval && waiting; // once you decided, the request is just something it did
+        const li = el("li", open ? "needs" : null); li.append(open ? el("i", "tm bad") : icon("check"), el("span", null, curly(didText(a)))); ul.append(li);
+      });
       did.append(ul);
     } else did.append(el("p", "soft", c.validator ? "Answered the message. Nothing else was needed." : "Still working on it…"));
     ev.append(did);
+    const fm = factsMini(f); if (fm) ev.append(fm);
 
     // the conversation column: a script, speaker in the margin
     const convo = el("section", "convo"); convo.setAttribute("aria-labelledby", "convH");
-    const ch = el("h3", "convo-h", "Conversation"); ch.id = "convH"; convo.append(ch);
+    const ch = el("h3", "sr-only", "Conversation"); ch.id = "convH"; convo.append(ch);
     const ol = el("ol", "turns");
     for (const m of d.messages) {
       const meta = m.meta || {}; const pending = meta.status === "pending";
@@ -416,7 +459,7 @@ window.CaseDeskConsoleView = (h) => {
     }
 
     const sc = c.sale_context || {};
-    const caseKv = { case: c.id, user: c.customer_user_id, opened: fmtTime(c.created_at) };
+    const caseKv = { case: c.id, user: c.customer_user_id, opened: day(c.created_at, true) };
     if (c.language) caseKv.language = c.language;
     if (c.intent && c.intent.type) caseKv.intent = c.intent.type;
     if (c.state) caseKv.state = c.state.code;
@@ -454,7 +497,7 @@ window.CaseDeskConsoleView = (h) => {
   function live(t, tone) {
     const n = $("#live"); if (!n) return;
     n.dataset.tone = tone || "ok";
-    n.textContent = /^updated /.test(t) ? "Updated " + t.slice(8) : curly(cap(t));
+    n.textContent = /^updated /.test(t) ? "Updated " + new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : curly(cap(t));
   }
   function toast(t, ms = 3200) {
     document.querySelectorAll(".toast").forEach((x) => x.remove());

@@ -10,8 +10,8 @@ for Claude is cut out.
 2. Ava: "I paid but have no premium". Premium is only requested; the developer has to OK it.
 3. Console: one click on "Give Ava 3 days of premium" calls the Adapty grant.
 4. Back in the app, Ava sees it was approved.
-5. Dylan tried to give Case Desk orders. A person needs to answer, so Case Desk drafts a checked reply, and the
-   team uses the draft and marks the case resolved.
+5. Isla asks for a person. Case Desk drafts a checked reply as ghost text in the composer; Tab takes it, Enter
+   sends it as "Lumen team", and the case is marked resolved. (Design: v6, strips.)
 6. Rules: the owner decides what Case Desk may do on its own.
 
 The narrated 3D demo used in the live presentation is in `presentation/present/video.html`.

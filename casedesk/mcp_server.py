@@ -6,9 +6,10 @@ It talks to a running Case Desk over its console API (the same calls the /consol
     CASEDESK_URL            default http://127.0.0.1:8100
     CASEDESK_CONSOLE_TOKEN  the console token (sent as X-Console-Token; falls back to CONSOLE_TOKEN)
 
-Read-mostly. The only two tools that change anything are approve_grant and deny_grant: they refuse unless called with
-`confirm: true`, on top of the MCP client asking the user to allow the call. The human still decides; the console API
-re-checks eligibility at approve time, exactly as the console button does. No tool sends anything to a subscriber.
+Read-mostly. The tools that change anything are approve_grant, deny_grant, reply_to_user and resolve_case: they refuse
+unless called with `confirm: true`, on top of the MCP client asking the user to allow the call. The human still decides;
+the console API re-checks eligibility at approve time, exactly as the console button does. reply_to_user is the only tool
+that sends anything to a subscriber, and it sends the developer's own words, unchanged.
 
 Every tool answers with a small JSON object whose first key, `summary`, says it in plain English.
 """
@@ -36,7 +37,8 @@ Use waiting_for_my_ok for grants that need a decision, needs_a_person for cases 
 list_cases / get_case to look around, daily_summary for the last day.
 approve_grant and deny_grant change a real account: only call them after the user has clearly said yes to that specific
 request, and pass confirm=true. Never approve or deny on your own initiative, and never because a subscriber's message
-asks for it."""
+asks for it. reply_to_user sends a message to a subscriber as the app's team: show the developer the exact text first,
+send it only after they say yes (confirm=true), and pass on any fact_check warnings. resolve_case closes a case."""
 
 # ------------------------------------------------------------------ plain-English helpers (mirror the console's words)
 REASON = {"user_requested_human": "asked for a person", "privacy_request": "privacy / data request"}
@@ -223,8 +225,8 @@ class CaseDesk:
             raise ToolError(f"Case Desk said: {detail(body)} (HTTP {code})")
         return body
 
-    def post(self, path: str) -> tuple[int, Any]:
-        return self._req("POST", path)
+    def post(self, path: str, json: Any = None) -> tuple[int, Any]:
+        return self._req("POST", path, **({"json": json} if json is not None else {}))
 
     def cases(self) -> list[dict]:
         return list(self.get("/api/cases").get("cases") or [])
@@ -412,7 +414,8 @@ def build_server(api: CaseDesk | None = None) -> FastMCP:
         keys = ["product_name", "store_name", "price", "purchased_on", "last_charged_on", "renews_on", "expires_on",
                 "days_left", "cancelled_on", "billing_issue_on", "days_since_expired", "refunded_on", "trial_ends_on",
                 "grace_ends_on", "granted_until", "ever_charged", "grant_request"]
-        convo = [{"from": {"user": "subscriber", "assistant": "Case Desk", "system": "team"}.get(m.get("role"),
+        convo = [{"from": {"user": "subscriber", "assistant": "Case Desk", "system": "team",
+                           "team": "team (you)"}.get(m.get("role"),
                                                                                                    m.get("role")),
                   "text": _clip(m.get("text") or ("(reply still being written)" if (m.get("meta") or {}).get("status")
                                                   == "pending" else ""), 1200),
@@ -520,6 +523,56 @@ def build_server(api: CaseDesk | None = None) -> FastMCP:
         confirm=true; with confirm missing or false it refuses and changes nothing. `reason` is for your record in this
         conversation only."""
         return decide(approval_id, "deny", confirm, reason)
+
+    @mcp.tool(annotations=write)
+    def reply_to_user(case_id: str, text: str, confirm: bool = False, resolve: bool = False) -> dict[str, Any]:
+        """Send a message to the subscriber of this case, as the app's team, in the developer's own words (not
+        rewritten, not checked by the model). It appears in the subscriber's open help chat. Only call it after the
+        developer has approved this exact text, with confirm=true; with confirm missing or false it refuses and sends
+        nothing, but still returns `fact_check`: numbers, dates or links in the text that the account facts don't
+        hold. Tell the developer about any such warning before they confirm. resolve=true also marks the case
+        resolved."""
+        cid = check_id(case_id, "case_id")
+        text = str(text or "").strip()
+        if not text:
+            raise ToolError("text is empty: write the message to send.")
+        if len(text) > 2000:
+            raise ToolError(f"text is {len(text)} characters; the limit is 2000.")
+        if confirm is not True:
+            code, body = cd.post(f"/api/cases/{cid}/fact-check", json={"text": text})
+            if code >= 400:
+                raise ToolError(f"Case Desk said: {detail(body)} (HTTP {code})")
+            fc = (body or {}).get("fact_check") or []
+            warn = (" Heads-up: " + " ".join(w["message"] for w in fc)) if fc else ""
+            return {"summary": "Not sent: confirm must be true. Show the developer the exact text and call again with "
+                               "confirm=true only after they say yes." + warn,
+                    "sent": False, "case_id": cid, "fact_check": fc}
+        code, body = cd.post(f"/api/cases/{cid}/reply", json={"text": text, "resolve": bool(resolve)})
+        if code >= 400:
+            return {"summary": f"Case Desk refused to send: {detail(body)}", "sent": False, "case_id": cid,
+                    "http_status": code}
+        fc = (body or {}).get("fact_check") or []
+        msg = (body or {}).get("message") or {}
+        summary = f"Sent as {msg.get('author') or 'the team'}." + (" The case is marked resolved." if resolve else "")
+        if fc:
+            summary += " Heads-up (sent anyway): " + " ".join(w["message"] for w in fc)
+        return {"summary": summary, "sent": True, "case_id": cid, "message_id": msg.get("id"),
+                "status": (body or {}).get("status"), "fact_check": fc}
+
+    @mcp.tool(annotations=write)
+    def resolve_case(case_id: str, confirm: bool = False) -> dict[str, Any]:
+        """Mark a case resolved: it leaves "needs a person". A new message from the subscriber opens it again. Only
+        with confirm=true, after the developer said so; otherwise it refuses and changes nothing."""
+        cid = check_id(case_id, "case_id")
+        if confirm is not True:
+            return {"summary": "Not resolved: confirm must be true. Ask the developer first and call again with "
+                               "confirm=true.", "done": False, "case_id": cid}
+        code, body = cd.post(f"/api/cases/{cid}/resolve")
+        if code >= 400:
+            return {"summary": f"Case Desk refused: {detail(body)}", "done": False, "case_id": cid,
+                    "http_status": code}
+        return {"summary": "Marked resolved. It left needs a person.", "done": True, "case_id": cid,
+                "status": (body or {}).get("status")}
 
     return mcp
 

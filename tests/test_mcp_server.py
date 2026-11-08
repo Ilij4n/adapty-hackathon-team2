@@ -78,10 +78,10 @@ def call(c, name: str, **args):
 def test_lists_the_tools_with_safety_annotations(app_client):
     tools = {t.name: t for t in run(app_client, [("__list__", {})])[0][1]}
     assert set(tools) == {"waiting_for_my_ok", "needs_a_person", "list_cases", "get_case", "daily_summary",
-                          "approve_grant", "deny_grant"}
+                          "approve_grant", "deny_grant", "reply_to_user", "resolve_case"}
     for name in ("waiting_for_my_ok", "needs_a_person", "list_cases", "get_case", "daily_summary"):
         assert tools[name].annotations.readOnlyHint is True
-    for name in ("approve_grant", "deny_grant"):
+    for name in ("approve_grant", "deny_grant", "reply_to_user", "resolve_case"):
         t = tools[name]
         assert t.annotations.destructiveHint is True and t.annotations.readOnlyHint is False
         assert "confirm" in t.inputSchema["properties"] and "confirm=true" in t.description

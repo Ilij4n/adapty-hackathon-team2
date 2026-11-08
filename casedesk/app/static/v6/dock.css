@@ -1,1 +1,93 @@
-/* v6: a compact decision dock (approval footer): wider than tall, fewer lines (agent E) */
+/* v6: a compact decision dock (approval footer): wider than tall, fewer lines (agent E).
+   v2's decision card is one row here:
+     1 waiting   Ava 00239  3 days of premium                       [Give Ava 3 days of premium] [Deny]  Nothing is granted
+     a give d deny  Paid, then the App Store couldn't take the renewal                                    until you approve.
+   The count and its keys | who, what, why | the two buttons | the hint. Several requests: the same row for the one in
+   front, then one short row each (own small Give / Deny), the list scrolling inside a capped height.
+   Type: a step above the console's 13/14px (who and what 16px, the Give button 15px), far under v2's 24px headline and
+   56px button. The dock stands out by colour first: the night band, the amber rule and count, the amber Give.
+   Gone (CSS only, v2 still renders them): the "3 days of premium asked for" total, the "Case Desk asks you to confirm"
+   kicker, "<Name> gets premium for 3 days. Nothing else changes.", and the "Also waiting" heading (kept for screen
+   readers). The DOM contract is untouched: dock.js changes words, not buttons. */
+
+.dock { --hint-w: 9.5rem; }
+
+.dock:not(.is-empty) .q-days,
+#queue .q-kick,
+#queue .q-change { display: none; }
+#queue .q-rest-h {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* the count: amber, a step above the console's body */
+.dock:not(.is-empty) .dock-head { padding: 2px 0 0; }
+.dock:not(.is-empty) .dock-head h2 { font-size: 16px; line-height: 1.3; white-space: nowrap; }
+
+/* the request in front: who and what, then why */
+#queue .q-item.big { padding: 0; gap: 0; }
+#queue .q-body { gap: 1px; }
+#queue .big .q-l1 { font-size: 16px; line-height: 1.3; gap: 0 10px; }
+#queue .big .q-l1 .uid { font-size: 13px; }
+#queue .q-why {
+  max-width: 68ch; font-size: 14px; line-height: 1.4; color: var(--ink-2); text-wrap: pretty;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+}
+#queue .grant-row { flex-wrap: nowrap; gap: 8px; }
+#queue .btn.approve.big { min-height: 40px; padding: 0 18px; font-size: 15px; border-radius: var(--r-ctl); white-space: nowrap; }
+#queue .big .btn.deny { min-height: 40px; padding: 0 16px; font-size: 14px; }
+#queue .q-item .hint { font-size: 12.5px; line-height: 1.35; color: var(--ink-3); text-wrap: balance; }
+#queue .q-item .fail, #queue .q-item .refused { font-size: var(--t-s); }
+
+/* the rest: one short row each */
+#queue .q-rest { margin-top: 10px; }
+#queue .q-item.row { gap: 4px 12px; padding: 5px 0; }
+#queue .q-item.row .q-l1 { font-size: 14px; }
+#queue .q-item.row .btn { min-height: 30px; padding: 0 10px; font-size: var(--t-s); }
+
+/* after the click: one green line */
+#queue .q-done { padding: 0; }
+#queue .q-done + .q-item, #queue .q-done + .q-rest { margin-top: 10px; }
+#queue .q-done .done { font-size: 15px; line-height: 1.3; }
+#queue .q-done .ic { width: 16px; height: 16px; }
+
+/* ------------------------------------------------------------ desktop: a band at the foot of the case pane */
+@media (min-width: 980px) {
+  .dock:not(.is-empty) {
+    display: grid; grid-template-columns: max-content minmax(0, 1fr); align-items: start; column-gap: 24px;
+    padding: 13px var(--gut) 11px;   /* the top 3px is the amber rule */
+  }
+  .dock:not(.is-empty) .dock-head { display: grid; justify-items: start; gap: 5px; }
+  .dock:not(.is-empty) .dock-head .keys { margin: 0; }
+  #dock .q-list { display: block; container-type: inline-size; }
+  #queue .q-item.big { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "body body" "row hint"; gap: 8px 16px; align-items: center; }
+  #queue .q-item.big > .q-body { grid-area: body; }
+  #queue .q-item.big > .grant-row { grid-area: row; }
+  #queue .q-item.big > .hint { grid-area: hint; }
+  #queue .q-item.big > .fail, #queue .q-item.big > .refused { grid-column: 1 / -1; margin: 0; }
+  #queue .q-rest { border: 0; padding: 0; }
+  #queue .q-rows { max-height: calc(3 * 41px); overflow-y: auto; }   /* three rows, then the list scrolls */
+  #queue .q-item.row { margin-inline: -8px; padding-inline: 8px; border-top: 1px solid var(--line); }
+  @container (min-width: 700px) {
+    /* one row: the reason sits right before the button, the hint right after it */
+    #queue .q-item.big { grid-template-columns: minmax(0, 1fr) auto var(--hint-w); grid-template-areas: "body row hint"; column-gap: 24px; }
+    #queue .q-item.big > .hint { margin-inline-start: -4px; }
+    #queue .q-item.row { padding-inline-end: calc(var(--hint-w) + 20px + 8px); }   /* Deny under Deny */
+  }
+}
+
+/* ------------------------------------------------------------ phone and tablet: the bottom sheet, three short lines */
+@media (max-width: 979px) {
+  .dock:not(.is-empty) { padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); }
+  /* the count floats left, so who and what sit on its line; the buttons clear it */
+  .dock:not(.is-empty) .dock-head { float: left; padding-inline-end: 12px; }
+  #queue .q-item.big { display: block; }
+  #queue .grant-row { clear: both; margin-top: 10px; }
+  #queue .q-item.big > .hint { margin-top: 6px; }
+  #queue .q-item.big > .fail, #queue .q-item.big > .refused { clear: both; margin-top: 6px; }
+  #queue .btn.approve.big, #queue .big .btn.deny { min-height: 44px; }
+  #queue .q-rest { clear: both; }
+  #queue .q-rows { max-height: 136px; overflow-y: auto; }   /* two and a half rows: the cut says it scrolls */
+  #queue .q-item.row { padding: 4px 0; border-top: 1px solid var(--line); }
+  #queue .q-item.row .btn { min-height: 44px; }
+}

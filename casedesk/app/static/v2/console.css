@@ -121,12 +121,18 @@
 
 .transcript { background: var(--read); min-width: 0; }
 .d-head {
-  display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px 32px;
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: end; gap: 10px 32px;
   padding: 18px var(--gut) 14px; background: var(--read); border-bottom: 1px solid var(--line);
+}
+.transcript { container-type: inline-size; }
+/* a narrow case column (evidence open, or a smaller screen): name and toggle on one line, the facts below */
+@container (max-width: 760px) {
+  .d-head { grid-template-columns: minmax(0, 1fr) auto; gap: 10px 16px; align-items: center; }
+  .d-head .d-meta { grid-column: 1 / -1; grid-row: 2; }
 }
 .d-head h2 { font-size: var(--t-l); line-height: 1.25; min-width: 0; overflow-wrap: anywhere; }
 .d-head h2 .uid { font-size: var(--t-s); }
-.d-meta { display: flex; flex-wrap: wrap; gap: 6px 28px; margin: 0; }
+.d-meta { display: flex; flex-wrap: wrap; gap: 6px 24px; margin: 0; }
 .d-meta div { display: grid; gap: 1px; min-width: 0; }
 .d-meta dt { font-size: var(--t-xs); color: var(--ink-3); }
 .d-meta dd { margin: 0; color: var(--ink); }
@@ -310,6 +316,8 @@
 .q-item.row .who-name { white-space: nowrap; }
 .q-item.row .q-want { color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .q-item.row .btn { min-height: 32px; padding: 0 10px; font-size: var(--t-s); }
+/* only the big card's button is filled: the rows' Give is an amber outline, so the screen stays calm at ten */
+.q-item.row .btn.approve { background: transparent; color: var(--amber); border-color: color-mix(in srgb, var(--amber) 60%, transparent); }
 .q-item.row .fail { grid-column: 1 / -1; font-size: var(--t-xs); }
 .q-item.row[aria-current="true"] { background: var(--sel); }
 
@@ -336,6 +344,7 @@
   .q-open:hover .nm { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--ink-3); }
   .ev-toggle:hover { border-color: var(--ink-3); }
   .btn.approve:hover { background: #ffb96d; border-color: #ffb96d; }
+  .q-item.row .btn.approve:hover { background: var(--amber-soft); border-color: var(--amber); }
   .btn.deny:hover { border-color: var(--ink-2); }
 }
 
@@ -374,7 +383,7 @@
   .dock .q-list.has-rest { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 38%); align-items: start; }
   .q-list.has-rest > .q-done { grid-column: 1 / -1; }
   .q-list.has-rest > .q-rest { border-left: 1px solid var(--line); align-self: stretch; display: flex; flex-direction: column; min-height: 0; }
-  .q-list.has-rest .q-rows { max-height: none; flex: 1; overflow-y: auto; }
+  .q-list.has-rest .q-rows { max-height: 212px; overflow-y: auto; }  /* about four rows; the card sets the dock's height */
   .q-list.has-rest .q-rest-h { padding-inline: 20px; padding-top: 12px; }
   .q-list.has-rest .q-item.row { padding-inline: 20px 16px; }
   .d-head { position: sticky; top: 0; z-index: 1; }
@@ -390,7 +399,8 @@
   .list { border-bottom: 1px solid var(--line); }
   .c-item { padding: 9px 16px 10px; line-height: 18px; }
   .filt { min-height: 40px; }
-  .d-head { display: grid; gap: 12px; }
+  .d-head { grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
+  .d-head .d-meta { grid-column: 1 / -1; grid-row: 2; }
   .d-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; }
   .sec { padding-left: 16px; padding-right: 16px; }
   .inspector { border-top: 1px solid var(--line); }
@@ -404,8 +414,11 @@
   .big .q-l1 { font-size: 20px; }
   .q-why { display: none; }   /* the sheet keeps to who, what, what changes and the buttons; the case says why */
   .big .grant-row .approve { flex: 1; }
-  .btn.approve.big, .big .btn.deny { min-height: 52px; }
+  .btn.approve.big, .big .btn.deny { min-height: 52px; font-size: 15px; }
+  .btn.approve.big { padding: 0 14px; }
+  .big .btn.deny { padding: 0 16px; }
   .q-item.row { padding: 6px 16px; }
+  .dock .q-rows { max-height: 170px; overflow-y: auto; }  /* three rows, then the list scrolls inside the sheet */
   .btn, .q-item.row .btn { min-height: 44px; }
   .ev-toggle { min-height: 40px; }
 }

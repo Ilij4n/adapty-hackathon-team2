@@ -167,7 +167,7 @@ window.CaseDeskConsoleView = (h) => {
     const li = el("li", "q-item row" + (a.status === "failed" ? " failed" : ""));
     li.setAttribute("aria-current", String(a.case_id === S.selected));
     const b = el("button", "q-open"); b.type = "button"; b.title = "Open the case";
-    const want = el("span", "q-want", what);
+    const want = el("span", "q-want", `${days} ${days === 1 ? "day" : "days"}`);
     const l1 = el("span", "q-l1"); l1.append(who(a.customer_user_id), want);
     b.append(l1, timeEl(a.created_at));
     b.onclick = () => h.select(a.case_id);
@@ -214,17 +214,20 @@ window.CaseDeskConsoleView = (h) => {
       p.append(icon("tick"), t); li.append(p); q.append(li);
       if (!seenQ.has("g" + a.id)) { seenQ.add("g" + a.id); requestAnimationFrame(() => flash(t, "ok")); }
     }
-    featured = pend.find((a) => a.case_id === S.selected) || pend[0] || null;
-    q.classList.toggle("has-rest", pend.length > 1);
+    // the big card belongs to the case on screen; with no case open, the oldest request gets it.
+    // Reading a case with nothing to approve (an escalated one, say), every request stays a compact row.
+    featured = pend.find((a) => a.case_id === S.selected) || (S.selected ? null : pend[0]) || null;
     if (featured) {
       const { li, want } = bigCard(featured, byCase[featured.case_id] || {});
       q.append(li);
       if (!seenQ.has(featured.id)) { seenQ.add(featured.id); if (!rises && !firstList) requestAnimationFrame(() => flash(want, "warn")); }
     }
     const rest = pend.filter((a) => a !== featured);
+    q.classList.toggle("has-rest", !!featured && rest.length > 0);
     if (rest.length) {
       const box = el("li", "q-rest"); box.setAttribute("role", "presentation");
-      const hd = el("h3", "q-rest-h", "Also waiting"); hd.append(document.createTextNode(" "), mono("n", String(rest.length)));
+      const hd = el("h3", "q-rest-h", featured ? "Also waiting" : "Open a request to see it in full, or decide it here");
+      if (featured) hd.append(document.createTextNode(" "), mono("n", String(rest.length)));
       const ol = el("ol", "q-rows");
       for (const a of rest) {
         const { li, want } = rowItem(a); ol.append(li);

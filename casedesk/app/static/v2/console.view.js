@@ -506,7 +506,7 @@ window.CaseDeskConsoleView = (h) => {
     const top = el("div", "sug-head");
     const lbl = el("h4", null, "Suggested reply");
     const cp = el("button", "btn copy", "Copy"); cp.type = "button";
-    cp.title = "Copy the suggested reply, to edit and send from your support inbox";
+    cp.title = "Copy the suggested reply (or use “Use the draft” below to send it from here)";
     cp.onclick = () => copyText(sug.text).then(() => { cp.textContent = "Copied"; toast("Suggested reply copied"); setTimeout(() => { cp.textContent = "Copy"; }, 1800); },
       () => toast("Couldn't copy. Select the text and copy it by hand.", 6000));
     top.append(lbl, cp);
@@ -514,7 +514,7 @@ window.CaseDeskConsoleView = (h) => {
     if (sug.language) txt.lang = sug.language;
     const how = sug.source === "llm" || sug.source === "llm_retry" ? "Written by Case Desk from the account facts and checked"
       : sug.source === "seed" ? "Drafted from the account facts and checked" : "Built from the account facts";
-    box.append(top, txt, el("p", "sug-note", how + ". Not sent to the user: edit it, then send it yourself."));
+    box.append(top, txt, el("p", "sug-note", how + ". Not sent to the user until you send it below."));
     return box;
   }
 

@@ -72,12 +72,15 @@ live demo starts clean. Running it twice adds nothing; `--reset` removes and re-
 
 `casedesk/mcp_server.py` is an MCP server, so you can run your support from Claude Code or Claude Desktop. You can
 ask what is waiting for your OK, which cases need a person, or what happened in a case, and approve or deny a
-grant. It calls a running Case Desk's console API. You still make the decision: approving or denying needs your OK
-in the client, and the call must also include `confirm: true`. Without it nothing changes. No tool sends anything to
-a subscriber.
+grant, write to a subscriber or close a case. It calls a running Case Desk's console API. You still make the decision:
+every tool that changes something needs your OK in the client, and the call must also include `confirm: true`. Without
+it nothing changes. `reply_to_user` is the only tool that sends anything to a subscriber, and it sends your words as
+written; without `confirm: true` it sends nothing but still returns its fact check (numbers, dates or links the
+account facts don't hold), so Claude can tell you before you say yes.
 
 Tools: `waiting_for_my_ok`, `needs_a_person`, `list_cases(filter, limit)`, `get_case(case_id)`, `daily_summary(hours)`,
-`approve_grant(approval_id, confirm)`, `deny_grant(approval_id, confirm, reason?)`.
+`approve_grant(approval_id, confirm)`, `deny_grant(approval_id, confirm, reason?)`,
+`reply_to_user(case_id, text, confirm, resolve=false)`, `resolve_case(case_id, confirm)`.
 
 ```bash
 uv sync --extra mcp
@@ -138,7 +141,30 @@ key is a 422. Both calls return `{"rules": {...}, "limits": {...}, "locked": [..
 When a case goes to a person (the user asked for one, a privacy request, or a message that tried to give orders),
 Case Desk also drafts the person's answer: built from the FactSheet, in the user's language, checked by the same
 validator (template fallback), stored as `suggested_reply` on the case and shown with a Copy button in the console's
-"A person needs to answer this" panel. It is never sent to the user.
+"A person needs to answer this" panel. It is never sent to the user by Case Desk.
+
+### Replying to the subscriber from the console
+
+The panel has a reply box under the draft: **Use the draft** puts the suggested reply in it to edit, then **Send** or
+**Send and mark resolved** (<kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Enter</kbd> sends). Every other case has a smaller
+**Write to <name>** link at the end of the conversation, so you can write to anyone. The message is yours: it is not
+passed through the model and the validator does not block it. While you type, the validator's number/date/link check
+runs against the case's FactSheet as advice ("Heads-up: “12 Nov 2031” isn't in the account facts"); if it finds
+something, the first click shows it and the button becomes **Send anyway**. The message appears in the case as
+"You (Lumen team)" and in the subscriber's open help chat as a teal "Lumen team" bubble (the widget polls every 4 s;
+an unanswered team reply is shown again when they open help). If they answer, the conversation continues in that case
+and a resolved case opens again.
+
+```bash
+curl -X POST -H "X-Console-Token: $CONSOLE_TOKEN" -H 'content-type: application/json' \
+     -d '{"text": "Hi Isla, I checked your account myself…", "resolve": true}' localhost:8100/api/cases/c_…/reply
+# -> {"message": {"id", "role": "team", "author": "Lumen team", "text", "created_at"}, "fact_check": [...], "status"}
+```
+
+`text` is 1–2000 characters (blank is a 422); `resolve` also marks the case resolved. Audit: `team_reply` (and
+`case_resolved`). `POST /api/cases/{id}/fact-check` runs the same advisory check without sending. The widget reads the
+team's messages with `GET /api/messages?customer_user_id=…&signature=…&after=<message id>` (signed like `/api/status`).
+The author label is `<CASEDESK_APP_NAME> team`.
 
 ## Tests
 

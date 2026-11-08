@@ -10,6 +10,11 @@ Actions depend on the classified state, the intent *type*, the FactSheet and a f
 `EXPLAIN_STATUS` comes first, except HUMAN_REQUEST / PRIVACY_REQUEST (escalation only). ACKNOWLEDGEMENT, OTHER_APP and
 THIRD_PARTY_ACCOUNT return no actions (`[]`); OTHER is `explain` only (no automatic escalation, bug bash M1).
 
+UNRECOGNISED_CHARGE ("why was I charged, I never bought anything") explains the charges the account shows and where
+to ask the store for a refund; it is not a charged-after-cancel claim. FREE_ACCESS_REQUEST ("give me premium for free")
+explains the account and what the user can do (subscribe, restore if they paid, fix the payment); a grant appears only
+where the grant policy already allows one, and its store slots are dropped (never escalated) on stores without links.
+
 ## Slots
 
 ```
@@ -37,12 +42,14 @@ Store links only exist for app_store / play_store: cancel / manage / payment / r
 
 ```
 Fact checks applied after the table (in this order):
-  H7 claims vs facts — for STATUS_QUESTION / CHARGED_AFTER_CANCEL / REFUND_REQUEST / PAID_NO_ACCESS: if
+  H7 claims vs facts — for STATUS_QUESTION / CHARGED_AFTER_CANCEL / REFUND_REQUEST / PAID_NO_ACCESS /
+     UNRECOGNISED_CHARGE: if
      claims.claimed_store (app_store|play_store) differs from the account's store, or claims.claimed_amount is not a
      number in the FactSheet (only checked when there is a `price`) -> the first action becomes explain! reason
      `charge_not_found` with params store_mismatch / amount_mismatch; refund paths are dropped (that charge is not on
      this account); a store mismatch adds ESCALATE_TO_HUMAN.
-  H4 never charged — facts.ever_charged == "no" with REFUND_REQUEST or CHARGED_AFTER_CANCEL (not FAMILY_SHARED):
+  H4 never charged — facts.ever_charged == "no" with REFUND_REQUEST, CHARGED_AFTER_CANCEL or UNRECOGNISED_CHARGE
+     (not FAMILY_SHARED):
      explain! reason `nothing_charged` (`no_charge_on_account` for NO_PURCHASE / GRANTED_BY_DEVELOPER, and for
      CHARGED_AFTER_CANCEL in CANCELLED_PAID_UP / EXPIRED_CANCELLED), and no refund path.
   M5 charge? + claims.wants_refund — a contradicted charged-after-cancel claim still gets the store refund path when
@@ -53,21 +60,21 @@ Fact checks applied after the table (in this order):
 
 ## Decision table
 
-| state | CHARGED_AFTER_CANCEL | PAID_NO_ACCESS | REFUND_REQUEST | HOW_TO_CANCEL | RESTORE_NEW_DEVICE | BILLING_FAILED | STATUS_QUESTION | OTHER |
-|---|---|---|---|---|---|---|---|---|
-| ACTIVE_RENEWING | explain! cancel refund | explain! restore | explain refund cancel | explain cancel | explain restore | explain! | explain | explain |
-| CANCELLED_PAID_UP | charge? | explain! restore | explain refund | explain | explain restore | explain! | explain | explain |
-| TRIAL_ACTIVE | explain! cancel | explain! restore | explain! cancel | explain cancel | explain restore | explain! | explain | explain |
-| TRIAL_CANCELLED | explain! | explain! restore | explain! | explain | explain restore | explain! | explain | explain |
-| GRACE_PERIOD | explain! cancel | explain! payment restore | explain refund | explain cancel | explain payment restore | explain payment | explain payment | explain |
-| BILLING_RETRY | explain! cancel | explain payment grant | explain refund | explain cancel | explain payment grant | explain payment grant | explain payment grant | explain |
-| EXPIRED_BILLING_ERROR | explain! | explain payment manage grant | explain refund | explain | explain payment manage grant | explain payment manage grant | explain payment manage grant | explain |
-| EXPIRED_CANCELLED | charge? | explain! manage | explain refund | explain | explain manage | explain! | explain | explain |
-| REFUNDED | explain! | explain! | explain! | explain | explain | explain | explain | explain |
-| LIFETIME | explain! | explain! restore | explain refund | explain | explain restore | explain! | explain | explain |
-| GRANTED_BY_DEVELOPER | explain! human | explain! restore | explain! | explain | explain restore | explain | explain | explain |
-| FAMILY_SHARED | explain! | explain! restore | explain! | explain | explain restore | explain | explain | explain |
-| NO_PURCHASE | explain! restore human | explain! restore human | explain human | explain manage | explain restore human | explain human | explain | explain |
+| state | CHARGED_AFTER_CANCEL | PAID_NO_ACCESS | REFUND_REQUEST | HOW_TO_CANCEL | RESTORE_NEW_DEVICE | BILLING_FAILED | STATUS_QUESTION | OTHER | UNRECOGNISED_CHARGE | FREE_ACCESS_REQUEST |
+|---|---|---|---|---|---|---|---|---|---|---|
+| ACTIVE_RENEWING | explain! cancel refund | explain! restore | explain refund cancel | explain cancel | explain restore | explain! | explain | explain | explain refund cancel | explain |
+| CANCELLED_PAID_UP | charge? | explain! restore | explain refund | explain | explain restore | explain! | explain | explain | explain refund | explain |
+| TRIAL_ACTIVE | explain! cancel | explain! restore | explain! cancel | explain cancel | explain restore | explain! | explain | explain | explain! cancel | explain |
+| TRIAL_CANCELLED | explain! | explain! restore | explain! | explain | explain restore | explain! | explain | explain | explain! | explain |
+| GRACE_PERIOD | explain! cancel | explain! payment restore | explain refund | explain cancel | explain payment restore | explain payment | explain payment | explain | explain refund cancel | explain payment |
+| BILLING_RETRY | explain! cancel | explain payment grant | explain refund | explain cancel | explain payment grant | explain payment grant | explain payment grant | explain | explain refund cancel | explain payment grant |
+| EXPIRED_BILLING_ERROR | explain! | explain payment manage grant | explain refund | explain | explain payment manage grant | explain payment manage grant | explain payment manage grant | explain | explain refund | explain payment manage grant |
+| EXPIRED_CANCELLED | charge? | explain! manage | explain refund | explain | explain manage | explain! | explain | explain | explain refund | explain manage |
+| REFUNDED | explain! | explain! | explain! | explain | explain | explain | explain | explain | explain! | explain manage |
+| LIFETIME | explain! | explain! restore | explain refund | explain | explain restore | explain! | explain | explain | explain refund | explain restore |
+| GRANTED_BY_DEVELOPER | explain! human | explain! restore | explain! | explain | explain restore | explain | explain | explain | explain! | explain |
+| FAMILY_SHARED | explain! | explain! restore | explain! | explain | explain restore | explain | explain | explain | explain! | explain |
+| NO_PURCHASE | explain! restore human | explain! restore human | explain human | explain manage | explain restore human | explain human | explain | explain | explain! | explain manage restore |
 
 | state | HUMAN_REQUEST | ACKNOWLEDGEMENT | OTHER_APP | PRIVACY_REQUEST | THIRD_PARTY_ACCOUNT | DISCOUNT_REQUEST |
 |---|---|---|---|---|---|---|
@@ -100,7 +107,8 @@ Fact checks applied after the table (in this order):
 | REFUND_REQUEST | TRIAL_ACTIVE, TRIAL_CANCELLED, GRANTED_BY_DEVELOPER / REFUNDED / FAMILY_SHARED | `nothing_charged` / `already_refunded` / `organizer_must_request` |
 | BILLING_FAILED | states where payment is fine | `payment_ok` |
 | REFUND_REQUEST / CHARGED_AFTER_CANCEL | `ever_charged=no` (not FAMILY_SHARED) | `nothing_charged`; `no_charge_on_account` for NO_PURCHASE / GRANTED_BY_DEVELOPER and for CHARGED_AFTER_CANCEL in CANCELLED_PAID_UP / EXPIRED_CANCELLED |
-| STATUS_QUESTION / CHARGED_AFTER_CANCEL / REFUND_REQUEST / PAID_NO_ACCESS | claimed store/amount not on this account | `charge_not_found` (+ `store_mismatch`, `amount_mismatch` booleans) |
+| UNRECOGNISED_CHARGE | TRIAL_ACTIVE, TRIAL_CANCELLED / REFUNDED / GRANTED_BY_DEVELOPER, NO_PURCHASE / FAMILY_SHARED | `nothing_charged` / `already_refunded` / `no_charge_on_account` / `organizer_pays` |
+| STATUS_QUESTION / CHARGED_AFTER_CANCEL / REFUND_REQUEST / PAID_NO_ACCESS / UNRECOGNISED_CHARGE | claimed store/amount not on this account | `charge_not_found` (+ `store_mismatch`, `amount_mismatch` booleans) |
 
 ## Grant policy (ARCH)
 

@@ -1,0 +1,78 @@
+/* =====================================================================================================================
+   v6 "Night Shift, strips": the team composer (composer.js). A normal chat box at the foot of the conversation, the
+   last thing in the transcript; the decision card (the dock) stays the bottom-most element of the screen.
+   It follows the strip spec in chat.css and the widths in layout.css: the box runs the chat column (--chat-measure),
+   the words in it keep the reading measure (--chat-text), --chat-fs, text 1em in from a 2px inline-start rule, the end
+   corners rounded; Send and the keys hint share the strips' end edge (where their times sit). The rule is teal because what is typed here becomes a teal "You (Lumen team)" strip.
+     Hint     one line above the box, .86em ink-2: who it goes to, as whom, and that it is sent exactly as written;
+              the keys at the inline end in ink-3 (hidden on touch and narrow screens).
+     Box      one line that grows to five, then scrolls; Send at the inline end. Empty: Send is a quiet outline.
+              Ready: teal fill. Sending: "Sending…", the text read-only. Focus: the 2px focus ring around the box.
+     Error    the box's border turns coral and a coral strip (coral rule on coral-soft) says it was not sent.
+     Heads-up v2's fact-check note (.fc-warn) under the box; Send becomes "Send anyway".
+   ===================================================================================================================== */
+
+#detail .tc {
+  display: grid; gap: .4em; min-width: 0;
+  max-width: var(--chat-measure, calc(72ch + 1.75em + 2px));
+  margin: .875em var(--gut) 0;
+  font-size: var(--chat-fs, var(--t-m));
+  scroll-margin-block: 16px;   /* scrolled into view, the focus ring stays clear of the case pane's edge */
+}
+
+/* the hint: its text sits on the strips' text line (1em in from the rule) */
+#detail .tc-hint {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: .15em .85em; min-width: 0; margin: 0;
+  padding-inline-start: calc(1em + 2px);
+  font-size: .86em; line-height: 1.35; color: var(--ink-2);
+}
+#detail .tc-hint b { font-weight: 600; color: var(--teal); }
+#detail .tc-keys { margin-inline-start: auto; color: var(--ink-3); white-space: nowrap; }
+#detail .tc-keys kbd { font-size: .92em; }
+@media (hover: none), (pointer: coarse), (max-width: 560px) { #detail .tc-keys { display: none; } }
+
+/* the box: a strip waiting to be sent */
+#detail .tc-box {
+  display: flex; align-items: flex-end; gap: .5em; min-width: 0;
+  padding: .3em .3em .3em 0;
+  border: 1px solid var(--line-ctl, var(--line-2)); border-inline-start: 2px solid var(--teal);
+  border-radius: 0; border-start-end-radius: var(--r-ctl); border-end-end-radius: var(--r-ctl);
+  background: var(--pane); cursor: text;
+  transition: border-color .12s ease-out;
+}
+#detail .tc-box:has(.tc-text:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
+#detail .tc-text {
+  flex: 1 1 auto; display: block; min-width: 0; width: 100%; max-width: var(--chat-text, none); margin: 0;
+  padding: .3em .25em .3em calc(1em - 2px);
+  border: 0; border-radius: 0; background: transparent; color: var(--ink);
+  font: inherit; font-size: 1em; line-height: 1.5; resize: none; overflow-y: hidden;
+  max-height: calc(5 * 1.5em + .6em);
+}
+#detail .tc-text:dir(rtl) { max-width: none; }   /* Arabic or Hebrew typed in: the words start beside Send, not mid-box */
+#detail .tc-text:focus, #detail .tc-text:focus-visible { outline: none; }
+#detail .tc-text::placeholder { color: var(--ink-3); opacity: 1; }
+#detail .tc.busy .tc-text { color: var(--ink-2); }
+
+/* Send: quiet when there is nothing to send, teal when there is (amber stays the Give button's) */
+#detail .tc-send {
+  flex: none; margin-inline-start: auto; cursor: pointer; min-height: 32px; padding: 0 .95em; border-radius: 4px;
+  font-size: var(--t-s); background: transparent; color: var(--ink-2); border-color: var(--line-2);
+}
+#detail .tc-send[disabled] { opacity: 1; cursor: default; }
+#detail .tc-send.ready { background: var(--teal); border-color: var(--teal); color: var(--pane); }
+#detail .tc.busy .tc-send { opacity: .75; cursor: progress; }
+@media (hover: hover) { #detail .tc-send.ready:not([disabled]):hover { filter: brightness(1.1); } }
+@media (hover: none), (pointer: coarse) { #detail .tc-send { min-height: 40px; } }
+
+/* not sent: the chat spec's error strip */
+#detail .tc.has-err .tc-box { border-color: var(--coral); }
+#detail .tc-err {
+  margin: 0; padding: .4em .75em .45em calc(1em); font-size: .93em; line-height: 1.45; color: var(--ink);
+  border-inline-start: 2px solid var(--coral); background: var(--coral-soft);
+  border-radius: 0; border-start-end-radius: var(--r-ctl); border-end-end-radius: var(--r-ctl);
+}
+#detail .tc-err[hidden], #detail .tc-warn[hidden] { display: none; }
+#detail .tc-warn { font-size: var(--t-s); }
+
+/* escalated cases: "Use the draft" beside Copy in the suggested reply's head */
+#detail .tc-sug-acts { display: inline-flex; flex-wrap: wrap; gap: 8px; }

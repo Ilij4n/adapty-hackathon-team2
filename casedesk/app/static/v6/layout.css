@@ -1,0 +1,26 @@
+/* =====================================================================================================================
+   v6: the transcript's width (agent B). Decision: the strips run the full width of the case column, the words inside
+   keep a reading measure. A strip is a row of the case, like the head above it and the decision card below it, so its
+   rule, its background step and its time share their right edge (the Evidence toggle, the readout's rule, the card's
+   time); a 500-character reply still wraps at about 95 characters a line, at 1440 and at 1920, evidence open or not.
+     --chat-measure   the chat column's width: strips, "What Case Desk did", and the team composer (max-width or width).
+                      100% of the case column, the gutters already out. Set on .transcript, so anything inside reads it.
+     --chat-text      the reading measure for words inside a strip (or a composer's text box): 80ch of their own font,
+                      never wider than the strip.
+   Evidence open at 1440 the column is about 590px, so both values meet and nothing changes from chat.css; phone too.
+   ===================================================================================================================== */
+
+#detail .transcript { --chat-measure: 100%; --chat-text: 80ch; }
+
+/* the strip: the column's full width; the head's time sits at its end */
+#detail .turns > .turn { max-width: var(--chat-measure); }
+/* the words: a reading measure inside the strip */
+#detail .turns > .turn > .txt { max-width: var(--chat-text); }
+#detail .turns > .turn.system > .txt { max-width: none; }   /* an event is one line; its time follows at the end */
+
+/* "What Case Desk did" under the turns: the same column, its sentences at the same measure */
+#detail .did-sec { max-width: var(--chat-measure); }
+#detail .did-sec .did-b { max-width: var(--chat-text); }
+
+/* a case for a person: the note and its suggested reply read at the same measure as the turns */
+#detail .person-note .alerts, #detail .person-note .pn-note, #detail .person-note .sug-text { max-width: var(--chat-text); }

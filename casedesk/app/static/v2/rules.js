@@ -40,7 +40,7 @@
         "at most once per person in 90 days. Anything longer or outside that still waits for your OK.";
     }
     if (r.courtesy_grants === "off") return "Case Desk never offers courtesy premium. Replies don't mention it and nothing waits for you.";
-    return "Case Desk asks you first. Each courtesy extension waits here for your OK, and the user is told it is only requested.";
+    return "Case Desk asks you first. Each courtesy extension waits in the decision dock for your OK, and the user is told it is only requested.";
   }
 
   function toast(text, bad) {

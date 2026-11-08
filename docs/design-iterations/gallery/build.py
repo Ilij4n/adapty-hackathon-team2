@@ -74,7 +74,7 @@ for it in data["iterations"]:
     paras = "".join(f"<p>{esc(p)}</p>" for p in it["why"])
     q = "" if v == "v0" else f"?v={v[1:]}"
     facts = "".join(f"<div><dt>{esc(k)}</dt><dd>{esc(val)}</dd></div>" for k, val in it["facts"])
-    pick = '<p class="pick">Recommended</p>' if it.get("recommended") else ""
+    pick = f'<p class="pick">{esc(it["mark"])}</p>' if it.get("mark") else ""
     sections.append(f'''
 <section class="it" id="{v}" aria-labelledby="{v}-h">
   <header class="it-head">
@@ -99,5 +99,9 @@ page = (HERE / "template.html").read_text()
 page = page.replace("{{NAV}}", nav).replace("{{SECTIONS}}", "\n".join(sections))
 for k, val in data["text"].items():
     page = page.replace("{{" + k + "}}", val)
+# a standalone page (the template is written as an artifact body: title, styles, then content)
+page = ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
+        '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+        + page.replace('<div class="wrap">', '</head>\n<body>\n<div class="wrap">', 1) + "\n</body>\n</html>\n")
 (HERE / "index.html").write_text(page)
 print("wrote", HERE / "index.html", sum(f.stat().st_size for f in IMG.rglob("*.webp")) // 1024, "KB of images")

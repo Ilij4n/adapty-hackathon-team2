@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case Desk Design Iterations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;650&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+/* Layout: a contact sheet on a light table. Quiet neutral ground so the four directions carry the colour;
+   one grease-pencil red marks the pick, the way a reviewer circles a frame. */
+:root {
+  --table: #e9eae6;
+  --sheet: #f7f7f4;
+  --ink: #1c1d1f;
+  --ink-2: #4f5257;
+  --ink-3: #6a6d72;
+  --line: #d2d3ce;
+  --pencil: #b9321c;
+  --code-bg: #e1e2dd;
+  --shadow: 0 1px 1px rgba(28, 29, 31, .06), 0 6px 18px rgba(28, 29, 31, .08);
+  --sans: "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --table: #161719; --sheet: #1f2023; --ink: #ecece8; --ink-2: #b0b2b6; --ink-3: #8d9095; --line: #34363a;
+    --pencil: #ff8a6e; --code-bg: #2a2c30; --shadow: 0 1px 1px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --table: #161719; --sheet: #1f2023; --ink: #ecece8; --ink-2: #b0b2b6; --ink-3: #8d9095; --line: #34363a;
+  --pencil: #ff8a6e; --code-bg: #2a2c30; --shadow: 0 1px 1px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35); color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--table); color: var(--ink); font: 400 16px/1.55 var(--sans); -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1320px; margin: 0 auto; padding-inline: clamp(16px, 4vw, 48px); padding-block: 48px 96px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 650; letter-spacing: -0.015em; }
+p { margin: 0; text-wrap: pretty; }
+code { font-family: var(--mono); font-size: .86em; background: var(--code-bg); padding: .1em .4em; border-radius: 4px; overflow-wrap: anywhere; }
+a { color: inherit; text-underline-offset: 3px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+:focus-visible { outline: 2px solid var(--pencil); outline-offset: 3px; border-radius: 4px; }
+
+/* intro */
+.intro { display: grid; gap: 40px; grid-template-columns: minmax(0, 1fr); margin-bottom: 72px; }
+@media (min-width: 960px) { .intro { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); align-items: start; } }
+.intro h1 { font-size: clamp(2rem, 4.2vw, 3.1rem); line-height: 1.05; max-width: 16ch; }
+.intro .lead { margin-top: 18px; font-size: 1.12rem; color: var(--ink-2); max-width: 58ch; }
+.intro .lead + .lead { margin-top: 12px; }
+.run { background: var(--sheet); border-radius: 10px; padding: 22px 24px; box-shadow: var(--shadow); display: grid; gap: 12px; font-size: .94rem; min-width: 0; }
+.run h2 { font-size: 1rem; }
+.run pre { margin: 0; font-family: var(--mono); font-size: .8rem; line-height: 1.6; background: var(--code-bg); border-radius: 6px; padding: 12px 14px; overflow-x: auto; white-space: pre; }
+.run p { color: var(--ink-2); }
+nav ol { list-style: none; margin: 28px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 22px; }
+nav a { text-decoration: none; font-weight: 500; color: var(--ink-2); }
+nav a:hover { color: var(--ink); text-decoration: underline; }
+nav .nv { font-family: var(--mono); font-size: .8rem; color: var(--ink-3); margin-right: 4px; }
+
+/* comparison */
+.compare { margin-bottom: 80px; }
+.compare h2 { font-size: 1.35rem; margin-bottom: 16px; }
+.table-wrap { overflow-x: auto; background: var(--sheet); border-radius: 10px; box-shadow: var(--shadow); }
+table { border-collapse: collapse; width: 100%; min-width: 860px; font-size: .9rem; }
+th, td { text-align: left; vertical-align: top; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+thead th { font-weight: 650; font-size: .95rem; }
+tbody th { font-weight: 500; color: var(--ink-3); width: 120px; }
+tr:last-child th, tr:last-child td { border-bottom: 0; }
+
+/* one iteration */
+.it { padding-top: 56px; border-top: 1px solid var(--line); margin-top: 56px; }
+.it-head { display: grid; gap: 8px; margin-bottom: 28px; position: relative; }
+.it-url { display: flex; gap: 8px; flex-wrap: wrap; }
+.it h2 { font-size: clamp(1.7rem, 3vw, 2.3rem); line-height: 1.1; }
+.lede { font-size: 1.1rem; color: var(--ink-2); max-width: 62ch; }
+.pick { justify-self: start; color: var(--pencil); font-weight: 650; font-size: .95rem; padding: 2px 12px; border: 2px solid var(--pencil); border-radius: 46% 54% 50% 50% / 60% 45% 55% 40%; transform: rotate(-2deg); }
+.it-body { display: grid; gap: 32px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 1080px) { .it-body { grid-template-columns: 330px minmax(0, 1fr); } }
+.it-text { display: grid; gap: 14px; align-content: start; color: var(--ink-2); font-size: .98rem; }
+.it-text p:first-child { color: var(--ink); }
+.facts { margin: 6px 0 0; display: grid; gap: 10px; }
+.facts div { display: grid; gap: 1px; }
+.facts dt { font-size: .8rem; color: var(--ink-3); }
+.facts dd { margin: 0; color: var(--ink); font-size: .92rem; }
+.palette { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px 12px; }
+.palette li { display: grid; grid-template-columns: 22px 1fr; column-gap: 8px; align-items: center; font-size: .8rem; }
+.sw { width: 22px; height: 22px; border-radius: 5px; box-shadow: inset 0 0 0 1px rgba(127,127,127,.35); grid-row: span 2; }
+.sw-name { color: var(--ink); }
+.palette code { background: none; padding: 0; font-size: .74rem; color: var(--ink-3); }
+
+.it-shots { display: grid; gap: 18px; min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.desk { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 760px) { .desk { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.phones { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); }
+figure { margin: 0; display: grid; gap: 6px; align-content: start; min-width: 0; }
+figcaption { font-size: .8rem; color: var(--ink-3); }
+.zoom { all: unset; cursor: zoom-in; display: block; border-radius: 8px; overflow: hidden; background: var(--sheet); box-shadow: var(--shadow); }
+.zoom:focus-visible { outline: 2px solid var(--pencil); outline-offset: 3px; }
+.zoom img { display: block; width: 100%; height: auto; }
+.shot.wide .zoom { aspect-ratio: 1440 / 900; }
+.shot.wide .zoom img { height: 100%; object-fit: cover; object-position: top; }
+.shot.phone .zoom { border-radius: 14px; aspect-ratio: 390 / 844; }
+.shot.phone .zoom img { height: 100%; object-fit: cover; object-position: top; }
+.more-shots summary { cursor: pointer; font-weight: 500; color: var(--ink-2); }
+.more-shots summary:hover { color: var(--ink); }
+.more-shots[open] summary { margin-bottom: 16px; }
+
+/* viewer */
+dialog { border: 0; padding: 0; background: transparent; max-width: min(1500px, 96vw); max-height: 94vh; }
+dialog::backdrop { background: rgba(10, 10, 12, .82); }
+dialog figure { gap: 10px; }
+dialog img { display: block; max-width: 100%; max-height: 86vh; width: auto; height: auto; margin: 0 auto; border-radius: 8px; }
+dialog figcaption { color: #e9e9e6; text-align: center; font-size: .9rem; }
+dialog .close { position: fixed; top: 14px; right: 18px; font: inherit; color: #e9e9e6; background: rgba(255,255,255,.12); border: 0; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+dialog .scroll { max-height: 86vh; overflow: auto; }
+footer { margin-top: 96px; color: var(--ink-3); font-size: .86rem; max-width: 70ch; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <div class="intro">
+    <div>
+      <h1>Four directions for Case Desk</h1>
+      <p class="lead">Each iteration pairs the developer console with the subscriber help chat as one design system. All four run in the real app on the same data and the same logic; only the markup, styles and view layer differ, and every one passes the end-to-end test.</p>
+      <p class="lead">Orchestrator’s pick for the demo: Board (v4). Ilijan’s favourite: Night Shift (v2), with open questions in docs/design-iterations/HANDOFF-BAGLEY.md. The current design is at the end for comparison.</p>
+      <nav aria-label="Iterations"><ol><li><a href="#v4"><span class="nv">v4</span> Board</a></li><li><a href="#v2"><span class="nv">v2</span> Night Shift</a></li><li><a href="#v1"><span class="nv">v1</span> Statement</a></li><li><a href="#v3"><span class="nv">v3</span> Correspondence</a></li><li><a href="#v0"><span class="nv">now</span> Current design</a></li></ol></nav>
+    </div>
+    <aside class="run" aria-labelledby="run-h">
+      <h2 id="run-h">Run them</h2>
+      <pre>git checkout experimental/design-iterations
+CASEDESK_DB=/tmp/cd-design.db \
+  uv run python -m casedesk.demo --port 8300 --fresh --seed
+
+localhost:8300/console?v=1   (to v=4)
+localhost:8300/help?v=1      (to v=4)
+localhost:8300/console       current design</pre>
+      <p>To ship one, start the demo with CASEDESK_DESIGN=N: /console and /help then serve that iteration, and ?v=0 still shows the current design. This branch is experimental and not merged into main.</p>
+    </aside>
+  </div>
+
+  <section class="compare" aria-labelledby="cmp-h">
+    <h2 id="cmp-h">How the four differ</h2>
+    <div class="table-wrap"><table><thead><tr><th scope="col"><span class="sr-only">Aspect</span></th><th scope="col">Statement (v1)</th><th scope="col">Night Shift (v2)</th><th scope="col">Correspondence (v3)</th><th scope="col">Board (v4)</th></tr></thead><tbody><tr><th scope="row">Stance</th><td>The account as a statement, on one time spine</td><td>The deck's control room, after dark</td><td>A calm mail client for a humane inbox</td><td>A Swiss triage board</td></tr><tr><th scope="row">Console layout</th><td>Grant slips and index on the left; the case as one full-width sheet with the spine beside the conversation</td><td>Cases, the case, the evidence column; full height</td><td>Folder rail, index, wide reading pane</td><td>Four lanes across the top; the case as a full-width spread below</td></tr><tr><th scope="row">Approvals</th><td>Tear-off slips, stamped on approve</td><td>A decision dock along the bottom</td><td>“Needs your OK” pinned atop the index</td><td>The first lane</td></tr><tr><th scope="row">Technical record</th><td>Folded; claims beside the FactSheet rows</td><td>Always visible as the evidence column</td><td>Unfolds in place</td><td>Folded below the spread</td></tr><tr><th scope="row">Type</th><td>Source Serif 4 and Source Sans 3</td><td>IBM Plex Sans and Plex Mono</td><td>Commissioner</td><td>Geologica and Ubuntu Sans Mono</td></tr><tr><th scope="row">Colour</th><td>Cool paper, Prussian blue, stamp green</td><td>Deck navy; amber, teal, coral</td><td>Eucalyptus, deep green, marigold</td><td>White, true black, Lumen coral and blue</td></tr><tr><th scope="row">Density</th><td>Medium</td><td>Highest</td><td>Lowest</td><td>Compact board, roomy spread</td></tr><tr><th scope="row">Motion</th><td>The stamp; the spine draws in once</td><td>Changed values flash; the dock rises</td><td>Sections unfold</td><td>A ticket travels to its new lane</td></tr><tr><th scope="row">Help chat</th><td>A printed receipt, serif replies</td><td>Lumen at night, status band</td><td>Status folded into a sentence, 17px text</td><td>The state as a headline, a grant tracker</td></tr></tbody></table></div>
+  </section>
+
+  
+<section class="it" id="v4" aria-labelledby="v4-h">
+  <header class="it-head">
+    <p class="it-url"><code>/console?v=4</code> <code>/help?v=4</code></p>
+    <h2 id="v4-h">Board</h2>
+    <p class="pick">Orchestrator’s pick</p>
+    <p class="lede">Triage first. No sidebar: the top of the screen is a board of lanes sorted by what each case needs, and the selected case opens as a full-width spread below it.</p>
+  </header>
+  <div class="it-body">
+    <div class="it-text"><p>A judge reads it in one look: 1 needs your OK, 2 need a person, 1 privacy, 14 answered. The approve button is the first thing in the first lane; on approve, Ava&#x27;s ticket travels to Answered and the numerals tick. The spread sets the status sentence at 40px beside the conversation, with the checked verdict and what Case Desk did above the fold.</p><p>Swiss and typographic: Geologica on white, true black for headlines, Lumen&#x27;s own coral as the only signal for “needs you” and Lumen&#x27;s blue for the subscriber&#x27;s voice. It holds up on a projector and is the furthest from generic SaaS.</p><p>Help leads with the account state as a headline, shows the facts as large figures, and draws a grant request as a three-step tracker (Requested, The team reviews, Given) that completes when the team approves.</p><dl class="facts"><div><dt>Console</dt><dd>Four lanes across the top, the case as a full-width spread</dd></div><div><dt>Type</dt><dd>Geologica, Ubuntu Sans Mono for ids only</dd></div><div><dt>Motion</dt><dd>A ticket travels to its new lane; numerals tick</dd></div></dl><ul class="palette" aria-label="Core colours"><li><span class="sw" style="background:#FFFFFF"></span><span class="sw-name">Paper</span><code>#FFFFFF</code></li><li><span class="sw" style="background:#F3F3F1"></span><span class="sw-name">Ground</span><code>#F3F3F1</code></li><li><span class="sw" style="background:#000000"></span><span class="sw-name">Black</span><code>#000000</code></li><li><span class="sw" style="background:#E8472B"></span><span class="sw-name">Coral</span><code>#E8472B</code></li><li><span class="sw" style="background:#2747D9"></span><span class="sw-name">Blue</span><code>#2747D9</code></li><li><span class="sw" style="background:#1C7A47"></span><span class="sw-name">Green</span><code>#1C7A47</code></li></ul></div>
+    <div class="it-shots">
+      <div class="desk"><figure class="shot wide"><button class="zoom" type="button" data-src="img/v4/console-ava-1440-light.webp" data-cap="Console, Ava&#x27;s grant waiting for an OK" aria-label="Enlarge: Console, Ava&#x27;s grant waiting for an OK"><img src="img/v4/console-ava-1440-light.webp" width="1440" height="900" alt="Console, Ava&#x27;s grant waiting for an OK" loading="lazy" decoding="async"></button><figcaption>Console, Ava&#x27;s grant waiting for an OK</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v4/console-ava-1440-dark.webp" data-cap="Same, dark" aria-label="Enlarge: Same, dark"><img src="img/v4/console-ava-1440-dark.webp" width="1440" height="900" alt="Same, dark" loading="lazy" decoding="async"></button><figcaption>Same, dark</figcaption></figure></div>
+      <div class="phones"><figure class="shot phone"><button class="zoom" type="button" data-src="img/v4/console-list-390-light.webp" data-cap="Console on a phone" aria-label="Enlarge: Console on a phone"><img src="img/v4/console-list-390-light.webp" width="780" height="1688" alt="Console on a phone" loading="lazy" decoding="async"></button><figcaption>Console on a phone</figcaption></figure><figure class="shot phone"><button class="zoom" type="button" data-src="img/v4/console-ava-390-dark.webp" data-cap="A case, dark" aria-label="Enlarge: A case, dark"><img src="img/v4/console-ava-390-dark.webp" width="780" height="1688" alt="A case, dark" loading="lazy" decoding="async"></button><figcaption>A case, dark</figcaption></figure><figure class="shot phone"><button class="zoom" type="button" data-src="img/v4/help-reply-ava-390-light.webp" data-cap="Help: Ava asks for premium" aria-label="Enlarge: Help: Ava asks for premium"><img src="img/v4/help-reply-ava-390-light.webp" width="780" height="1688" alt="Help: Ava asks for premium" loading="lazy" decoding="async"></button><figcaption>Help: Ava asks for premium</figcaption></figure><figure class="shot phone"><button class="zoom" type="button" data-src="img/v4/help-reply-ava-390-dark.webp" data-cap="Same, dark" aria-label="Enlarge: Same, dark"><img src="img/v4/help-reply-ava-390-dark.webp" width="780" height="1688" alt="Same, dark" loading="lazy" decoding="async"></button><figcaption>Same, dark</figcaption></figure><figure class="shot phone"><button class="zoom" type="button" data-src="img/v4/help-ava-granted-390-light.webp" data-cap="After the team approves" aria-label="Enlarge: After the team approves"><img src="img/v4/help-ava-granted-390-light.webp" width="780" height="1688" alt="After the team approves" loading="lazy" decoding="async"></button><figcaption>After the team approves</figcaption></figure></div>
+      <details class="more-shots"><summary>6 more screens: escalation, Cyrillic, approval, technical record, help on a laptop</summary><div class="desk"><figure class="shot wide"><button class="zoom" type="button" data-src="img/v4/console-dylan-1440-light.webp" data-cap="An injection attempt, escalated to a person" aria-label="Enlarge: An injection attempt, escalated to a person"><img src="img/v4/console-dylan-1440-light.webp" width="1440" height="900" alt="An injection attempt, escalated to a person" loading="lazy" decoding="async"></button><figcaption>An injection attempt, escalated to a person</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v4/console-nikola-1440-dark.webp" data-cap="A Serbian Cyrillic case, dark" aria-label="Enlarge: A Serbian Cyrillic case, dark"><img src="img/v4/console-nikola-1440-dark.webp" width="1440" height="900" alt="A Serbian Cyrillic case, dark" loading="lazy" decoding="async"></button><figcaption>A Serbian Cyrillic case, dark</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v4/console-approved-1440-light.webp" data-cap="After one click on approve" aria-label="Enlarge: After one click on approve"><img src="img/v4/console-approved-1440-light.webp" width="1440" height="900" alt="After one click on approve" loading="lazy" decoding="async"></button><figcaption>After one click on approve</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v4/console-dylan-details-1440-light.webp" data-cap="The technical record, open (full page)" aria-label="Enlarge: The technical record, open (full page)"><img src="img/v4/console-dylan-details-1440-light.webp" width="1440" height="1851" alt="The technical record, open (full page)" loading="lazy" decoding="async"></button><figcaption>The technical record, open (full page)</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v4/help-reply-marko-1440-light.webp" data-cap="Help on a laptop: Marko writes in Serbian" aria-label="Enlarge: Help on a laptop: Marko writes in Serbian"><img src="img/v4/help-reply-marko-1440-light.webp" width="1440" height="900" alt="Help on a laptop: Marko writes in Serbian" loading="lazy" decoding="async"></button><figcaption>Help on a laptop: Marko writes in Serbian</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v4/help-reply-marko-1440-dark.webp" data-cap="Same, dark" aria-label="Enlarge: Same, dark"><img src="img/v4/help-reply-marko-1440-dark.webp" width="1440" height="900" alt="Same, dark" loading="lazy" decoding="async"></button><figcaption>Same, dark</figcaption></figure></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="it" id="v2" aria-labelledby="v2-h">
+  <header class="it-head">
+    <p class="it-url"><code>/console?v=2</code> <code>/help?v=2</code></p>
+    <h2 id="v2-h">Night Shift</h2>
+    <p class="pick">Ilijan’s favourite</p>
+    <p class="lede">The pitch deck&#x27;s control room after dark. A dense three-pane instrument in the deck&#x27;s navy, with its colour grammar: amber needs you, teal is checked, coral is blocked.</p>
+  </header>
+  <div class="it-body">
+    <div class="it-text"><p>It is the direction where the facts, the actions policy chose and the reply the checker passed sit on one screen, which is exactly the sentence the demo script says. Every pending grant lives in a decision dock along the bottom; its amber button is the brightest thing on screen, and the dock is gone when nothing waits.</p><p>It flows straight out of the slides: the same navy, IBM Plex and colour meanings, so the jump from deck to live demo feels like one product. Day shift (light) is designed too, for a bright room.</p><p>Help is Lumen at night: a compact status band, replies on an amber rule, the phone over a still from the deck. j and k move through cases in the console.</p><dl class="facts"><div><dt>Console</dt><dd>Cases, the case, an always-open evidence column; a decision dock</dd></div><div><dt>Type</dt><dd>IBM Plex Sans, Plex Mono for literal values</dd></div><div><dt>Motion</dt><dd>Changed values flash once; the dock rises</dd></div></dl><ul class="palette" aria-label="Core colours"><li><span class="sw" style="background:#070B14"></span><span class="sw-name">Night</span><code>#070B14</code></li><li><span class="sw" style="background:#0B1324"></span><span class="sw-name">Navy</span><code>#0B1324</code></li><li><span class="sw" style="background:#101A30"></span><span class="sw-name">Raised</span><code>#101A30</code></li><li><span class="sw" style="background:#FFA84C"></span><span class="sw-name">Amber</span><code>#FFA84C</code></li><li><span class="sw" style="background:#3FD0C0"></span><span class="sw-name">Teal</span><code>#3FD0C0</code></li><li><span class="sw" style="background:#FF7A6B"></span><span class="sw-name">Coral</span><code>#FF7A6B</code></li></ul></div>
+    <div class="it-shots">
+      <div class="desk"><figure class="shot wide"><button class="zoom" type="button" data-src="img/v2/console-ava-1440-light.webp" data-cap="Console, Ava&#x27;s grant waiting for an OK" aria-label="Enlarge: Console, Ava&#x27;s grant waiting for an OK"><img src="img/v2/console-ava-1440-light.webp" width="1440" height="900" alt="Console, Ava&#x27;s grant waiting for an OK" loading="lazy" decoding="async"></button><figcaption>Console, Ava&#x27;s grant waiting for an OK</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v2/console-ava-1440-dark.webp" data-cap="Same, dark" aria-label="Enlarge: Same, dark"><img src="img/v2/console-ava-1440-dark.webp" width="1440" height="900" alt="Same, dark" loading="lazy" decoding="async"></button><figcaption>Same, dark</figcaption></figure></div>
+      <div class="phones"><figure class="shot phone"><button class="zoom" type="button" data-src="img/v2/console-list-390-light.webp" data-cap="Console on a phone" aria-label="Enlarge: Console on a phone"><img src="img/v2/console-list-390-light.webp" width="780" height="1688" alt="Console on a phone" loading="lazy" decoding="async"></button><figcaption>Console on a phone</figcaption></figure><figure class="shot phone"><button class="zoom" type="button" data-src="img/v2/console-ava-390-dark.webp" data-cap="A case, dark" aria-label="Enlarge: A case, dark"><img src="img/v2/console-ava-390-dark.webp" width="780" height="1688" alt="A case, dark" loading="lazy" decoding="async"></button><figcaption>A case, dark</figcaption></figure><figure class="shot phone"><button class="zoom" type="button" data-src="img/v2/help-reply-ava-390-light.webp" data-cap="Help: Ava asks for premium" aria-label="Enlarge: Help: Ava asks for premium"><img src="img/v2/help-reply-ava-390-light.webp" width="780" height="1688" alt="Help: Ava asks for premium" loading="lazy" decoding="async"></button><figcaption>Help: Ava asks for premium</figcaption></figure><figure class="shot phone"><button class="zoom" type="button" data-src="img/v2/help-reply-ava-390-dark.webp" data-cap="Same, dark" aria-label="Enlarge: Same, dark"><img src="img/v2/help-reply-ava-390-dark.webp" width="780" height="1688" alt="Same, dark" loading="lazy" decoding="async"></button><figcaption>Same, dark</figcaption></figure><figure class="shot phone"><button class="zoom" type="button" data-src="img/v2/help-ava-granted-390-light.webp" data-cap="After the team approves" aria-label="Enlarge: After the team approves"><img src="img/v2/help-ava-granted-390-light.webp" width="780" height="1688" alt="After the team approves" loading="lazy" decoding="async"></button><figcaption>After the team approves</figcaption></figure></div>
+      <details class="more-shots"><summary>6 more screens: escalation, Cyrillic, approval, technical record, help on a laptop</summary><div class="desk"><figure class="shot wide"><button class="zoom" type="button" data-src="img/v2/console-dylan-1440-light.webp" data-cap="An injection attempt, escalated to a person" aria-label="Enlarge: An injection attempt, escalated to a person"><img src="img/v2/console-dylan-1440-light.webp" width="1440" height="900" alt="An injection attempt, escalated to a person" loading="lazy" decoding="async"></button><figcaption>An injection attempt, escalated to a person</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v2/console-nikola-1440-dark.webp" data-cap="A Serbian Cyrillic case, dark" aria-label="Enlarge: A Serbian Cyrillic case, dark"><img src="img/v2/console-nikola-1440-dark.webp" width="1440" height="900" alt="A Serbian Cyrillic case, dark" loading="lazy" decoding="async"></button><figcaption>A Serbian Cyrillic case, dark</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v2/console-approved-1440-light.webp" data-cap="After one click on approve" aria-label="Enlarge: After one click on approve"><img src="img/v2/console-approved-1440-light.webp" width="1440" height="900" alt="After one click on approve" loading="lazy" decoding="async"></button><figcaption>After one click on approve</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v2/console-dylan-details-1440-light.webp" data-cap="The technical record, open (full page)" aria-label="Enlarge: The technical record, open (full page)"><img src="img/v2/console-dylan-details-1440-light.webp" width="1440" height="900" alt="The technical record, open (full page)" loading="lazy" decoding="async"></button><figcaption>The technical record, open (full page)</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v2/help-reply-marko-1440-light.webp" data-cap="Help on a laptop: Marko writes in Serbian" aria-label="Enlarge: Help on a laptop: Marko writes in Serbian"><img src="img/v2/help-reply-marko-1440-light.webp" width="1440" height="900" alt="Help on a laptop: Marko writes in Serbian" loading="lazy" decoding="async"></button><figcaption>Help on a laptop: Marko writes in Serbian</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v2/help-reply-marko-1440-dark.webp" data-cap="Same, dark" aria-label="Enlarge: Same, dark"><img src="img/v2/help-reply-marko-1440-dark.webp" width="1440" height="900" alt="Same, dark" loading="lazy" decoding="async"></button><figcaption>Same, dark</figcaption></figure></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="it" id="v1" aria-labelledby="v1-h">
+  <header class="it-head">
+    <p class="it-url"><code>/console?v=1</code> <code>/help?v=1</code></p>
+    <h2 id="v1-h">Statement</h2>
+    
+    <p class="lede">The account as a statement. Every case reads on one dated spine: what the store did, when the user wrote, what Case Desk did, what waits for you.</p>
+  </header>
+  <div class="it-body">
+    <div class="it-text"><p>It regroups the case by time instead of by panel, which is how a developer reasons about a billing complaint: bought 12 Oct, charged 15 Oct, renewal failed 22 Oct, Ava wrote 8 Nov. The status sentence, set large in Source Serif 4, is the one bold thing on the page.</p><p>It shows the pitch&#x27;s central claim as layout: the spine&#x27;s facts come from Adapty, the conversation sits beside them, and the user&#x27;s claims sit on the FactSheet rows that confirm or contradict them. Approving stamps the grant slip, which then folds away.</p><p>Help is a printed receipt: plan, raw price and key dates on a mini spine, Case Desk&#x27;s replies as serif text on paper, and the grant as a slip that receives a dated stamp.</p><dl class="facts"><div><dt>Console</dt><dd>Slips and index on the left, the case as one full-width sheet</dd></div><div><dt>Type</dt><dd>Source Serif 4, Source Sans 3</dd></div><div><dt>Motion</dt><dd>The Approved stamp; the spine draws in once</dd></div></dl><ul class="palette" aria-label="Core colours"><li><span class="sw" style="background:#F5F6F4"></span><span class="sw-name">Paper</span><code>#F5F6F4</code></li><li><span class="sw" style="background:#FFFFFF"></span><span class="sw-name">Sheet</span><code>#FFFFFF</code></li><li><span class="sw" style="background:#1B2430"></span><span class="sw-name">Ink</span><code>#1B2430</code></li><li><span class="sw" style="background:#1D3E66"></span><span class="sw-name">Prussian</span><code>#1D3E66</code></li><li><span class="sw" style="background:#2D6B4A"></span><span class="sw-name">Stamp</span><code>#2D6B4A</code></li><li><span class="sw" style="background:#875700"></span><span class="sw-name">Ochre</span><code>#875700</code></li></ul></div>
+    <div class="it-shots">
+      <div class="desk"><figure class="shot wide"><button class="zoom" type="button" data-src="img/v1/console-ava-1440-light.webp" data-cap="Console, Ava&#x27;s grant waiting for an OK" aria-label="Enlarge: Console, Ava&#x27;s grant waiting for an OK"><img src="img/v1/console-ava-1440-light.webp" width="1440" height="900" alt="Console, Ava&#x27;s grant waiting for an OK" loading="lazy" decoding="async"></button><figcaption>Console, Ava&#x27;s grant waiting for an OK</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v1/console-ava-1440-dark.webp" data-cap="Same, dark" aria-label="Enlarge: Same, dark"><img src="img/v1/console-ava-1440-dark.webp" width="1440" height="900" alt="Same, dark" loading="lazy" decoding="async"></button><figcaption>Same, dark</figcaption></figure></div>
+      <div class="phones"><figure class="shot phone"><button class="zoom" type="button" data-src="img/v1/console-list-390-light.webp" data-cap="Console on a phone" aria-label="Enlarge: Console on a phone"><img src="img/v1/console-list-390-light.webp" width="780" height="1688" alt="Console on a phone" loading="lazy" decoding="async"></button><figcaption>Console on a phone</figcaption></figure><figure class="shot phone"><button class="zoom" type="button" data-src="img/v1/console-ava-390-dark.webp" data-cap="A case, dark" aria-label="Enlarge: A case, dark"><img src="img/v1/console-ava-390-dark.webp" width="780" height="1688" alt="A case, dark" loading="lazy" decoding="async"></button><figcaption>A case, dark</figcaption></figure><figure class="shot phone"><button class="zoom" type="button" data-src="img/v1/help-reply-ava-390-light.webp" data-cap="Help: Ava asks for premium" aria-label="Enlarge: Help: Ava asks for premium"><img src="img/v1/help-reply-ava-390-light.webp" width="780" height="1688" alt="Help: Ava asks for premium" loading="lazy" decoding="async"></button><figcaption>Help: Ava asks for premium</figcaption></figure><figure class="shot phone"><button class="zoom" type="button" data-src="img/v1/help-reply-ava-390-dark.webp" data-cap="Same, dark" aria-label="Enlarge: Same, dark"><img src="img/v1/help-reply-ava-390-dark.webp" width="780" height="1688" alt="Same, dark" loading="lazy" decoding="async"></button><figcaption>Same, dark</figcaption></figure><figure class="shot phone"><button class="zoom" type="button" data-src="img/v1/help-ava-granted-390-light.webp" data-cap="After the team approves" aria-label="Enlarge: After the team approves"><img src="img/v1/help-ava-granted-390-light.webp" width="780" height="1688" alt="After the team approves" loading="lazy" decoding="async"></button><figcaption>After the team approves</figcaption></figure></div>
+      <details class="more-shots"><summary>6 more screens: escalation, Cyrillic, approval, technical record, help on a laptop</summary><div class="desk"><figure class="shot wide"><button class="zoom" type="button" data-src="img/v1/console-dylan-1440-light.webp" data-cap="An injection attempt, escalated to a person" aria-label="Enlarge: An injection attempt, escalated to a person"><img src="img/v1/console-dylan-1440-light.webp" width="1440" height="900" alt="An injection attempt, escalated to a person" loading="lazy" decoding="async"></button><figcaption>An injection attempt, escalated to a person</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v1/console-nikola-1440-dark.webp" data-cap="A Serbian Cyrillic case, dark" aria-label="Enlarge: A Serbian Cyrillic case, dark"><img src="img/v1/console-nikola-1440-dark.webp" width="1440" height="900" alt="A Serbian Cyrillic case, dark" loading="lazy" decoding="async"></button><figcaption>A Serbian Cyrillic case, dark</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v1/console-approved-1440-light.webp" data-cap="After one click on approve" aria-label="Enlarge: After one click on approve"><img src="img/v1/console-approved-1440-light.webp" width="1440" height="900" alt="After one click on approve" loading="lazy" decoding="async"></button><figcaption>After one click on approve</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v1/console-dylan-details-1440-light.webp" data-cap="The technical record, open (full page)" aria-label="Enlarge: The technical record, open (full page)"><img src="img/v1/console-dylan-details-1440-light.webp" width="1440" height="2118" alt="The technical record, open (full page)" loading="lazy" decoding="async"></button><figcaption>The technical record, open (full page)</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v1/help-reply-marko-1440-light.webp" data-cap="Help on a laptop: Marko writes in Serbian" aria-label="Enlarge: Help on a laptop: Marko writes in Serbian"><img src="img/v1/help-reply-marko-1440-light.webp" width="1440" height="900" alt="Help on a laptop: Marko writes in Serbian" loading="lazy" decoding="async"></button><figcaption>Help on a laptop: Marko writes in Serbian</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v1/help-reply-marko-1440-dark.webp" data-cap="Same, dark" aria-label="Enlarge: Same, dark"><img src="img/v1/help-reply-marko-1440-dark.webp" width="1440" height="900" alt="Same, dark" loading="lazy" decoding="async"></button><figcaption>Same, dark</figcaption></figure></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="it" id="v3" aria-labelledby="v3-h">
+  <header class="it-head">
+    <p class="it-url"><code>/console?v=3</code> <code>/help?v=3</code></p>
+    <h2 id="v3-h">Correspondence</h2>
+    
+    <p class="lede">Support as correspondence. A calm mail client in the lineage of Things and Front: big humane type, a lot of air, each case read like a letter.</p>
+  </header>
+  <div class="it-body">
+    <div class="it-text"><p>The most legible of the four and the friendliest for a developer who is not deep in billing: a folder rail with the four filters, an index with “Needs your OK” pinned on top, and a wide reading pane. Details unfold in place only when asked.</p><p>Each letter opens with the correspondent&#x27;s name in Commissioner&#x27;s flared display weight, the one memorable element, then a plain sentence: writes in Serbian, bought on the App Store on 22 Sept for 36.99 EUR. Once a grant is approved, the outcome appears right under the status.</p><p>Help is the gentlest: the status folded into one sentence under the header that unfolds to every fact, 17px text, and suggestions that wrap instead of scrolling.</p><dl class="facts"><div><dt>Console</dt><dd>Folder rail, index, wide reading pane</dd></div><div><dt>Type</dt><dd>Commissioner, one family</dd></div><div><dt>Motion</dt><dd>Sections unfold in place, nothing else moves</dd></div></dl><ul class="palette" aria-label="Core colours"><li><span class="sw" style="background:#EEF2EE"></span><span class="sw-name">Eucalyptus</span><code>#EEF2EE</code></li><li><span class="sw" style="background:#FBFCFA"></span><span class="sw-name">Sheet</span><code>#FBFCFA</code></li><li><span class="sw" style="background:#1E2A24"></span><span class="sw-name">Ink</span><code>#1E2A24</code></li><li><span class="sw" style="background:#2C6A4F"></span><span class="sw-name">Green</span><code>#2C6A4F</code></li><li><span class="sw" style="background:#8A5A00"></span><span class="sw-name">Marigold</span><code>#8A5A00</code></li><li><span class="sw" style="background:#2A6276"></span><span class="sw-name">Blue gum</span><code>#2A6276</code></li></ul></div>
+    <div class="it-shots">
+      <div class="desk"><figure class="shot wide"><button class="zoom" type="button" data-src="img/v3/console-ava-1440-light.webp" data-cap="Console, Ava&#x27;s grant waiting for an OK" aria-label="Enlarge: Console, Ava&#x27;s grant waiting for an OK"><img src="img/v3/console-ava-1440-light.webp" width="1440" height="900" alt="Console, Ava&#x27;s grant waiting for an OK" loading="lazy" decoding="async"></button><figcaption>Console, Ava&#x27;s grant waiting for an OK</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v3/console-ava-1440-dark.webp" data-cap="Same, dark" aria-label="Enlarge: Same, dark"><img src="img/v3/console-ava-1440-dark.webp" width="1440" height="900" alt="Same, dark" loading="lazy" decoding="async"></button><figcaption>Same, dark</figcaption></figure></div>
+      <div class="phones"><figure class="shot phone"><button class="zoom" type="button" data-src="img/v3/console-list-390-light.webp" data-cap="Console on a phone" aria-label="Enlarge: Console on a phone"><img src="img/v3/console-list-390-light.webp" width="780" height="1688" alt="Console on a phone" loading="lazy" decoding="async"></button><figcaption>Console on a phone</figcaption></figure><figure class="shot phone"><button class="zoom" type="button" data-src="img/v3/console-ava-390-dark.webp" data-cap="A case, dark" aria-label="Enlarge: A case, dark"><img src="img/v3/console-ava-390-dark.webp" width="780" height="1688" alt="A case, dark" loading="lazy" decoding="async"></button><figcaption>A case, dark</figcaption></figure><figure class="shot phone"><button class="zoom" type="button" data-src="img/v3/help-reply-ava-390-light.webp" data-cap="Help: Ava asks for premium" aria-label="Enlarge: Help: Ava asks for premium"><img src="img/v3/help-reply-ava-390-light.webp" width="780" height="1688" alt="Help: Ava asks for premium" loading="lazy" decoding="async"></button><figcaption>Help: Ava asks for premium</figcaption></figure><figure class="shot phone"><button class="zoom" type="button" data-src="img/v3/help-reply-ava-390-dark.webp" data-cap="Same, dark" aria-label="Enlarge: Same, dark"><img src="img/v3/help-reply-ava-390-dark.webp" width="780" height="1688" alt="Same, dark" loading="lazy" decoding="async"></button><figcaption>Same, dark</figcaption></figure><figure class="shot phone"><button class="zoom" type="button" data-src="img/v3/help-ava-granted-390-light.webp" data-cap="After the team approves" aria-label="Enlarge: After the team approves"><img src="img/v3/help-ava-granted-390-light.webp" width="780" height="1688" alt="After the team approves" loading="lazy" decoding="async"></button><figcaption>After the team approves</figcaption></figure></div>
+      <details class="more-shots"><summary>6 more screens: escalation, Cyrillic, approval, technical record, help on a laptop</summary><div class="desk"><figure class="shot wide"><button class="zoom" type="button" data-src="img/v3/console-dylan-1440-light.webp" data-cap="An injection attempt, escalated to a person" aria-label="Enlarge: An injection attempt, escalated to a person"><img src="img/v3/console-dylan-1440-light.webp" width="1440" height="900" alt="An injection attempt, escalated to a person" loading="lazy" decoding="async"></button><figcaption>An injection attempt, escalated to a person</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v3/console-nikola-1440-dark.webp" data-cap="A Serbian Cyrillic case, dark" aria-label="Enlarge: A Serbian Cyrillic case, dark"><img src="img/v3/console-nikola-1440-dark.webp" width="1440" height="900" alt="A Serbian Cyrillic case, dark" loading="lazy" decoding="async"></button><figcaption>A Serbian Cyrillic case, dark</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v3/console-approved-1440-light.webp" data-cap="After one click on approve" aria-label="Enlarge: After one click on approve"><img src="img/v3/console-approved-1440-light.webp" width="1440" height="900" alt="After one click on approve" loading="lazy" decoding="async"></button><figcaption>After one click on approve</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v3/console-dylan-details-1440-light.webp" data-cap="The technical record, open (full page)" aria-label="Enlarge: The technical record, open (full page)"><img src="img/v3/console-dylan-details-1440-light.webp" width="1440" height="2600" alt="The technical record, open (full page)" loading="lazy" decoding="async"></button><figcaption>The technical record, open (full page)</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v3/help-reply-marko-1440-light.webp" data-cap="Help on a laptop: Marko writes in Serbian" aria-label="Enlarge: Help on a laptop: Marko writes in Serbian"><img src="img/v3/help-reply-marko-1440-light.webp" width="1440" height="900" alt="Help on a laptop: Marko writes in Serbian" loading="lazy" decoding="async"></button><figcaption>Help on a laptop: Marko writes in Serbian</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v3/help-reply-marko-1440-dark.webp" data-cap="Same, dark" aria-label="Enlarge: Same, dark"><img src="img/v3/help-reply-marko-1440-dark.webp" width="1440" height="900" alt="Same, dark" loading="lazy" decoding="async"></button><figcaption>Same, dark</figcaption></figure></div></details>
+    </div>
+  </div>
+</section>
+
+<section class="it" id="v0" aria-labelledby="v0-h">
+  <header class="it-head">
+    <p class="it-url"><code>/console</code> <code>/help</code></p>
+    <h2 id="v0-h">Current design</h2>
+    
+    <p class="lede">What the app ships today, kept unchanged as the reference.</p>
+  </header>
+  <div class="it-body">
+    <div class="it-text"><p>Queue and cases on the left, one case card capped at 760px on the right, the technical record in a “Details (for the curious)” disclosure. Bricolage Grotesque, Onest and JetBrains Mono.</p><dl class="facts"><div><dt>Console</dt><dd>Queue and cases left, one card capped at 760px</dd></div><div><dt>Type</dt><dd>Bricolage Grotesque, Onest, JetBrains Mono</dd></div></dl></div>
+    <div class="it-shots">
+      <div class="desk"><figure class="shot wide"><button class="zoom" type="button" data-src="img/v0/console-ava-1440-light.webp" data-cap="Console, Ava&#x27;s grant waiting for an OK" aria-label="Enlarge: Console, Ava&#x27;s grant waiting for an OK"><img src="img/v0/console-ava-1440-light.webp" width="1440" height="900" alt="Console, Ava&#x27;s grant waiting for an OK" loading="lazy" decoding="async"></button><figcaption>Console, Ava&#x27;s grant waiting for an OK</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v0/console-ava-1440-dark.webp" data-cap="Same, dark" aria-label="Enlarge: Same, dark"><img src="img/v0/console-ava-1440-dark.webp" width="1440" height="900" alt="Same, dark" loading="lazy" decoding="async"></button><figcaption>Same, dark</figcaption></figure></div>
+      <div class="phones"><figure class="shot phone"><button class="zoom" type="button" data-src="img/v0/console-list-390-light.webp" data-cap="Console on a phone" aria-label="Enlarge: Console on a phone"><img src="img/v0/console-list-390-light.webp" width="780" height="1688" alt="Console on a phone" loading="lazy" decoding="async"></button><figcaption>Console on a phone</figcaption></figure><figure class="shot phone"><button class="zoom" type="button" data-src="img/v0/console-ava-390-dark.webp" data-cap="A case, dark" aria-label="Enlarge: A case, dark"><img src="img/v0/console-ava-390-dark.webp" width="780" height="1688" alt="A case, dark" loading="lazy" decoding="async"></button><figcaption>A case, dark</figcaption></figure><figure class="shot phone"><button class="zoom" type="button" data-src="img/v0/help-reply-ava-390-light.webp" data-cap="Help: Ava asks for premium" aria-label="Enlarge: Help: Ava asks for premium"><img src="img/v0/help-reply-ava-390-light.webp" width="780" height="1688" alt="Help: Ava asks for premium" loading="lazy" decoding="async"></button><figcaption>Help: Ava asks for premium</figcaption></figure><figure class="shot phone"><button class="zoom" type="button" data-src="img/v0/help-reply-ava-390-dark.webp" data-cap="Same, dark" aria-label="Enlarge: Same, dark"><img src="img/v0/help-reply-ava-390-dark.webp" width="780" height="1688" alt="Same, dark" loading="lazy" decoding="async"></button><figcaption>Same, dark</figcaption></figure><figure class="shot phone"><button class="zoom" type="button" data-src="img/v0/help-ava-granted-390-light.webp" data-cap="After the team approves" aria-label="Enlarge: After the team approves"><img src="img/v0/help-ava-granted-390-light.webp" width="780" height="1688" alt="After the team approves" loading="lazy" decoding="async"></button><figcaption>After the team approves</figcaption></figure></div>
+      <details class="more-shots"><summary>6 more screens: escalation, Cyrillic, approval, technical record, help on a laptop</summary><div class="desk"><figure class="shot wide"><button class="zoom" type="button" data-src="img/v0/console-dylan-1440-light.webp" data-cap="An injection attempt, escalated to a person" aria-label="Enlarge: An injection attempt, escalated to a person"><img src="img/v0/console-dylan-1440-light.webp" width="1440" height="900" alt="An injection attempt, escalated to a person" loading="lazy" decoding="async"></button><figcaption>An injection attempt, escalated to a person</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v0/console-nikola-1440-dark.webp" data-cap="A Serbian Cyrillic case, dark" aria-label="Enlarge: A Serbian Cyrillic case, dark"><img src="img/v0/console-nikola-1440-dark.webp" width="1440" height="900" alt="A Serbian Cyrillic case, dark" loading="lazy" decoding="async"></button><figcaption>A Serbian Cyrillic case, dark</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v0/console-approved-1440-light.webp" data-cap="After one click on approve" aria-label="Enlarge: After one click on approve"><img src="img/v0/console-approved-1440-light.webp" width="1440" height="900" alt="After one click on approve" loading="lazy" decoding="async"></button><figcaption>After one click on approve</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v0/console-dylan-details-1440-light.webp" data-cap="The technical record, open (full page)" aria-label="Enlarge: The technical record, open (full page)"><img src="img/v0/console-dylan-details-1440-light.webp" width="1440" height="2110" alt="The technical record, open (full page)" loading="lazy" decoding="async"></button><figcaption>The technical record, open (full page)</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v0/help-reply-marko-1440-light.webp" data-cap="Help on a laptop: Marko writes in Serbian" aria-label="Enlarge: Help on a laptop: Marko writes in Serbian"><img src="img/v0/help-reply-marko-1440-light.webp" width="1440" height="900" alt="Help on a laptop: Marko writes in Serbian" loading="lazy" decoding="async"></button><figcaption>Help on a laptop: Marko writes in Serbian</figcaption></figure><figure class="shot wide"><button class="zoom" type="button" data-src="img/v0/help-reply-marko-1440-dark.webp" data-cap="Same, dark" aria-label="Enlarge: Same, dark"><img src="img/v0/help-reply-marko-1440-dark.webp" width="1440" height="900" alt="Same, dark" loading="lazy" decoding="async"></button><figcaption>Same, dark</figcaption></figure></div></details>
+    </div>
+  </div>
+</section>
+
+  <footer>Screenshots are 1440 by 900 desktop and 390 phone (at 2x), light and dark, taken by tests/design_shots.py against a fresh seeded demo with template replies on the demo's frozen clock (4 Nov 2026). Built overnight on 8 Nov 2026 with Claude Code: design research, four parallel implementers, an independent senior design review of each iteration and one fix round.</footer>
+</div>
+
+<dialog id="viewer" aria-label="Screenshot">
+  <button class="close" type="button" id="viewerClose">Close</button>
+  <figure><div class="scroll"><img id="viewerImg" alt=""></div><figcaption id="viewerCap"></figcaption></figure>
+</dialog>
+<script>
+(() => {
+  const dlg = document.getElementById("viewer"), img = document.getElementById("viewerImg"), cap = document.getElementById("viewerCap");
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest(".zoom");
+    if (b) { img.src = b.dataset.src; img.alt = b.dataset.cap; cap.textContent = b.dataset.cap; dlg.showModal(); return; }
+    if (e.target === dlg) dlg.close();
+  });
+  document.getElementById("viewerClose").addEventListener("click", () => dlg.close());
+})();
+</script>
+
+</body>
+</html>

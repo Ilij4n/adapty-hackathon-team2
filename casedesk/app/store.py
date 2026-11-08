@@ -76,6 +76,9 @@ class Store:
         self._db.row_factory = sqlite3.Row
         with self._lock:
             self._db.executescript(SCHEMA)
+            # additive: case status (open | resolved), so an escalation can leave "Needs a person"
+            if "status" not in {r[1] for r in self._db.execute("PRAGMA table_info(cases)")}:
+                self._db.execute("ALTER TABLE cases ADD COLUMN status TEXT NOT NULL DEFAULT 'open'")
             self._db.commit()
 
     # ------------------------------------------------------------------ helpers
@@ -121,6 +124,13 @@ class Store:
         return [self._decode_case(r) for r in
                 self._all("SELECT * FROM cases ORDER BY updated_at DESC, created_at DESC LIMIT ?", (limit,))]
 
+    def set_case_status(self, case_id: str, status: str) -> bool:
+        """open | resolved. Does not touch updated_at (the list order is about the conversation). False if no case."""
+        return self._x("UPDATE cases SET status=? WHERE id=?", (status, case_id)).rowcount == 1
+
+    def count_cases(self) -> int:
+        return int(self._all("SELECT COUNT(*) AS n FROM cases")[0]["n"])
+
     def user_cases(self, customer_user_id: str) -> list[dict]:
         return [self._decode_case(r) for r in self._all(
             "SELECT * FROM cases WHERE customer_user_id=? ORDER BY created_at", (customer_user_id,))]
@@ -139,6 +149,8 @@ class Store:
     def add_message(self, case_id: str, role: str, text: str, meta: dict | None = None, at: str | None = None) -> int:
         cur = self._x("INSERT INTO messages(case_id, role, text, meta, created_at) VALUES (?,?,?,?,?)",
                       (case_id, role, text, self._j(meta or {}), at or now_iso()))
+        if role == "user":  # the customer wrote again: a resolved case is open again
+            self._x("UPDATE cases SET status='open' WHERE id=? AND status='resolved'", (case_id,))
         return int(cur.lastrowid)
 
     def update_message(self, msg_id: int, text: str, meta: dict) -> None:

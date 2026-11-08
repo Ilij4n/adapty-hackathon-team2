@@ -250,6 +250,7 @@ window.CaseDeskConsoleView = (h) => {
     const flags = el("span", "flags");
     if (c.pending_approval) flags.append(el("span", "flag", "waiting for your OK"));
     if (esc) flags.append(el("span", "flag person", personReason(c)));
+    if (c.status === "resolved") flags.append(el("span", "flag done", "Resolved"));
     if (flags.children.length) r2.append(flags);
     if (esc && !wait) {
       const m = icon("person"); m.setAttribute("role", "img"); m.setAttribute("aria-label", "Needs a person"); m.removeAttribute("aria-hidden");
@@ -272,7 +273,8 @@ window.CaseDeskConsoleView = (h) => {
       const n = S.cases.filter(pred).length;
       const b = el("button", "filt"); b.type = "button";
       b.setAttribute("aria-pressed", String(S.filter === key));
-      b.append(el("span", "fl", label), document.createTextNode(" "), el("span", "fn", String(n)));
+      b.append(el("span", "fl", label));
+      if (n || key === "all") b.append(document.createTextNode(" "), el("span", "fn", String(n))); // no "Waiting 0": five filters fit one line
       if (key !== "all" && n) b.classList.add("has", key === "waiting" ? "amber" : "person");
       b.onclick = () => { S.filter = key; S.sig.list = ""; renderList(); };
       fb.append(b);
@@ -297,7 +299,7 @@ window.CaseDeskConsoleView = (h) => {
         const a = el("a", null, "Lumen Help"); a.href = "/help?v=2"; a.target = "_blank"; a.rel = "noopener";
         empty.append(document.createTextNode("No cases yet. Open "), a, document.createTextNode(" and send a message; it shows up here."));
       } else {
-        const what = { escalated: "No case needs a person right now.", privacy: "No privacy or data requests.", waiting: "No case is waiting for a grant." }[S.filter] || "Nothing here.";
+        const what = { escalated: "No case needs a person right now.", privacy: "No privacy or data requests.", waiting: "No case is waiting for a grant.", resolved: "No resolved cases yet." }[S.filter] || "Nothing here.";
         empty.append(document.createTextNode(what + " "));
         const back = el("button", "linkish", "Show all cases"); back.type = "button";
         back.onclick = () => { S.filter = "all"; S.sig.list = ""; renderList(); };
@@ -477,7 +479,8 @@ window.CaseDeskConsoleView = (h) => {
     box.classList.add("has-case");
 
     // ================= the case: who, the status, the conversation, what Case Desk did
-    const tr = el("section", "transcript scroll"); tr.setAttribute("aria-label", "The case");
+    const resolved = c.status === "resolved";
+    const tr = el("section", "transcript scroll" + (resolved ? " resolved" : "")); tr.setAttribute("aria-label", "The case");
     const head = el("header", "d-head");
     const h2 = el("h2"); h2.append(who(c.customer_user_id, "span"));
     const meta = el("dl", "d-meta");
@@ -492,7 +495,23 @@ window.CaseDeskConsoleView = (h) => {
     evb.append(el("span", null, "Evidence"), icon("chev"), el("kbd", null, "e"));
     evb.lastChild.setAttribute("aria-hidden", "true");
     evb.onclick = () => setEvidence(!evOpen);
-    head.append(h2, meta, evb);
+    // escalations can be closed: Mark resolved / Reopen (POST /api/cases/{id}/resolve | /reopen)
+    const acts2 = el("div", "d-acts");
+    if (resolved) acts2.append(el("span", "tag-resolved", "Resolved"));
+    if (fl.escalated || fl.privacy || resolved) {
+      const rb = el("button", "btn resolve", resolved ? "Reopen" : "Mark resolved"); rb.type = "button";
+      rb.onclick = () => {
+        rb.disabled = true;
+        h.api(`/api/cases/${encodeURIComponent(c.id)}/${resolved ? "reopen" : "resolve"}`, { method: "POST" }).then((r) => {
+          const lc = S.cases.find((x) => x.id === c.id); if (lc) lc.status = r.status;
+          h.toast(r.status === "resolved" ? "Marked resolved. It left Needs a person." : "Open again.");
+          return h.select(c.id);
+        }).catch((e) => { rb.disabled = false; h.toast(e.message || "Failed", 7000); });
+      };
+      acts2.append(rb);
+    }
+    acts2.append(evb);
+    head.append(h2, meta, acts2);
     tr.append(head);
 
     const tone = (c.state && c.state.tone) || "info";

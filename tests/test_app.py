@@ -370,3 +370,37 @@ def test_design_variant_pages(tmp_path, monkeypatch):
     monkeypatch.setenv("CASEDESK_DESIGN", n)
     assert client.get("/help").text == want
     assert client.get("/help?v=0").text == (main.STATIC / "help.html").read_text()
+
+
+def test_case_resolve_and_reopen(client):
+    d = chat(client, "lumen_marko", "I want to talk to a real person").json()
+    cid = d["case_id"]
+    assert client.get("/api/cases", headers=CON).json()["cases"][0]["status"] == "open"
+    assert client.post(f"/api/cases/{cid}/resolve").status_code == 401   # console auth
+    r = client.post(f"/api/cases/{cid}/resolve", headers=CON)
+    assert r.status_code == 200 and r.json() == {"case_id": cid, "status": "resolved"}
+    assert client.get("/api/cases", headers=CON).json()["cases"][0]["status"] == "resolved"
+    det = client.get(f"/api/cases/{cid}", headers=CON).json()
+    assert det["case"]["status"] == "resolved"
+    assert any(e["event"] == "case_resolved" and e["actor"] == "console" for e in det["audit"])
+    assert client.post(f"/api/cases/{cid}/reopen", headers=CON).json()["status"] == "open"
+    assert any(e["event"] == "case_reopened" for e in client.get(f"/api/cases/{cid}", headers=CON).json()["audit"])
+    assert client.post("/api/cases/c_nope/resolve", headers=CON).status_code == 404
+    # the customer writing again reopens a resolved case
+    client.post(f"/api/cases/{cid}/resolve", headers=CON)
+    chat(client, "lumen_marko", "hello again?", case_id=cid)
+    assert client.get(f"/api/cases/{cid}", headers=CON).json()["case"]["status"] == "open"
+
+
+def test_store_adds_status_to_an_old_db(tmp_path):
+    import sqlite3
+    p = tmp_path / "old.db"
+    db = sqlite3.connect(p)
+    db.execute("CREATE TABLE cases (id TEXT PRIMARY KEY, customer_user_id TEXT NOT NULL, created_at TEXT NOT NULL,"
+               " updated_at TEXT NOT NULL, language TEXT, intent TEXT, state TEXT, facts TEXT, actions TEXT,"
+               " sale_context TEXT, validator TEXT)")
+    db.execute("INSERT INTO cases(id, customer_user_id, created_at, updated_at) VALUES ('c_1','u','t','t')")
+    db.commit(); db.close()
+    st = Store(p)
+    assert st.get_case("c_1")["status"] == "open"
+    assert st.set_case_status("c_1", "resolved") and st.get_case("c_1")["status"] == "resolved"

@@ -87,8 +87,9 @@
   const llmErrors = (v, field) => [...(field ? [field] : []), ...(v || []).filter(isLlmErr)].filter((x, i, a) => a.indexOf(x) === i);
   const REASON = { user_requested_human: "they asked for a person", privacy_request: "privacy / data request" };
   const reasonText = (r) => REASON[r] || String(r || "escalated").replace(/_/g, " ");
-  const FILTERS = [["all", "All", () => true], ["escalated", "Escalated", (c) => c.escalated],
-    ["privacy", "Privacy", (c) => c.privacy], ["waiting", "Waiting", (c) => c.pending_approval]];
+  const FILTERS = [["all", "All", () => true], ["escalated", "Escalated", (c) => c.escalated && c.status !== "resolved"],
+    ["privacy", "Privacy", (c) => c.privacy], ["waiting", "Waiting", (c) => c.pending_approval],
+    ["resolved", "Resolved", (c) => c.status === "resolved"]];
   const auto = (n) => { n.dir = "auto"; return n; };
   const dot = (tone) => el("span", "dot " + (tone || "info"));
 

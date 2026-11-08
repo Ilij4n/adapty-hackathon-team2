@@ -20,7 +20,7 @@
   function toast(text, ms = 3200) { const t = el("div", "toast", text); t.setAttribute("role", "status"); document.body.append(t); setTimeout(() => t.remove(), ms); }
 
   // ------------------------------------------------------------ plain-English helpers
-  // Dates: FactSheet values are ISO dates ("2026-10-22") -> "22 Oct" (year only when it isn't this year's).
+  // Dates: FactSheet values are ISO dates ("2026-10-22") -> "22 Oct" (year only when it isn’t this year’s).
   function day(iso, withTime) {
     if (!iso) return "";
     const d = new Date(/^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso + "T12:00:00" : iso);
@@ -39,9 +39,9 @@
     CANCELLED_PAID_UP: (f) => "Cancelled, but premium stays on" + until(f.expires_on),
     TRIAL_ACTIVE: (f) => "On a free trial" + until(f.trial_ends_on || f.expires_on),
     TRIAL_CANCELLED: (f) => "Cancelled the free trial, so no charge will follow",
-    GRACE_PERIOD: (f) => `${cap(storeOf(f))} couldn't take the payment. Premium stays on for now` + until(f.grace_ends_on),
-    BILLING_RETRY: (f) => `${cap(storeOf(f))} couldn't take the payment${on(f.billing_issue_on)} and is retrying`,
-    EXPIRED_BILLING_ERROR: (f) => (f.ever_charged === "yes" ? "Paid, then " : "") + `${f.ever_charged === "yes" ? storeOf(f) : cap(storeOf(f))} couldn't take the renewal` + on(f.billing_issue_on || f.expires_on),
+    GRACE_PERIOD: (f) => `${cap(storeOf(f))} couldn’t take the payment. Premium stays on for now` + until(f.grace_ends_on),
+    BILLING_RETRY: (f) => `${cap(storeOf(f))} couldn’t take the payment${on(f.billing_issue_on)} and is retrying`,
+    EXPIRED_BILLING_ERROR: (f) => (f.ever_charged === "yes" ? "Paid, then " : "") + `${f.ever_charged === "yes" ? storeOf(f) : cap(storeOf(f))} couldn’t take the renewal` + on(f.billing_issue_on || f.expires_on),
     EXPIRED_CANCELLED: (f) => "Cancelled, and premium ended" + on(f.expires_on),
     REFUNDED: (f) => "Got a refund" + on(f.refunded_on),
     LIFETIME: () => "Has lifetime premium",
@@ -111,7 +111,7 @@
       if (c.state_badge) { const s2 = el("div", "line soft"); s2.append(dot(c.state_badge.tone), el("span", "ell", c.state_badge.label)); b.append(s2); }
       b.onclick = () => select(a.case_id);
       li.append(b);
-      if (a.status === "failed") li.append(el("p", "fail", "Adapty couldn't give it: " + ((a.result && a.result.error) || "error")));
+      if (a.status === "failed") li.append(el("p", "fail", "Adapty couldn’t give it: " + ((a.result && a.result.error) || "error")));
       const row = el("div", "grant-row");
       const ok = el("button", "btn approve", a.status === "failed" ? `Try again: give ${who} ${what}` : `Give ${who} ${what}`);
       ok.type = "button"; ok.onclick = () => decide(a.id, "approve", ok);
@@ -368,12 +368,12 @@
   async function refresh() {
     const [cs, ap] = await Promise.all([api("/api/cases"), api("/api/approvals")]);
     S.cases = cs.cases; S.approvals = ap.approvals;
-    // seeded demo cases carry a display name (GET /api/cases, demo only); the picker's names win
+    // seeded demo cases carry a display name (GET /api/cases, demo only); the picker’s names win
     for (const c of S.cases) if (c.display_name && !S.names[c.customer_user_id]) S.names[c.customer_user_id] = c.display_name;
     const sig = JSON.stringify([S.cases, S.approvals, S.selected]);
     if (sig !== S.sig.list) { S.sig.list = sig; V.renderList(); }
     await refreshDetail();
-    V.live("updated " + new Date().toLocaleTimeString(), "ok");
+    V.live("updated " + new Date().toLocaleTimeString("en-GB"), "ok");
   }
   async function start() {
     try {
@@ -387,7 +387,7 @@
       S.timer = setInterval(() => refresh().catch(() => V.live("offline, retrying", "bad")), 3000);
     } catch (e) {
       if (e.status === 401) { $("#gate").hidden = false; $("#app").hidden = true; if (S.token) $("#gateErr").hidden = false; $("#tok").focus(); }
-      else { V.live("can't reach the server", "bad"); setTimeout(start, 3000); }
+      else { V.live("can’t reach the server", "bad"); setTimeout(start, 3000); }
     }
   }
 

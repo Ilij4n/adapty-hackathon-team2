@@ -44,7 +44,7 @@ STATE_LABELS: dict[str, tuple[str, str]] = {
     "TRIAL_CANCELLED": ("Trial cancelled: no charge will follow", "info"),
     "GRACE_PERIOD": ("Payment problem, still active for now", "warn"),
     "BILLING_RETRY": ("Payment problem: the store is retrying", "warn"),
-    "EXPIRED_BILLING_ERROR": ("Ended: the payment didn't go through", "bad"),
+    "EXPIRED_BILLING_ERROR": ("Ended: the payment didn’t go through", "bad"),
     "EXPIRED_CANCELLED": ("Ended after you cancelled", "info"),
     "REFUNDED": ("Refunded", "info"),
     "LIFETIME": ("Lifetime access", "ok"),

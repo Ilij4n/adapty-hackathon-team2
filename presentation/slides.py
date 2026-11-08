@@ -31,8 +31,8 @@ We read "earn more" as also: don't lose the subscribers you already have. [click
 A question about a charge that gets no answer, or a wrong one, turns into a refund or a cancel. A true answer, fast, keeps the subscriber."""),
 
 dict(id="primer", bg="live", secs=30, html="""
-<div class="kick">WHAT YOU'LL SEE</div>
-<h2>Three things no other team here has built.</h2>
+<div class="kick">WHAT WE BUILT</div>
+<h2>Three things that make Case Desk different.</h2>
 <div class="see2"><div class="why">
   <div class="wrow" data-step="1"><span class="wn tea">✓</span><p><b>Every reply is checked</b> against the subscriber's account<br><small>before they see it, in their own language</small></p></div>
   <div class="wrow" data-step="2"><span class="wn amb">1</span><p><b class="amb">Free premium only with your OK</b>, or a rule you set<br><small>privacy requests and attacks always go to a person</small></p></div>
@@ -40,7 +40,7 @@ dict(id="primer", bg="live", secs=30, html="""
 </div>
 <div class="shots" data-step="1"><img class="sh-c" alt="The Case Desk console" src="{{img}}ui_console.jpg"><img class="sh-p" alt="Lumen Help on a phone" src="{{img}}ui_help.jpg"></div></div>
 <p class="lumen" data-step="3"><small>In the video: <b>Lumen</b>, Adapty's own test app · watch for Marko (Serbian), Lucía and Ava</small></p>
-""", notes="""Here is what you'll see, and as far as the other teams' public repos show, nobody else here has built it. [click]
+""", notes="""Here's what we built, and the three things that make it different. [click]
 One: every reply is checked against the subscriber's real account before they ever see it, in their own language. [click]
 Two: free premium only goes out with your OK, or under a rule you set. Privacy requests and attacks always go to a person. [click]
 Three: the whole support desk works from inside Claude. You can approve a grant, answer a subscriber or close a case, over MCP.

@@ -4,7 +4,7 @@ Read the plain text. Lines in [brackets] are actions, not words. [click] = press
 
 The deck shows these notes with N (bottom panel + timer) or P (separate presenter window for a second screen).
 
-Spoken before the video: ≈89 s. After the video: ≈108 s. Video ≈3:04. Whole slot ≈5 min + Q&A.
+Spoken before the video: ≈86 s. After the video: ≈108 s. Video ≈3:04. Whole slot ≈5 min + Q&A.
 
 ## 1. title — ≈19 s (46 words)
 
@@ -17,9 +17,9 @@ Adapty's brief was: help subscription apps earn more, or make Adapty easier or s
 We read "earn more" as also: don't lose the subscribers you already have. [click]
 A question about a charge that gets no answer, or a wrong one, turns into a refund or a cancel. A true answer, fast, keeps the subscriber.
 
-## 3. primer — ≈45 s (109 words)
+## 3. primer — ≈42 s (100 words)
 
-Here is what you'll see, and as far as the other teams' public repos show, nobody else here has built it. [click]
+Here's what we built, and the three things that make it different. [click]
 One: every reply is checked against the subscriber's real account before they ever see it, in their own language. [click]
 Two: free premium only goes out with your OK, or under a rule you set. Privacy requests and attacks always go to a person. [click]
 Three: the whole support desk works from inside Claude. You can approve a grant, answer a subscriber or close a case, over MCP.

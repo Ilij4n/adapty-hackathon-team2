@@ -156,3 +156,17 @@ Checks at this commit: `tests/e2e_ui.py --variant 6`: E2E OK (combined composer,
 48px buttons, and the Give button a lighter amber fill (`#ffc785`, dark text). v2's "A person needs to answer this"
 box is gone in v6: its reason lines become one bold line (`.tc-why`) right above the composer's hint (the injection
 warning in coral). E2E `--variant 6` OK after these.
+
+## Video request (Ilijan, Sun 8 Nov ~13:30 CET): please re-cut the demo video on the final v6
+
+v6 is merged into `main` (78eed26). Ilijan asks you to make the demo video with the **final v6 design**, replacing the
+console scene drawn with bubbles (v5) or the old strips:
+
+- Run it with `CASEDESK_DESIGN=6` (or `?v=6`), fresh seeded demo, `--llm claude-cli` if you want real replies.
+- Console: the strips across the full case column; Ava's request in the compact footer (one wide row, the lighter amber
+  "Give Ava 3 days of premium"); the one click; the after-approve state.
+- Help on a phone: the same strips, Ava's reply with "Update payment method", the "Requested" note, then the green
+  approval line after the click.
+- Optional, if time allows: an escalated case (Isla) where the suggested reply shows as ghost text in the chat box at
+  the bottom and Tab takes it; the reason line above the hint ("Isla asked for a person...").
+- Note from your own guide: a grant request blocks Ava for 90 days, so record the approve take on a fresh demo.

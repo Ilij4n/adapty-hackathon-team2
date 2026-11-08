@@ -15,6 +15,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import re
 import time
 from contextlib import asynccontextmanager
 from collections import defaultdict, deque
@@ -99,18 +100,32 @@ def team_fact_check(text: str, fields: dict | None) -> list[dict]:
         for k, v in f.items():
             allowed |= _numbers_of(k, v)
     except Exception:  # noqa: BLE001 — engine missing: compare against the raw digit runs
-        import re
         for v in f.values():
             allowed |= set(re.findall(r"\d+(?:[.,:/\-]\d+)*", v))
     sheet = {"fields": f, "allowed_numbers": allowed}
     url_v, stripped = validate._check_urls(text, sheet)
-    out = []
+    out, seen = [], set()
     for v in validate._check_numbers(stripped, sheet) + url_v:
         kind, _, tok = v.partition(":")
-        out.append({"code": kind, "token": tok,
-                    "message": (f"“{tok}” isn't in the account facts." if kind == "unsupported_number"
+        shown = tok
+        if kind == "unsupported_number":   # "12" in "12 Nov 2031" reads better as the whole date
+            for m in _DATE_PHRASE.finditer(stripped):
+                if re.search(rf"(?<!\d){re.escape(tok)}(?!\d)", m.group(0)):
+                    shown = m.group(0).strip(" ,.")
+                    break
+        if (kind, shown) in seen:
+            continue
+        seen.add((kind, shown))
+        out.append({"code": kind, "token": tok, "text": shown,
+                    "message": (f"“{shown}” isn't in the account facts." if kind == "unsupported_number"
                                 else f"The link “{tok}” isn't one of the account's links.")})
     return out
+
+
+_MONTH = (r"(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|"
+          r"oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\.?")
+_DATE_PHRASE = re.compile(rf"\b\d{{1,2}}(?:st|nd|rd|th)?\.?\s+{_MONTH}(?:,?\s+\d{{4}})?\b|\b{_MONTH}\s+\d{{1,2}}"
+                          rf"(?:st|nd|rd|th)?(?:,?\s+\d{{4}})?\b", re.I)
 
 
 class RateLimiter:

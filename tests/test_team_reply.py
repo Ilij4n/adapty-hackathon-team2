@@ -150,7 +150,7 @@ def test_fact_check_unit():
     fields = {"expires_on": "2026-11-12", "price": "6.99 EUR"}
     assert team_fact_check("Your plan ends 12 Nov 2026 and costs 6,99 EUR.", fields) == []
     w = team_fact_check("It ends on 13 Nov.", fields)
-    assert [x["token"] for x in w] == ["13"] and w[0]["message"] == "“13” isn't in the account facts."
+    assert [x["token"] for x in w] == ["13"] and w[0]["message"] == "“13 Nov” isn't in the account facts."
     assert team_fact_check("hello", {}) == []
 
 

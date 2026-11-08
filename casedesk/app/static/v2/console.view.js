@@ -452,6 +452,32 @@ window.CaseDeskConsoleView = (h) => {
   let evOpen = false;
   try { evOpen = localStorage.getItem(EV_KEY) === "open"; } catch { /* default: collapsed */ }
   const prev = { id: null, vals: new Map() };
+  // A draft for the person who answers an escalated case: built from the facts, checked like every reply, never sent.
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+    return new Promise((ok, bad) => {
+      const ta = el("textarea"); ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.append(ta); ta.select();
+      try { document.execCommand("copy") ? ok() : bad(new Error("copy refused")); } catch (e) { bad(e); } finally { ta.remove(); }
+    });
+  }
+  function suggestEl(sug) {
+    const box = el("div", "suggest");
+    const top = el("div", "sug-head");
+    const lbl = el("h4", null, "Suggested reply");
+    const cp = el("button", "btn copy", "Copy"); cp.type = "button";
+    cp.title = "Copy the suggested reply, to edit and send from your support inbox";
+    cp.onclick = () => copyText(sug.text).then(() => { cp.textContent = "Copied"; toast("Suggested reply copied"); setTimeout(() => { cp.textContent = "Copy"; }, 1800); },
+      () => toast("Couldn't copy. Select the text and copy it by hand.", 6000));
+    top.append(lbl, cp);
+    const txt = auto(el("p", "sug-text", sug.text));
+    if (sug.language) txt.lang = sug.language;
+    const how = sug.source === "llm" || sug.source === "llm_retry" ? "Written by Case Desk from the account facts and checked"
+      : sug.source === "seed" ? "Drafted from the account facts and checked" : "Built from the account facts";
+    box.append(top, txt, el("p", "sug-note", how + ". Not sent to the user: edit it, then send it yourself."));
+    return box;
+  }
+
   function renderDetail(d) {
     const box = $("#detail");
     const c = d.case; const f = c.facts || {}; const fl = d.flags || {};
@@ -490,7 +516,8 @@ window.CaseDeskConsoleView = (h) => {
     // escalated: Case Desk could not help, so no button can settle it. Its own ink, not amber (amber asks you to confirm).
     const injected = !!(c.intent && c.intent.injection_suspected);
     if (injected !== !!orders.get(c.id)) { orders.set(c.id, injected); setTimeout(() => h.rerenderList(), 0); }
-    if (fl.escalated || fl.privacy) {
+    const sug = c.suggested_reply && typeof c.suggested_reply.text === "string" && c.suggested_reply.text.trim() ? c.suggested_reply : null;
+    if (fl.escalated || fl.privacy || (injected && sug)) {
       const pn = el("section", "person-note"); pn.setAttribute("aria-label", "Needs a person");
       const ph = el("h3"); ph.append(icon("person"), el("span", null, "A person needs to answer this"));
       const nm = cap(h.nameOf(c.customer_user_id) || "the user");
@@ -501,7 +528,9 @@ window.CaseDeskConsoleView = (h) => {
       (fl.escalation_reasons || []).filter((r) => r !== "privacy_request" && r !== "user_requested_human").forEach((r) => lines.push(["person", "Escalated because " + h.reasonText(r) + "."]));
       const ul = el("ul", "alerts");
       lines.forEach(([t, text]) => { const li = el("li", "alert " + t); li.append(lamp(t === "bad" ? "bad" : "person"), el("span", null, text)); ul.append(li); });
-      pn.append(ph, ul, el("p", "pn-note", "Nothing here to approve. Reply from your support inbox."));
+      pn.append(ph, ul);
+      if (sug) pn.append(suggestEl(sug));
+      pn.append(el("p", "pn-note", "Nothing here to approve. Reply from your support inbox."));
       tr.append(pn);
     } else if (injected) {
       const ul = el("ul", "alerts solo"); const li = el("li", "alert bad");

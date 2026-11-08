@@ -156,6 +156,14 @@
 .person-note h3 .ic { width: 18px; height: 18px; }
 .person-note .alerts { padding-top: 0; }
 .pn-note { color: var(--ink-2); font-size: var(--t-s); }
+.suggest { display: grid; gap: 6px; margin-top: 4px; padding: 10px 12px; background: var(--pane); border: 1px solid var(--line-2); border-radius: var(--r-ctl); }
+.sug-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sug-head h4 { font-size: var(--t-s); font-weight: 600; color: var(--person); }
+.btn.copy { min-height: 32px; padding: 0 12px; font-size: var(--t-s); background: transparent; color: var(--ink); border-color: var(--line-2); }
+.sug-text { white-space: pre-wrap; overflow-wrap: anywhere; color: var(--ink); line-height: 1.45; }
+.sug-note { color: var(--ink-3); font-size: var(--t-xs); }
+@media (hover: hover) { .btn.copy:hover { border-color: var(--ink-2); } }
+@media (hover: none), (pointer: coarse) { .btn.copy { min-height: 44px; } }
 .alerts.solo { margin: 14px var(--gut) 0; }
 .lamp.person { background: var(--person); }
 

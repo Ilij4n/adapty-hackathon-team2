@@ -1,6 +1,8 @@
 /* Lumen Help, iteration 2 "Night Shift". Same behaviour as the stock widget (static/help.js); this view only changes
-   how the status instrument and the demo profiles are drawn. When the status changes for the same subscriber (the team
-   approved a grant), the state and every changed fact flash once in reverse video. */
+   how the status band and the demo profiles are drawn.
+   - When the status band scrolls away, a one-line state bar stays under the header (no strip of the band is left).
+   - When the status changes for the same subscriber (the team approved a grant), the state label and each changed fact
+     value flash once as a label-sized reverse-video chip. */
 window.CaseDeskHelpView = (h) => {
   "use strict";
   const { el } = h;
@@ -12,28 +14,42 @@ window.CaseDeskHelpView = (h) => {
     n.addEventListener("animationend", (e) => { if (e.target === n) n.classList.remove("flash"); }, { once: true });
   }
 
-  // the narrow-screen picker reads "Ava 00239": layout and a space instead of a middle dot
-  const sel = document.getElementById("demoSelect");
-  if (sel && "MutationObserver" in window) {
-    new MutationObserver(() => {
-      for (const o of sel.options) if (o.textContent.includes(" · ")) o.textContent = o.textContent.replace(" · ", " ");
-    }).observe(sel, { childList: true });
+  // the compact state bar: shown while the band's bottom edge sits above the top 48px of the conversation
+  const scroller = document.getElementById("scroller");
+  const card = document.getElementById("statusCard");
+  const mini = document.getElementById("statusMini");
+  const miniBadge = mini && mini.querySelector(".sm-badge");
+  const end = card && card.querySelector(".status-end");
+  let bandGone = false;
+  const setGone = (on) => { bandGone = !!on && !card.hidden; scroller.classList.toggle("band-gone", bandGone); };
+  if (scroller && end && "IntersectionObserver" in window) {
+    new IntersectionObserver(([e]) => {
+      const top = (e.rootBounds || scroller.getBoundingClientRect()).top;
+      setGone(!e.isIntersecting && e.boundingClientRect.bottom <= top + 1 && e.boundingClientRect.height >= 0);
+    }, { root: scroller, rootMargin: "-48px 0px 0px 0px", threshold: 0 }).observe(end);
   }
 
+  // the conversation takes the whole view only once it overflows (see .fill in help.css)
+  const log = document.getElementById("log");
+  const fit = () => { if (scroller && !scroller.classList.contains("fill") && log.children.length && scroller.scrollHeight > scroller.clientHeight + 1) scroller.classList.add("fill"); };
+  if (log && "MutationObserver" in window) new MutationObserver(fit).observe(log, { childList: true, subtree: true, characterData: true });
+  addEventListener("resize", fit);
+
   let prev = null;
-  const factRows = (card) => [...card.querySelectorAll("#facts > div")].map((d) => [d.querySelector("dt"), d.querySelector("dd"), d]);
+  const factRows = (c) => [...c.querySelectorAll("#facts > div")].map((d) => [d.querySelector("dt"), d.querySelector("dd")]);
 
   return {
-    paintStatus(st, card) {
-      h.defaults.paintStatus(st, card);
+    paintStatus(st, c) {
+      h.defaults.paintStatus(st, c);
       const badge = st.state_badge || {};
       const tone = badge.tone || "info";
-      card.dataset.tone = tone;
+      c.dataset.tone = tone;
+      if (miniBadge) { miniBadge.className = "sm-badge " + tone; miniBadge.textContent = document.getElementById("stateBadge").textContent; }
       const rows = new Map();
-      for (const [dt, dd] of factRows(card)) rows.set(dt.textContent, dd.textContent);
+      for (const [dt, dd] of factRows(c)) rows.set(dt.textContent, dd.textContent);
       if (prev && prev.user === h.S.user && prev.lang === h.S.lang) {
-        if (prev.code !== badge.code) flash(card.querySelector(".readout"), tone);
-        for (const [dt, dd, d] of factRows(card)) if (prev.rows.get(dt.textContent) !== dd.textContent) flash(d, tone);
+        if (prev.code !== badge.code) { flash(c.querySelector(".readout"), tone); if (bandGone) flash(miniBadge, tone); }
+        for (const [dt, dd] of factRows(c)) if (prev.rows.get(dt.textContent) !== dd.textContent) flash(dd, tone);
       }
       prev = { user: h.S.user, lang: h.S.lang, code: badge.code, rows };
     },
@@ -47,6 +63,6 @@ window.CaseDeskHelpView = (h) => {
       top.append(el("b", null, name), loc, id);
       b.append(av, top, el("small", null, u.scenario));
     },
-    onUser() { prev = null; },
+    onUser() { prev = null; if (scroller && card) { setGone(false); scroller.classList.remove("fill"); } },
   };
 };

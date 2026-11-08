@@ -22,24 +22,29 @@
      IBM Plex Sans Arabic for Arabic messages. Sentence case everywhere; tabular figures for times and ids.
      Console scale 12 / 13 / 14 / 17 / 24. Help scale 13 / 15 / 16 / 22.
 
-   Layout
-     console, 1200 and up                                  phone, 390
-     +-top: Case Desk for Lumen ............ live 00:51-+  +-top----------------+
-     | cases 300 | transcript      | inspector 400     |  | cases, filters     |
-     | filters   | Ava    09:12    | status readout    |  | rows               |
-     | rows      | | user words    | What Case Desk did|  +--------------------+
-     |  2 lines  | Case Desk  ok   |   grant state     |  | Ava 00239, turns   |
-     |           | | amber rule    | claims vs facts   |  +--------------------+
-     |           |                 | facts, checks, log|  | inspector          |
-     +==== decision dock: who, what, [Give Ava 3 days of premium] [Deny] =====+  | (padded for dock)  |
-                                                                               +=dock sheet (fixed)=+
-     help: the phone over the deck's night still (blurred, dimmed); the picker on a navy panel.
+   Layout (revision 2, after the design review)
+     console, 1200 and up: one screen at 1440x900 shows the facts, the actions and the checked reply
+     +-top: Case Desk for Lumen ....................... live 00:51-+  +-phone 390--------+
+     | cases 300  | the case                 | evidence 440       |  | cases (filters)  |
+     | sticky head| Ava 00239    Writes in.. | What the user      |  +------------------+
+     | rows       | Ended: payment failed    |  claims, beside    |  | the case         |
+     |  2 lines   | Paid, then the App Store |  the facts         |  | status, turns,   |
+     |            |  couldn't take ... (24)  | Facts the reply    |  | what CD did      |
+     |            | v every fact matches     |  may use           |  +------------------+
+     |            | | Ava: words             | Reply check        |  | evidence         |
+     |            | | Case Desk: reply  ok   | Records, policy    |  | (padded for dock)|
+     |            | | What Case Desk did     |  actions (raw),    |  +==dock sheet======+
+     |            |   grant state            |  audit log         |
+     +===== decision dock (absent until a grant arrives): who, what, [Give Ava 3 days of premium] [Deny] =====+
+     help: the phone over the deck's night still (lightly blurred); the picker on a navy panel of the same height.
      +-phone-------------------+
      | logo  Lumen Help        |
-     | status instrument band  |  lamp + state in words; facts in two columns, values in Plex Mono
-     | intro, then the turns   |  helper = amber rule, subscriber = raised navy block
-     | tray of action buttons  |
-     | chips, composer         |
+     | status band             |  square + state in words; facts in two columns (Plex Sans 600, tabular)
+     | (compact state bar once |  the band scrolls away; a one-line state bar stays under the header
+     |  the band scrolls away) |
+     | turns: helper = amber   |  subscriber = raised blue block; actions = stacked buttons
+     | chips (edge to edge)    |
+     | composer                |
      +-------------------------+
      Everything left-aligned; numbers right-aligned in columns.
 
@@ -48,7 +53,10 @@
      2. Boldness in one place: the dock's amber "Give Ava 3 days of premium" is the brightest thing on the screen.
      3. Panes, not cards. Separation by space, then a background step, then a 1px line. Radius only on controls (6px),
         the dock sheet and the phone.
-     4. Motion only on change: a changed value flashes once in reverse video (600ms); the dock rises (220ms).
+     4. Motion only on change: a changed label flashes once as a reverse-video chip (700ms); the dock rises (220ms)
+        when a grant arrives. Nothing fades or slides in.
+     5. Human words before codes: dates as "15 Oct 2026", claims as "Last charged 15 Oct 2026"; raw keys live in
+        titles and in one raw "Policy actions" table for the technical reader.
 
    Review against the AI clusters, and what changed
      - Cluster 2 (near-black + one acid accent): the brief pins the deck navy, so I kept it but made it navy, not
@@ -61,6 +69,8 @@
      - Cluster 5 (template chrome): first draft copied the deck's tracked uppercase mono kickers ("UNDER THE HOOD").
        Dropped: the user rejected uppercase labels, and mono for labels is a tell. The stock "Ava · 00239" middle dot
        is replaced by layout. No arrows appended to buttons; the deck's clock glow is not copied (no glow).
+     - Review round: the first build flashed whole blocks and slid toasts in (the rejected fade/slide); now only
+       labels flash. Solid teal meant both "active" and "checked"; active is now a teal outline.
    ===================================================================================================================== */
 
 @import url("fonts/fonts.css");
@@ -147,7 +157,7 @@ code, kbd, .mono { font-family: var(--font-mono); font-weight: 400; }
 
 /* a lamp: the instrument's status mark. Always next to words that say the same thing. */
 .lamp { display: inline-block; flex: none; width: 8px; height: 8px; border-radius: 2px; background: var(--info); }
-.lamp.ok { background: var(--teal); }
+.lamp.ok { background: transparent; box-shadow: inset 0 0 0 1.5px var(--teal); }  /* active: outline; solid teal means checked */
 .lamp.warn { background: var(--amber); }
 .lamp.bad { background: var(--coral); }
 .lamp.info { background: var(--ink-3); }
@@ -166,14 +176,15 @@ kbd {
   font-weight: 600; font-size: var(--t-m); line-height: 1.2; text-decoration: none;
   transition: background-color .12s ease-out, border-color .12s ease-out;
 }
-.btn:hover { border-color: var(--ink-3); }
+@media (hover: hover) { .btn:hover { border-color: var(--ink-3); } }
 .btn[disabled] { opacity: .55; cursor: default; }
 
-/* reverse video: a value that changed on the live refresh flashes once in its own colour, then settles */
-.flash { animation: rv 600ms ease-out; }
-.flash * { animation: rv-ink 600ms ease-out; }
-@keyframes rv { 0%, 40% { background-color: var(--fc, var(--ink)); color: var(--fc-ink, var(--pane)); } }
-@keyframes rv-ink { 0%, 40% { color: var(--fc-ink, var(--pane)); } }
+/* reverse video, label-sized: a label that changed on the live refresh becomes a chip in its own colour, then settles.
+   The 3px ring pads the chip without moving the layout. */
+.flash { border-radius: 3px; animation: rv 700ms ease-out; }
+.flash * { animation: rv-ink 700ms ease-out; }
+@keyframes rv { 0%, 45% { background-color: var(--fc, var(--ink)); color: var(--fc-ink, var(--pane)); box-shadow: 0 0 0 3px var(--fc, var(--ink)); } }
+@keyframes rv-ink { 0%, 45% { color: var(--fc-ink, var(--pane)); } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

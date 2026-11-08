@@ -14,7 +14,7 @@
 <body class="help">
 <div class="stage">
   <aside class="demo-side" id="demoSide" hidden>
-    <a class="back-home" href="/"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Lumen</a>
+    <a class="back-home" href="/?v=2"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Lumen</a>
     <h1 class="side-title">Pick a Lumen subscriber</h1>
     <p class="demo-note">In the real app the subscriber is signed in already. Here you switch between seeded test accounts; each one is in a different situation in Adapty.</p>
     <div class="profiles" id="profiles" role="radiogroup" aria-label="Demo subscriber"></div>
@@ -37,12 +37,14 @@
       </header>
 
       <div class="w-body" id="scroller">
+        <div class="status-mini" id="statusMini" aria-hidden="true"><div class="sm-bar"><span class="sm-badge"></span></div></div>
         <section class="status" id="statusCard" aria-live="polite" hidden>
           <div class="status-top">
             <span class="st-k" data-i18n="whatWeFound">What we found on your account</span>
             <span class="readout"><span class="badge" id="stateBadge"></span></span>
           </div>
           <dl class="facts" id="facts"></dl>
+          <span class="status-end" aria-hidden="true"></span>
         </section>
 
         <div class="intro" id="intro">

@@ -1,7 +1,9 @@
 /* Case Desk console, iteration 2 "Night Shift". Same data, calls and actions as the stock console (static/console.js);
-   only the drawing changes: three panes (cases, transcript, inspector) and a decision dock that holds the queue.
+   only the drawing changes. Three panes: the case list; the case itself (status, conversation, what Case Desk did);
+   the evidence (claims beside the facts, the reply check, records, the raw policy table, the audit log). The decision
+   dock holds the queue and rises when a grant arrives.
    - Every value is set with textContent; nothing from the API goes through innerHTML.
-   - A value that changes on the live refresh (a status, a grant, a new message, a case row) flashes once in reverse video.
+   - A value that changes on the live refresh flashes once as a label-sized reverse-video chip, never a whole block.
    - j / k move through the case list (the hint in the list header is real). */
 window.CaseDeskConsoleView = (h) => {
   "use strict";
@@ -31,10 +33,22 @@ window.CaseDeskConsoleView = (h) => {
     else w.append(mono("uid solo", cuid));
     return w;
   }
+  // the state label is written to the subscriber; the developer reads about them
+  const devLabel = (l) => String(l || "").replace(/\bafter you cancelled\b/i, "after they cancelled");
+
+  // ------------------------------------------------------------ time and value formatting (human words before codes)
   const pad = (n) => String(n).padStart(2, "0");
   const hm = (d) => pad(d.getHours()) + ":" + pad(d.getMinutes());
   const dm = (d) => d.toLocaleString("en-GB", { day: "numeric", month: "short" });
+  const dmy = (d) => d.toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/, ISO_TS = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/;
   function clock(iso) { const d = new Date(iso); return isNaN(d) ? String(iso || "") : dm(d) + " " + hm(d); }
+  function human(v) { // "2026-10-15" -> "15 Oct 2026"; "2026-11-07T00:12:04+00:00" -> "7 Nov 2026 00:12"
+    if (typeof v !== "string") return v;
+    if (ISO_DAY.test(v)) { const d = new Date(v + "T12:00:00"); return isNaN(d) ? v : dmy(d); }
+    if (ISO_TS.test(v)) { const d = new Date(v); return isNaN(d) ? v : dmy(d) + " " + hm(d); }
+    return v;
+  }
   function short(iso) {
     const d = new Date(iso); if (isNaN(d)) return "";
     const s = (Date.now() - d) / 1000;
@@ -42,9 +56,15 @@ window.CaseDeskConsoleView = (h) => {
     if (s < 3600) return Math.floor(s / 60) + " min";
     return d.toDateString() === new Date().toDateString() ? hm(d) : dm(d);
   }
-  function timeEl(iso, full) {
-    const t = el("time", "mono t", full ? clock(iso) : short(iso)); t.dateTime = iso || ""; t.title = clock(iso); return t;
+  function timeEl(iso, mode, sameDayAs) {
+    let text = short(iso);
+    if (mode === "full") text = clock(iso);
+    if (mode === "turn") { const d = new Date(iso), o = new Date(sameDayAs); text = !isNaN(d) && !isNaN(o) && d.toDateString() === o.toDateString() ? hm(d) : clock(iso); }
+    const t = el("time", "mono t", text); t.dateTime = iso || ""; t.title = clock(iso); return t;
   }
+  const words = (k) => String(k).replace(/_/g, " ");
+
+  // reverse video, label-sized: the element gets a chip in its own colour for 700ms
   const TONE_C = { ok: "var(--teal)", warn: "var(--amber)", bad: "var(--coral)", info: "var(--ink)", amber: "var(--amber)" };
   function flash(n, tone) {
     if (!n) return;
@@ -57,14 +77,12 @@ window.CaseDeskConsoleView = (h) => {
     if (extra != null) hd.append(document.createTextNode(" "), mono("n", String(extra)));
     s.append(hd); return s;
   };
-  const words = (k) => String(k).replace(/_/g, " ");
-  // a params / detail object as "key value" tokens (keys in the third ink), one level of nesting flattened
-  function tokens(code, obj, skip) {
+  // raw "key value" tokens for the technical tables; one level of nesting flattened
+  function tokens(code, obj, fmt) {
     const val = (v) => Array.isArray(v) ? (v.length ? v.map((x) => (typeof x === "string" ? x : JSON.stringify(x))).join(", ") : "none")
-      : v !== null && typeof v === "object" ? JSON.stringify(v) : String(v);
+      : v !== null && typeof v === "object" ? JSON.stringify(v) : String(fmt ? human(v) : v);
     const add = (k, v) => code.append(" ", el("span", "pk", k), " ", el("span", "pv", val(v)));
     for (const [k, v] of Object.entries(obj || {})) {
-      if (skip && skip.has(k)) continue;
       if (v && typeof v === "object" && !Array.isArray(v)) for (const [k2, v2] of Object.entries(v)) add(k + "." + k2, v2);
       else add(k, v);
     }
@@ -97,14 +115,14 @@ window.CaseDeskConsoleView = (h) => {
       const c = byCase[a.case_id] || {};
       const name = h.nameOf(a.customer_user_id) || "them";
       const what = `${a.days || 3} days of premium`;
-      const li = el("li", "q-item" + (a.status === "failed" ? " failed" : ""));
+      const li = el("li", "q-item" + (a.status === "failed" ? " failed" : "") + (S.selected && S.selected !== a.case_id ? " other" : ""));
       li.setAttribute("aria-current", String(a.case_id === S.selected));
-      if (!seenQ.has(a.id)) { seenQ.add(a.id); if (!rises) li.classList.add("arrive"); }
       const b = el("button", "q-open"); b.type = "button"; b.title = "Open the case";
-      const l1 = el("span", "q-l1"); l1.append(who(a.customer_user_id), el("span", "q-want", "wants " + what));
+      const want = el("span", "q-want", "wants " + what);
+      const l1 = el("span", "q-l1"); l1.append(who(a.customer_user_id), want);
       const l2 = el("span", "q-l2");
       const tone = c.state_badge && c.state_badge.tone;
-      l2.append(lamp(tone), el("span", "ell", (c.state_badge && c.state_badge.label) || "No status yet"), timeEl(a.created_at));
+      l2.append(lamp(tone), el("span", "ell", devLabel(c.state_badge && c.state_badge.label) || "No status yet"), timeEl(a.created_at));
       b.append(l1, l2);
       b.onclick = () => h.select(a.case_id);
       li.append(b);
@@ -118,6 +136,7 @@ window.CaseDeskConsoleView = (h) => {
       row.append(ok, no);
       li.append(row, el("p", "hint", "Nothing is granted until you approve."));
       q.append(li);
+      if (!seenQ.has(a.id)) { seenQ.add(a.id); if (!rises && !firstList) requestAnimationFrame(() => flash(want, "warn")); }
     }
 
     // filters: plain words with counts; the active one in teal
@@ -165,23 +184,22 @@ window.CaseDeskConsoleView = (h) => {
       if (c.privacy) flags.append(el("span", "flag", "privacy"));
       else if (c.escalated) flags.append(el("span", "flag", "needs a person"));
       if (flags.children.length) r2.append(flags);
-      b.append(lamp(st.tone, st.label || "No status yet"), r1, r2);
+      b.append(lamp(st.tone, devLabel(st.label) || "No status yet"), r1, r2);
       b.onclick = () => h.select(c.id);
       li.append(b); list.append(li);
     }
-    // a row whose state, flags or message count changed since the last refresh flashes once
+    // a row whose state, flags or message count changed since the last refresh: its time flashes
     const now = new Map();
     for (const c of S.cases) now.set(c.id, [c.state_badge && c.state_badge.code, c.pending_approval, c.escalated, c.privacy, c.messages].join("|"));
     if (!firstList) {
-      for (const b of list.querySelectorAll(".c-item")) if (rowSig.get(b.dataset.id) !== now.get(b.dataset.id)) flash(b, "info");
+      for (const b of list.querySelectorAll(".c-item")) if (rowSig.get(b.dataset.id) !== now.get(b.dataset.id)) flash(b.querySelector(".t"), "info");
     }
     rowSig.clear(); now.forEach((v, k) => rowSig.set(k, v));
     firstList = false;
     if (current && navFocus) { current.scrollIntoView({ block: "nearest" }); current.focus({ preventScroll: true }); navFocus = false; }
   }
 
-  // ------------------------------------------------------------ detail: transcript + inspector
-  const ACT_ICON = (a) => (a.requires_approval ? lamp("warn") : icon("tick"));
+  // ------------------------------------------------------------ detail
   const CLAIM = {
     says_paid: "Says they paid", says_no_access: "Says premium doesn't work", says_charged: "Says they were charged",
     says_cancelled: "Says they cancelled", wants_refund: "Wants a refund", wants_to_cancel: "Wants to cancel",
@@ -192,13 +210,34 @@ window.CaseDeskConsoleView = (h) => {
   const CLAIM_FACT = { says_paid: "last_charged_on", says_no_access: "expires_on", says_charged: "last_charged_on",
     says_cancelled: "cancelled_on", wants_refund: "refund_policy", wants_to_cancel: "renews_on",
     says_new_device: "restore_steps_key", claimed_amount: "price" };
+  const MISSING = { last_charged_on: "No charge on the account", cancelled_on: "Never cancelled", renews_on: "Does not renew" };
   const CONTRA = {
     nothing_charged: { keys: ["says_charged"], text: "The account shows no charge." },
     charged_before_cancel: { keys: ["says_charged"], text: "The charge came before the cancellation." },
     has_access: { keys: ["says_no_access"], text: "Premium is active on the account." },
   };
   const VAL_CLAIM = new Set(["claimed_amount", "previous_intent"]);
-  const HIDE_PARAM = new Set(["store", "state", "steps_key"]); // the same values sit in the FactSheet right below
+  const FACT_LABEL = {
+    state: "State", product_name: "Plan", access_level_name: "Access level", store_name: "Store", price: "Price",
+    purchased_on: "Bought", started_on: "Started", last_charged_on: "Last charged", cancelled_on: "Cancelled",
+    billing_issue_on: "Payment failed", expires_on: "Access ends", renews_on: "Renews", trial_ends_on: "Trial ends",
+    grace_ends_on: "Grace period ends", granted_until: "Given until", refunded_on: "Refunded", days_left: "Days left",
+    days_since_expired: "Days since it ended", ever_charged: "Ever charged", grant_days: "Grant length",
+    grant_access_level: "Grant gives", manage_url: "Manage link", payment_url: "Payment link", refund_url: "Refund link",
+    refund_policy: "Refunds", restore_steps_key: "Restore steps",
+  };
+  const FACT_SKIP = new Set(["store", "as_of", "app_name"]);
+  const ENUM = { apple_only: "Only Apple refunds", google_request: "Request through Google Play", restore_ios: "iPhone steps", restore_android: "Android steps" };
+  function factLabel(k, f) {
+    if (k === "expires_on" && f.as_of && f[k] < f.as_of) return "Access ended";
+    return FACT_LABEL[k] || cap(words(k));
+  }
+  function factValue(k, v, c) {
+    if (k === "state" && c.state) return devLabel(c.state.label);
+    if (k === "grant_days") return `${v} days`;
+    if (typeof v === "string" && ENUM[v]) return ENUM[v];
+    return human(v);
+  }
 
   function grantEl(a, c) {
     const f = c.facts || {};
@@ -215,7 +254,7 @@ window.CaseDeskConsoleView = (h) => {
       w.append(p);
     } else if (a.status === "approved") {
       const p = el("p", "done");
-      p.append(icon("tick"), el("span", null, "Premium given" + (a.result && a.result.expires_at ? " until " + h.day(a.result.expires_at, true) : "")));
+      p.append(icon("tick"), el("span", null, "Premium given" + (a.result && a.result.expires_at ? " until " + human(a.result.expires_at) : "")));
       w.append(p);
     } else if (a.status === "denied") {
       w.append(el("p", "done no", `You said no to ${what}. ${cap(h.nameOf(a.customer_user_id) || "the user")} will see that.`));
@@ -248,16 +287,16 @@ window.CaseDeskConsoleView = (h) => {
       const v = claims[k];
       const isContra = struck.includes(k);
       const li = el("li", "claim" + (isContra ? " contra" : ""));
-      const t = el("span", "cl-t"); t.title = k;
+      const t = el("span", "cl-t"); t.title = k + (v === true ? "" : " " + String(v));
       t.append(el("span", "cl-w", CLAIM[k] || cap(words(k))));
-      if (VAL_CLAIM.has(k) || (v !== true && v != null && !(k in CLAIM))) t.append(document.createTextNode(" "), mono("cl-v", String(v)));
+      if (VAL_CLAIM.has(k) || (v !== true && v != null && !(k in CLAIM))) t.append(document.createTextNode(" "), el("span", "cl-v", String(v)));
       const fk = CLAIM_FACT[k];
       const fact = el("span", "cl-f");
-      if (fk) {
-        fact.append(mono("fk", fk), document.createTextNode(" "));
-        if (f[fk]) fact.append(mono("fv", String(f[fk])));
-        else fact.append(el("span", "none", "not on the account"));
-      } else fact.append(el("span", "none", "no matching fact"));
+      if (fk && f[fk]) {
+        fact.title = fk + " " + f[fk];
+        fact.append(el("span", "fl", factLabel(fk, f)), document.createTextNode(" "), el("span", "fv", String(factValue(fk, f[fk], c))));
+      } else if (fk) { fact.title = fk + " is not in the FactSheet"; fact.append(el("span", "fl", MISSING[fk] || "Not on the account")); }
+      else fact.append(el("span", "fl", "Nothing to check against"));
       li.append(t, fact);
       if (isContra) li.append(el("span", "cl-why", contra.text));
       ul.append(li);
@@ -271,10 +310,11 @@ window.CaseDeskConsoleView = (h) => {
     const rv = h.realViolations(v.violations);
     const ok = v.used_fallback || !rv.length; // a rejected draft is replaced by the checked template
     const p = el("p", "verdict " + (ok ? "ok" : "bad"));
-    p.append(icon(ok ? "tick" : "cross"), el("span", null, ok
+    const s = el("span", null, ok
       ? "Every fact in the reply matches the account."
-      : `The reply states ${rv.length === 1 ? "something" : rv.length + " things"} the account doesn't support. See Reply check.`));
-    p.dataset.k = "verdict"; p.dataset.v = ok ? "ok" : "bad"; p.dataset.tone = ok ? "ok" : "bad";
+      : `The reply states ${rv.length === 1 ? "something" : rv.length + " things"} the account doesn't support. See Reply check.`);
+    s.dataset.k = "verdict"; s.dataset.v = ok ? "ok" : "bad"; s.dataset.tone = ok ? "ok" : "bad";
+    p.append(icon(ok ? "tick" : "cross"), s);
     return p;
   }
 
@@ -296,8 +336,8 @@ window.CaseDeskConsoleView = (h) => {
     box.textContent = "";
     box.classList.add("has-case");
 
-    // ---------------- transcript
-    const tr = el("section", "transcript scroll"); tr.setAttribute("aria-label", "Conversation");
+    // ================= the case: who, the status, the conversation, what Case Desk did
+    const tr = el("section", "transcript scroll"); tr.setAttribute("aria-label", "The case");
     const head = el("header", "d-head");
     const h2 = el("h2"); h2.append(who(c.customer_user_id, "span"));
     const meta = el("dl", "d-meta");
@@ -309,38 +349,13 @@ window.CaseDeskConsoleView = (h) => {
     head.append(h2, meta);
     tr.append(head);
 
-    const turns = el("ol", "turns");
-    for (const m of d.messages) {
-      const mm = m.meta || {};
-      const pending = mm.status === "pending";
-      const li = el("li", `turn ${m.role}${pending ? " pending" : ""}${mm.event === "grant_denied" ? " denied" : ""}`);
-      li.dataset.k = "m:" + m.id; li.dataset.v = (mm.status || "") + (pending ? "" : String(m.text).length);
-      li.dataset.tone = m.role === "assistant" ? "amber" : m.role === "system" ? (mm.event === "grant_denied" ? "info" : "ok") : "info";
-      const th = el("div", "turn-head");
-      th.append(el("span", "turn-who", m.role === "user" ? (h.nameOf(c.customer_user_id) || "User") : m.role === "system" ? "Lumen team" : "Case Desk"));
-      if (m.role === "assistant" && !pending) {
-        const n = replyNote(mm);
-        const ck = el("span", "checked" + (n.bad ? " bad" : ""));
-        ck.append(icon(n.bad ? "cross" : "tick"), el("span", null, n.bad ? "Check failed" : "Checked"));
-        ck.title = n.text;
-        th.append(ck);
-      }
-      if (mm.status === "error") th.append(el("span", "turn-flag bad", "Something went wrong"));
-      if (mm.abandoned) th.append(el("span", "turn-flag", "Never seen by the user"));
-      th.append(timeEl(m.created_at, true));
-      li.append(th, auto(el("div", "txt", pending ? "Writing the reply…" : m.text)));
-      turns.append(li);
-    }
-    tr.append(turns);
-
-    // ---------------- inspector (always visible: no disclosure)
-    const ins = el("section", "inspector scroll"); ins.setAttribute("aria-label", "Inspector");
     const tone = (c.state && c.state.tone) || "info";
     const ro = el("div", "readout " + tone);
-    ro.dataset.k = "status"; ro.dataset.v = (c.state && c.state.code) + "|" + h.stateLine(c.state, f); ro.dataset.tone = tone;
-    const rl = el("p", "ro-label"); rl.append(lamp(tone), el("span", null, (c.state && c.state.label) || "No status yet"));
-    ro.append(rl, el("p", "ro-line", h.stateLine(c.state, f)));
-    ro.append(verdictLine(c));
+    const rl = el("p", "ro-label");
+    const rlt = el("span", "ro-l", devLabel(c.state && c.state.label) || "No status yet");
+    rlt.dataset.k = "status"; rlt.dataset.v = (c.state && c.state.code) + "|" + h.stateLine(c.state, f); rlt.dataset.tone = tone;
+    rl.append(lamp(tone), rlt);
+    ro.append(rl, el("p", "ro-line", h.stateLine(c.state, f)), verdictLine(c));
     const alerts = [];
     if (fl.privacy) alerts.push(["warn", "Privacy or data request. Handle it through your data-protection process."]);
     (fl.escalation_reasons || []).filter((r) => r !== "privacy_request" || !fl.privacy).forEach((r) => alerts.push(["warn", "Needs a person, because " + h.reasonText(r) + "."]));
@@ -350,10 +365,36 @@ window.CaseDeskConsoleView = (h) => {
       alerts.forEach(([t, text]) => { const li = el("li", "alert " + t); li.append(lamp(t), el("span", null, text)); ul.append(li); });
       ro.append(ul);
     }
-    ins.append(ro);
+    tr.append(ro);
 
-    // what Case Desk did, with the policy code under each line and the grant under its request
-    const did = sub("What Case Desk did");
+    const turns = el("ol", "turns");
+    for (const m of d.messages) {
+      const mm = m.meta || {};
+      const pending = mm.status === "pending";
+      const li = el("li", `turn ${m.role}${pending ? " pending" : ""}${mm.event === "grant_denied" ? " denied" : ""}`);
+      const th = el("div", "turn-head");
+      const nm = el("span", "turn-who", m.role === "user" ? (h.nameOf(c.customer_user_id) || "User") : m.role === "system" ? "Lumen team" : "Case Desk");
+      nm.dataset.k = "m:" + m.id; nm.dataset.v = (mm.status || "") + (pending ? "" : String(m.text).length);
+      nm.dataset.tone = m.role === "assistant" ? "amber" : m.role === "system" ? (mm.event === "grant_denied" ? "info" : "ok") : "info";
+      th.append(nm);
+      if (m.role === "assistant" && !pending) {
+        const n = replyNote(mm);
+        const ck = el("span", "checked" + (n.bad ? " bad" : ""));
+        ck.append(icon(n.bad ? "cross" : "tick"), el("span", null, n.bad ? "Check failed" : "Checked"));
+        ck.title = n.text;
+        th.append(ck);
+      }
+      if (mm.status === "error") th.append(el("span", "turn-flag bad", "Something went wrong"));
+      if (mm.abandoned) th.append(el("span", "turn-flag", "Never seen by the user"));
+      th.append(timeEl(m.created_at, "turn", c.created_at));
+      li.append(th, auto(el("div", "txt", pending ? "Writing the reply…" : m.text)));
+      turns.append(li);
+    }
+    tr.append(turns);
+
+    // what Case Desk did: plain sentences (the policy code is in the title), the grant under its request
+    const did = el("section", "did-sec");
+    did.append(el("h3", null, "What Case Desk did"));
     const acts = c.actions || [];
     const grants = d.approvals.map((a) => grantEl(a, c));
     if (acts.length) {
@@ -361,62 +402,65 @@ window.CaseDeskConsoleView = (h) => {
       for (const a of acts) {
         const li = el("li", a.requires_approval ? "needs" : null);
         const body = el("div", "did-b");
-        body.append(el("span", "did-t", h.actionText(a)));
-        const code = el("code", "did-k"); code.translate = false;
-        code.append(el("span", "k", a.kind));
-        tokens(code, a.params, HIDE_PARAM);
-        body.append(code);
+        const t = el("span", "did-t", h.actionText(a)); t.title = a.kind;
+        body.append(t);
         if (a.kind === "PROPOSE_GRANT") grants.splice(0).forEach((g) => body.append(g));
-        li.append(ACT_ICON(a), body);
+        li.append(a.requires_approval ? lamp("warn") : icon("tick"), body);
         ul.append(li);
       }
       did.append(ul);
     } else did.append(el("p", "quiet", c.validator ? "Answered the message. Nothing else was needed." : "Still working on it…"));
     grants.forEach((g) => did.append(g));
-    ins.append(did);
+    tr.append(did);
 
-    // claims against the facts
+    // ================= the evidence column
+    const ins = el("section", "inspector scroll"); ins.setAttribute("aria-label", "Evidence");
+
     const cl = sub("What the user claims");
-    cl.append(claimsBlock(c));
+    cl.append(el("p", "sec-note", "Each claim beside the fact it was checked against."), claimsBlock(c));
     ins.append(cl);
 
-    // the FactSheet
     const fs = sub("Facts the reply may use");
     fs.append(el("p", "sec-note", "Code built this FactSheet from the Adapty profile. A reply may state these facts and nothing else."));
-    fs.append(kvTable(Object.entries(f).map(([k, v]) => [words(k), v, k])));
+    const factRows = Object.entries(f).filter(([k]) => !FACT_SKIP.has(k)).map(([k, v]) => {
+      const val = factValue(k, v, c);
+      if (typeof v === "string" && /^https?:\/\//.test(v)) { const u = el("span", "url", v.replace(/^https?:\/\//, "")); u.title = v; return [factLabel(k, f), u, k]; }
+      return [factLabel(k, f), val, k + " " + (typeof v === "string" ? v : JSON.stringify(v))];
+    });
+    fs.append(kvTable(factRows));
     ins.append(fs);
 
-    // validator, per reply
     const vc = sub("Reply check");
     const v = c.validator;
     if (v) {
       const rv = h.realViolations(v.violations), le = h.llmErrors(v.violations, v.llm_error);
       vc.append(kvTable([
         ["Rules broken", String(rv.length), null, "mono " + (rv.length ? "bad" : "ok")],
-        ["Template used instead of the draft", v.used_fallback ? "yes" : "no", null, "mono"],
-        ["Source", v.source || "", null, "mono"],
+        ["Template used instead of the draft", v.used_fallback ? "Yes" : "No", null, "plain"],
+        ["Reply written by", { seed: "Scripted demo text", template: "The checked template", llm: "The model" }[v.source] || words(v.source || ""), v.source, "plain"],
       ], "tight"));
       if (rv.length) { const ul = el("ul", "violations"); rv.forEach((x) => ul.append(el("li", null, x))); vc.append(ul); }
-      if (le.length) { const ul = el("ul", "codes"); le.forEach((x) => ul.append(mono(null, x))); vc.append(ul); }
+      if (le.length) { const ul = el("ul", "codes"); le.forEach((x) => { const li = el("li"); li.append(mono(null, x)); ul.append(li); }); vc.append(el("p", "sec-sub", "The model was unavailable, so the checked template answered."), ul); }
     } else vc.append(el("p", "quiet", "The reply is still being written…"));
     const per = el("ol", "per-reply");
     d.messages.filter((m) => m.role === "assistant" && m.meta && m.meta.status !== "pending").forEach((m) => {
       const n = replyNote(m.meta); const li = el("li", n.bad ? "bad" : null);
-      li.append(timeEl(m.created_at, true), el("span", null, n.text)); per.append(li);
+      li.append(timeEl(m.created_at, "turn", c.created_at), el("span", null, n.text)); per.append(li);
     });
     if (per.children.length) vc.append(per);
     ins.append(vc);
 
-    // approval records
     if (d.approvals.length) {
       const ap = sub("Approval records", d.approvals.length);
       const ol = el("ol", "records");
       d.approvals.forEach((a) => {
         const li = el("li");
+        const res = a.result && Object.keys(a.result).length ? el("code", "plainc") : null;
+        if (res) tokens(res, a.result, true);
         li.append(kvTable([
-          ["Request", a.id], ["Status", a.status], ["Grant", `${a.days || "?"} days of ${a.access_level_id}`],
+          ["Request", a.id], ["Status", cap(a.status), null, "plain"], ["Grant", `${a.days || "?"} days of ${a.access_level_id}`, null, "plain"],
           ["Requested", clock(a.created_at)], ...(a.decided_at ? [["Decided", clock(a.decided_at)]] : []),
-          ...(a.result && Object.keys(a.result).length ? [["Adapty result", JSON.stringify(a.result)]] : []),
+          ...(res ? [["Adapty result", res]] : []),
         ], "tight"));
         ol.append(li);
       });
@@ -428,10 +472,10 @@ window.CaseDeskConsoleView = (h) => {
     const rec = sub("Case record");
     const sc = c.sale_context || {};
     const rows = [["Case", c.id], ["User", c.customer_user_id], ["Opened", clock(c.created_at)], ["Updated", clock(c.updated_at)]];
-    if (c.state) rows.push(["State", c.state.code]);
+    if (c.state) rows.push(["State code", c.state.code]);
     if (c.intent && c.intent.type) rows.push(["Intent", c.intent.type + (c.intent.source ? " (" + c.intent.source + ")" : "")]);
-    if (c.language) rows.push(["Language", c.language]);
-    rows.push(["Channel", words(sc.acquisition_channel || "unknown")]);
+    if (c.language) rows.push(["Language code", c.language]);
+    rows.push(["Channel", cap(words(sc.acquisition_channel || "unknown")), null, "plain"]);
     if (sc.placement || sc.flow) rows.push(["Placement and flow", [sc.placement, sc.flow].filter(Boolean).join(" / ")]);
     rec.append(kvTable(rows, "tight"));
     if (sc.placement || sc.flow) rec.append(el("p", "sec-note", "Placement and flow come from the seed CSV, a stand-in for Adapty paywall data."));
@@ -441,15 +485,25 @@ window.CaseDeskConsoleView = (h) => {
     }
     ins.append(rec);
 
-    // audit log as a compact time grid
+    // the one raw table: what policy decided, exactly as stored
+    if (acts.length) {
+      const pa = sub("Policy actions", acts.length);
+      pa.append(kvTable(acts.map((a) => {
+        const code = el("code", "raw"); tokens(code, a.params);
+        if (a.requires_approval) code.append(" ", el("span", "pk", "requires_approval"), " ", el("span", "pv", "true"));
+        return [a.kind, code, null, "mono raw"];
+      }), "policy"));
+      ins.append(pa);
+    }
+
     const au = sub("Audit log", d.audit.length);
     const ol = el("ol", "audit");
     d.audit.forEach((e) => {
       const li = el("li");
       const ev = el("span", "a-ev"); ev.append(mono("a-e", e.event), document.createTextNode(" "), mono("a-a", e.actor));
       const det = el("code", "a-d"); det.translate = false;
-      tokens(det, e.detail);
-      li.append(timeEl(e.ts, true), ev, det);
+      tokens(det, e.detail, true);
+      li.append(timeEl(e.ts, "full"), ev, det);
       ol.append(li);
     });
     au.append(ol);
@@ -458,14 +512,14 @@ window.CaseDeskConsoleView = (h) => {
     const mods = Object.entries(S.modules || {});
     if (mods.length) {
       const sm = sub("System modules");
-      sm.append(kvTable(mods.map(([k, val]) => [words(k), val, k, "mono" + (val === "stub" ? " warn" : "")]), "tight"));
+      sm.append(kvTable(mods.map(([k, val]) => [cap(words(k)).replace(/^Ai\b/, "AI"), val, k, "mono" + (val === "stub" ? " warn" : "")]), "tight"));
       ins.append(sm);
     }
 
     box.append(tr, ins);
     if (keep) { box.scrollTop = keep[0]; box.querySelectorAll(".scroll").forEach((n, i) => { n.scrollTop = keep[i + 1] || 0; }); }
 
-    // reverse video for whatever changed on this case since the last refresh
+    // reverse video for whatever changed on this case since the last refresh (labels only)
     const vals = new Map();
     box.querySelectorAll("[data-k]").forEach((n) => vals.set(n.dataset.k, n.dataset.v));
     if (same) box.querySelectorAll("[data-k]").forEach((n) => { if (prev.vals.get(n.dataset.k) !== n.dataset.v) flash(n, n.dataset.tone); });

@@ -13,7 +13,7 @@
 </head>
 <body class="console">
 <header class="top">
-  <a class="mark" href="/" title="Back to the Lumen landing page"><span class="mk" aria-hidden="true"></span><span class="cd">Case Desk</span><span class="for">for Lumen</span></a>
+  <a class="mark" href="/?v=2" title="Back to the Lumen landing page"><span class="mk" aria-hidden="true"></span><span class="cd">Case Desk</span><span class="for">for Lumen</span></a>
   <div class="top-meta" id="topMeta"></div>
   <span class="live" id="live" aria-live="polite"></span>
 </header>
@@ -31,12 +31,14 @@
 
 <main class="app" id="app" hidden>
   <section class="list" aria-labelledby="cH">
-    <div class="list-head">
-      <h2 id="cH">Cases</h2>
-      <span class="count" id="cCount">0</span>
-      <span class="keys" aria-hidden="true"><kbd>j</kbd><kbd>k</kbd> move</span>
+    <div class="list-top">
+      <div class="list-head">
+        <h2 id="cH">Cases</h2>
+        <span class="count" id="cCount">0</span>
+        <span class="keys" aria-hidden="true"><kbd>j</kbd><kbd>k</kbd> move</span>
+      </div>
+      <div class="filters" id="filters" role="group" aria-label="Filter cases"></div>
     </div>
-    <div class="filters" id="filters" role="group" aria-label="Filter cases"></div>
     <ol class="c-list" id="cases"></ol>
     <p class="empty" id="cEmpty" hidden>No cases yet. Open <a href="/help?v=2" target="_blank" rel="noopener">Lumen Help</a> and send a message; it shows up here.</p>
   </section>

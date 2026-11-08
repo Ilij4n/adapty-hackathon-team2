@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/img/banner.svg" width="100%" alt="Case Desk: in-app subscription help, built on Adapty"></p>
+
 # Case Desk
 
 In-app subscription help for an app's subscribers, built on Adapty. Adapty Hackathon Belgrade 2026, Team 2
@@ -10,6 +12,10 @@ the code didn't supply. A courtesy grant is only ever a request, which the devel
 one click.
 
 It is white-labelled for the app ("Lumen Help" in the demo; Lumen is Adapty's hackathon test app).
+
+<p align="center"><img src="docs/img/architecture.svg" width="100%" alt="Architecture: code decides the facts, Claude writes the words, you approve the money"></p>
+
+<p align="center"><img src="docs/img/request-flow.svg" width="100%" alt="One message step by step: status card at once, checked reply after, and where an injection stops"></p>
 
 ## Install and run (uv)
 
@@ -110,6 +116,8 @@ The console's **Rules** button (Night Shift, top right) opens three rows:
   written, so the reply doesn't mention it.
 - **Privacy, attacks and "I want a person"**: always a person, by design (not configurable).
 - **Answers about status, charges, cancelling, restore**: automatic, every reply checked (not configurable).
+
+<p align="center"><img src="docs/img/grant-flow.svg" width="100%" alt="The money path: propose, your rule (ask, auto, never), one approve path, Adapty grant"></p>
 
 Grants a rule gave show in teal in the case and the list ("Given automatically by your rule"), with a one-click
 "Switch rule to Ask me". Every rule change is in the audit log (`rules changed: grants ask → auto (3 days)`).

@@ -3,7 +3,8 @@
 .console {
   --chrome: var(--raised);   /* top bar, case list, evidence column */
   --read: var(--pane);       /* the case: the reading surface */
-  --hover: #eef2f8;
+  --hover: #e6ebf3;
+  --line-ctl: #8a97b3;       /* control outlines: 3:1 on white */
   --list-w: clamp(300px, 22vw, 330px);
   --insp-w: clamp(360px, 31vw, 460px);
   --gut: 28px;               /* the case column's side gutter */
@@ -12,7 +13,7 @@
   line-height: 1.45;
 }
 @media (prefers-color-scheme: dark) {
-  .console { --chrome: var(--pane); --read: var(--page); --hover: #111b31; }
+  .console { --chrome: var(--pane); --read: var(--page); --hover: #142039; --line-ctl: #4f6088; }
 }
 /* the dock and the toast are the night strip in both modes: one set of dark tokens */
 .night, .dock, .toast {
@@ -20,6 +21,7 @@
   --ink: #e8edf7; --ink-2: #a7b3cc; --ink-3: #8592ae;
   --amber: #ffa84c; --teal: #3fd0c0; --coral: #ff7a6b; --info: #a7b3cc; --focus: #e8edf7;
   --amber-soft: #2a2117; --teal-soft: #0f2b2f; --coral-soft: #2d1a20; --person: #9cc8f2; --person-soft: #102238;
+  --line-ctl: #55678f;
   color-scheme: dark;
 }
 .console * { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
@@ -347,15 +349,34 @@
 
 /* ------------------------------------------------------------ hover, only where there is a pointer that hovers */
 @media (hover: hover) {
-  .filt:hover { color: var(--ink); }
-  .c-item:hover { background: var(--hover); }
-  .c-item[aria-current="true"]:hover { background: var(--sel); }
+  .filt:hover { color: var(--ink); box-shadow: inset 0 -2px 0 var(--line-2); }
+  .filt[aria-pressed="true"]:hover { box-shadow: inset 0 -2px 0 var(--teal); }
+  .c-item:hover { background: var(--hover); box-shadow: inset 2px 0 0 var(--line-ctl); }
+  .c-item.esc:hover { background: color-mix(in srgb, var(--person-soft) 88%, var(--ink) 12%); }
+  .c-item.wait:hover { box-shadow: inset 2px 0 0 var(--amber); }
+  .c-item:hover .c-msg { color: var(--ink); }
+  .c-item[aria-current="true"]:hover { background: var(--sel); box-shadow: inset 2px 0 0 var(--ink); }
   .q-open:hover .nm { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--ink-3); }
-  .ev-toggle:hover { border-color: var(--ink-3); }
-  .btn.approve:hover { background: #ffb96d; border-color: #ffb96d; }
-  .q-item.row .btn.approve:hover { background: var(--amber-soft); border-color: var(--amber); }
-  .btn.deny:hover { border-color: var(--ink-2); }
+  .btn.approve:hover { background: #ffb766; border-color: #ffb766; transform: translateY(-1px);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--amber-fill) 28%, transparent); }
+  .btn.approve.big:hover { box-shadow: 0 0 0 4px color-mix(in srgb, var(--amber-fill) 24%, transparent); }
+  .btn.deny:hover, .ev-toggle:hover, .btn.resolve:hover { background: var(--sel); border-color: var(--ink-3); }
+  .q-item.row .btn.approve:hover { background: var(--amber-soft); border-color: var(--amber); color: var(--amber); }
 }
+/* press, everywhere (touch too): darker, no lift */
+.btn:active:not([disabled]) { transform: translateY(1px); }
+.btn.approve:active:not([disabled]) { background: #f09634; border-color: #f09634; box-shadow: none; transform: none; }
+.btn.deny:active, .ev-toggle:active { background: var(--line); }
+.c-item:active { background: var(--sel); }
+.btn { transition: background-color .12s ease-out, border-color .12s ease-out, box-shadow .12s ease-out, transform .06s ease-out; }
+/* control outlines that pass 3:1 against their surface */
+.btn.deny, .ev-toggle, .btn.resolve { border-color: var(--line-ctl); }
+.btn.approve:focus-visible { outline-offset: 3px; }
+/* skip link: the first Tab stop goes straight to the approvals */
+.skip { position: absolute; left: -9999px; top: 8px; }
+#dock:focus:not(:focus-visible) { outline: none; }
+.skip:focus-visible { position: fixed; left: 8px; z-index: 50; padding: 8px 12px; border-radius: var(--r-ctl);
+  background: var(--amber-fill); color: var(--amber-on); font-weight: 600; text-decoration: none; outline-color: var(--ink); }
 
 /* ------------------------------------------------------------ desktop: a full-height instrument, no page scroll */
 @media (min-width: 980px) {

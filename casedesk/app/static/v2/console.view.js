@@ -755,6 +755,14 @@ window.CaseDeskConsoleView = (h) => {
     if (open && !matchMedia("(min-width: 1200px)").matches) { const ev = $("#evidence"); if (ev) ev.scrollIntoView({ behavior: "smooth", block: "start" }); }
   }
 
+  // skip link: straight to the first Give button (or the dock when nothing waits)
+  const skip = document.getElementById("skipQ");
+  if (skip) skip.addEventListener("click", (e) => {
+    e.preventDefault();
+    const t = document.querySelector("#queue .btn.approve:not([disabled])") || document.getElementById("dock");
+    if (t) { t.focus(); t.scrollIntoView({ block: "nearest" }); }
+  });
+
   // the dock is a fixed sheet on phones: the page is padded by its height so it never hides the end of the page
   const dock = document.getElementById("dock");
   if (dock && "ResizeObserver" in window) {

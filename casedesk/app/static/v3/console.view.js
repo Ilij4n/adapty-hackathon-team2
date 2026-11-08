@@ -30,15 +30,9 @@
       const now = new Date();
       if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
       if (Date.now() - d < 3600e3 * 24 && d < now) return ago(iso);
-      const o = { day: "numeric", month: "short" }; if (d.getFullYear() !== now.getFullYear()) o.year = "numeric";
-      return d.toLocaleDateString("en-GB", o);
+      return day(iso);
     }
-    function stamp(iso) { // "4 Nov, 00:10"
-      const d = new Date(iso); if (isNaN(d)) return String(iso || "");
-      const o = { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" };
-      if (d.getFullYear() !== new Date().getFullYear()) o.year = "numeric";
-      return d.toLocaleString("en-GB", o);
-    }
+    const stamp = (iso) => day(iso, true); // "4 Nov, 00:10": every date goes through h.day
     const timeEl = (iso, cls) => { const t = el("time", cls || "c-time", when(iso)); t.dateTime = iso; t.title = stamp(iso); return t; };
     function stateEl(badge) {
       const s = el("span", "state"); s.append(mark(badge && badge.tone), el("span", "ell", (badge && badge.label) || "No status yet")); return s;
@@ -84,14 +78,16 @@
         li.setAttribute("aria-current", String(a.case_id === S.selected));
         const b = el("button", "q-open"); b.type = "button"; b.title = "Open the case";
         const top = el("span", "row-top");
-        top.append(icon(a.status === "failed" ? "x" : "gift", "q-ic"), who(a.customer_user_id), timeEl(a.created_at));
-        b.append(top, el("span", "q-want", a.status === "failed" ? `Giving ${what} failed` : `Asks for ${what}`));
+        top.append(who(a.customer_user_id), timeEl(a.created_at));
+        const want = el("span", "q-want");
+        want.append(icon(a.status === "failed" ? "x" : "gift", "q-ic"), el("span", null, a.status === "failed" ? `Giving ${what} failed` : `Asks for ${what}`));
+        b.append(top, want);
         if (c.state_badge) b.append(stateEl(c.state_badge));
         b.onclick = () => select(a.case_id);
         li.append(b);
-        if (a.status === "failed") li.append(el("p", "fail", "Adapty couldn't give it: " + ((a.result && a.result.error) || "error") + "."));
+        if (a.status === "failed") li.append(el("p", "fail", `Adapty couldn't give it (${(a.result && a.result.error) || "error"}).`));
         const row = el("div", "grant-row");
-        const ok = el("button", "btn approve", a.status === "failed" ? `Try again: give ${name} ${what}` : `Give ${name} ${what}`);
+        const ok = el("button", "btn approve", a.status === "failed" ? `Try again to give ${name} ${what}` : `Give ${name} ${what}`);
         ok.type = "button"; ok.onclick = () => decide(a.id, "approve", ok);
         const no = el("button", "btn deny", "Deny"); no.type = "button"; no.onclick = () => decide(a.id, "deny", no);
         row.append(ok, no);
@@ -158,8 +154,8 @@
       if (meta.status === "error") return ["bad", "x", "Something went wrong writing this reply."];
       if (rv.length && !meta.used_fallback) return ["bad", "x", `Broke ${rv.length} ${rv.length === 1 ? "rule" : "rules"}. See the technical record.`];
       if (rv.length) return ["ok", "check", "The draft broke a rule, so the checked template was sent."];
-      if (meta.used_fallback || le.length) return ["ok", "check", "The model was unavailable, so the checked template answered."];
-      return ["ok", "check", "Checked against the account."];
+      if (le.length) return ["ok", "check", "The model was unavailable, so the checked template answered."];
+      return ["ok", "check", "Matches the account."];
     }
 
     function grantBox(a, c) {
@@ -170,21 +166,24 @@
       const prev = grantSeen[a.id]; grantSeen[a.id] = a.status;
       if (prev && prev !== a.status) w.classList.add("changed");
       if (a.status === "pending" || a.status === "failed") {
-        const t = el("p", "waiting");
-        t.append(icon("left", "to-list wide-only"), icon("up", "to-list narrow-only"), el("span", null, a.status === "failed"
+        w.append(hang("waiting", icon(a.status === "failed" ? "x" : "clock"), a.status === "failed"
           ? `Giving ${name} ${what} failed. Try again under Needs your OK.`
           : `Waiting for your OK on ${what} for ${name}. Give it or deny it under Needs your OK.`));
-        w.append(t);
       } else if (a.status === "approved") {
-        const t = el("p", "done");
         const exp = a.result && a.result.expires_at;
-        t.append(icon("check"), el("span", null, "Premium given" + (exp ? `, until ${stamp(exp)}.` : ".")));
-        w.append(t, el("p", "grant-sub", `${cap(callName(a.customer_user_id))} sees it in Lumen Help.`));
+        w.append(hang("done", icon("check"), "Premium given" + (exp ? ` until ${day(exp)}.` : ".")),
+          hang("grant-sub", "", `${cap(callName(a.customer_user_id))} sees it in Lumen Help.`));
       } else if (a.status === "denied") {
-        const t = el("p", "done no"); t.append(icon("x"), el("span", null, `You said no to ${what}. ${cap(nameOf(a.customer_user_id) || "the user")} will see that.`));
-        w.append(t);
-      } else w.append(el("p", "done no", `${cap(what)}: ${a.status}.`));
+        w.append(hang("done no", icon("x"), `You said no to ${what}. ${cap(nameOf(a.customer_user_id) || "the user")} will see that.`));
+      } else w.append(hang("done no", "", `${cap(what)} is ${a.status}.`));
       return w;
+    }
+
+    // one hanging column: a 16px icon (or mark) on the reading edge, the words 8px after it
+    function hang(cls, lead, text) {
+      const p = el("p", "hang" + (cls ? " " + cls : ""));
+      const l = el("span", "lead"); l.append(lead); p.append(l, typeof text === "string" ? el("span", "words", text) : text);
+      return p;
     }
 
     function section(title, ...kids) { const s = el("section", "sub"); s.append(el("h3", null, title), ...kids); return s; }
@@ -253,7 +252,7 @@
       } else ver.append(el("p", "soft", "The reply is still being written."));
       const per = el("ol", "per-reply");
       d.messages.filter((m) => m.role === "assistant" && m.meta && m.meta.status !== "pending").forEach((m, i) => {
-        const meta = m.meta; const bits = [meta.used_fallback ? "template fallback" : meta.source === "seed" ? "scripted demo reply passed" : "model reply passed"];
+        const meta = m.meta; const bits = [meta.source === "seed" ? "scripted demo reply passed" : meta.source === "template" && !llmErrors(meta.violations, meta.llm_error).length && !realViolations(meta.violations).length ? "template reply passed" : meta.used_fallback ? "template fallback" : "model reply passed"];
         const rv = realViolations(meta.violations), le = llmErrors(meta.violations, meta.llm_error);
         if (rv.length) bits.push(rv.length + (rv.length === 1 ? " violation" : " violations"));
         if (le.length) bits.push("model unavailable: " + le.join(", "));
@@ -267,14 +266,16 @@
       // claims beside the facts, so a contradiction lines up
       const claims = (c.intent && c.intent.claims) || {};
       const two = el("div", "two");
-      two.append(section("What the user claims", Object.keys(claims).length ? kv(claims) : el("p", "soft", "No specific claims.")),
-        section("FactSheet: the only facts the reply may use", kv(c.facts, "facts")));
+      const claimSec = section("What the user claims", Object.keys(claims).length ? kv(claims) : el("p", "soft", "No specific claims."));
+      claimSec.classList.add("claims");
+      const factSec = section("FactSheet", el("p", "sub-note", "The only facts a reply may use."), kv(c.facts, "facts"));
+      two.append(claimSec, factSec);
       body.append(two);
 
       if (d.approvals.length) {
         const ap = el("ul", "approvals");
         d.approvals.forEach((a) => {
-          const li = el("li"); li.append(lit(a.id), el("span", null, ` ${a.status}, ${a.days || "?"} days of ${a.access_level_id}, requested ${stamp(a.created_at)}`));
+          const li = el("li"); li.append(lit(a.id), el("span", null, ` ${a.status}, ${a.days || "?"} days of ${a.access_level_id}, requested ${day(a.created_at, true)}`));
           if (a.result) li.append(pairs(a.result));
           ap.append(li);
         });
@@ -314,27 +315,30 @@
       card.append(head);
 
       const tone = (c.state && c.state.tone) || "info";
-      const status = el("p", "status " + tone);
-      status.append(mark(tone), el("span", null, stateLine(c.state, f) + "."));
-      card.append(status);
-
+      const top = el("div", "top-lines");
+      top.append(hang("status " + tone, mark(tone), stateLine(c.state, f) + "."));
+      // the outcome of a grant, visible at the top of the letter
+      const done = d.approvals.filter((a) => a.status === "approved").pop();
+      if (done) {
+        const exp = done.result && done.result.expires_at;
+        top.append(hang("outcome", icon("gift"), `Premium given until ${exp ? day(exp) : "the end of the courtesy period"}.`));
+      }
       const v = c.validator || null;
       if (v) {
         const rv = realViolations(v.violations);
         const ok = v.used_fallback || !rv.length;
-        const t = el("p", "trust " + (ok ? "ok" : "bad"));
-        t.append(icon(ok ? "check" : "x"), el("span", null, ok ? "Checked: every fact in the replies matches the account." : "A reply broke a rule. See the technical record."));
-        card.append(t);
+        top.append(hang("trust " + (ok ? "ok" : "bad"), icon(ok ? "check" : "x"), ok ? "Every fact in the replies matches the account." : "A reply broke a rule. See the technical record."));
       }
+      card.append(top);
 
       // what needs a person, in plain view
       const alerts = [];
       if (fl.privacy) alerts.push(["lock", "Privacy or data request. Handle it through your data-protection process."]);
-      (fl.escalation_reasons || []).filter((r) => r !== "privacy_request" || !fl.privacy).forEach((r) => alerts.push(["person", "Needs a person: " + reasonText(r) + "."]));
+      (fl.escalation_reasons || []).filter((r) => r !== "privacy_request" || !fl.privacy).forEach((r) => alerts.push(["person", cap(reasonText(r)) + "."]));
       if (c.intent && c.intent.injection_suspected) alerts.push(["shield", "The message tried to give Case Desk orders. It was ignored."]);
       if (alerts.length) {
         const al = el("ul", "alerts");
-        alerts.forEach(([ic, t]) => { const li = el("li"); li.append(icon(ic), el("span", null, t)); al.append(li); });
+        alerts.forEach(([ic, t]) => { const li = el("li", "hang"); const l = el("span", "lead"); l.append(icon(ic)); li.append(l, el("span", "words", t)); al.append(li); });
         card.append(al);
       }
 
@@ -349,13 +353,19 @@
         whoRow.append(el("b", null, m.role === "user" ? (nameOf(c.customer_user_id) || "User") : m.role === "system" ? "Lumen Help" : "Case Desk"));
         const tm = el("time", null, stamp(m.created_at)); tm.dateTime = m.created_at; whoRow.append(tm);
         if (meta.abandoned) whoRow.append(el("span", "never", "never seen by the user"));
-        const txt = auto(el("div", "txt"));
-        if (m.role === "system") txt.append(icon(meta.event === "grant_denied" ? "x" : "check"));
-        withBreaks(txt, pending ? "Writing the reply…" : m.text);
-        t.append(whoRow, txt);
+        if (m.role === "system") {
+          const words = withBreaks(auto(el("span", "words")), m.text);
+          const line = hang(meta.event === "grant_denied" ? "sys no" : "sys", icon(meta.event === "grant_denied" ? "x" : "check"), words);
+          line.classList.add("txt");
+          t.append(whoRow, line);
+        } else {
+          const txt = auto(el("div", "txt"));
+          withBreaks(txt, pending ? "Writing the reply…" : m.text);
+          t.append(whoRow, txt);
+        }
         if (m.role === "assistant" && !pending && m.meta) {
           const [ctone, cic, ctext] = replyCheck(meta);
-          const ck = el("p", "checked " + ctone); ck.append(icon(cic), el("span", null, ctext)); t.append(ck);
+          t.append(hang("checked " + ctone, icon(cic), ctext));
         }
         convo.append(t);
       }
@@ -368,7 +378,7 @@
       const acts = c.actions || [];
       if (acts.length) {
         const ul = el("ul");
-        acts.forEach((a) => { const li = el("li", a.requires_approval ? "needs" : null); li.append(icon(KIND_ICON[a.kind] || "check"), el("span", null, actionText(a) + ".")); ul.append(li); });
+        acts.forEach((a) => { const li = el("li", "hang" + (a.requires_approval ? " needs" : "")); const l = el("span", "lead"); l.append(icon(KIND_ICON[a.kind] || "check")); li.append(l, el("span", "words", actionText(a) + ".")); ul.append(li); });
         did.append(ul);
       } else did.append(el("p", "soft", c.validator ? "Answered the message. Nothing else was needed." : "Still working on it…"));
       card.append(did);
@@ -379,7 +389,7 @@
       const more = el("details", "more");
       const sum = el("summary");
       sum.append(icon("chev", "chev"), el("span", "when-closed", "Show the technical record"), el("span", "when-open", "Hide the technical record"),
-        el("span", "sum-note", "facts, policy, checks, audit log"));
+        el("span", "sum-note", "Facts, policy, checks and the audit log."));
       // only a reader's click animates; console.js restoring an open record after a refresh stays instant
       sum.addEventListener("click", () => { more.classList.add("animate"); });
       more.append(sum, record(d, c, v));

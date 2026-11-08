@@ -26,16 +26,28 @@
       setOpen(tog, more, open); card.classList.toggle("open", open);
     });
 
+    // the state label ("Ended: the payment didn't go through") written as sentences
+    const capL = (x) => (x ? x.charAt(0).toLocaleUpperCase(document.documentElement.lang) + x.slice(1) : x);
+    const stop = (x) => (/[.!?]$/.test(x) ? x : x + ".");
     function paintStatus(st) {
       const b = $("#stateBadge"); const code = st.state_badge.code;
       b.className = "badge " + (st.state_badge.tone || "info");
-      b.textContent = (SL[S.lang] && SL[S.lang][code]) || st.state_badge.label;
+      const label = String((SL[S.lang] && SL[S.lang][code]) || st.state_badge.label || "");
       const L = t().facts; const rows = cardRows(st.facts || {});
-      // the one date that answers "until when" goes into the folded sentence; the rest waits in the fold
+      // the one date that answers "until when" goes under the sentence; the rest waits in the fold
       const DATES = [L.granted_until, L.trial_ends_on, L.renews_on, L.grace_until, L.expires_on, L.expired_on, L.refunded_on, L.billing_issue_on];
       const key = rows.find(([k]) => DATES.includes(k));
+      const cut = label.indexOf(": ");
+      let sentence = stop(capL(label));
+      if (cut > 0) {
+        const head = label.slice(0, cut), tail = stop(capL(label.slice(cut + 2)));
+        // "Ended" is said again by "Ended on 22 Oct 2026", so the head only stays when the date line doesn't repeat it
+        const repeated = key && key[0].toLocaleLowerCase().startsWith(head.toLocaleLowerCase());
+        sentence = repeated ? tail : `${stop(capL(head))} ${tail}`;
+      }
+      b.textContent = sentence;
       const sub = $("#stSub"); sub.textContent = "";
-      if (key) sub.append(el("span", "st-date", `${key[0]} ${key[1]}`));
+      if (key) sub.append(el("span", "st-date", stop(`${key[0]} ${String(key[1]).replace(/\.$/, "")}`)));
       sub.hidden = !sub.children.length;
       const dl = $("#facts"); dl.textContent = "";
       rows.forEach(([k, v]) => { const d = el("div"); d.append(el("dt", null, k), el("dd", null, v)); dl.append(d); });
@@ -120,10 +132,13 @@
       }
     }).observe($("#log"), { childList: true, subtree: true });
 
-    // the narrow-screen picker: "Ava 00239", laid out without a middle dot
-    function onUser() {
-      document.querySelectorAll("#demoSelect option").forEach((o) => { if (o.textContent.includes(" \u00b7 ")) o.textContent = o.textContent.replace(" \u00b7 ", "\u2002"); });
-    }
+    // bubbles settle in only when they arrive after the page or a new subscriber has loaded, never as a replay
+    const log = $("#log");
+    const goLive = () => log.classList.add("live");
+    $("#composer").addEventListener("submit", goLive, true);
+    $("#msg").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) goLive(); }, true);
+    $("#chips").addEventListener("click", goLive, true);
+    function onUser() { log.classList.remove("live"); }
 
     return { paintStatus, renderActions, fillProfile, onUser };
   };

@@ -18,8 +18,9 @@
      Status colours never carry meaning alone: each sits next to words (or a named icon).
 
    TYPE     Commissioner, one family (variable wght + FLAR "flair"). Two weights: 400 and 600.
-            Flair only on the three display moments: the correspondent's name, the status sentence, the help
-            greeting (FLAR 36, a little). Sentence case everywhere; no capitals labels, no mono.
+            Flair at full strength (FLAR 100, weight 800, the one display exception to the two weights) on one
+            element only: the correspondent's name heading each letter in the console, where the flared
+            terminals read like a letterhead. Everything else is plain 400 and 600. Sentence case everywhere; no capitals labels, no mono.
             Console scale 13 / 14 / 17 / 22 / 30.  Help scale 13 / 15 / 17 / 22 / 26.
             Line-height 1.45 to 1.5, measure under 72ch. Commissioner ships no tabular figures, so times live
             right-aligned in their own column instead of relying on tnum.
@@ -39,7 +40,7 @@
      | () Wait   1 | | Nothing is granted ...   |  v Checked: every fact in the replies matches the account |
      |             | '-------------------------'                                                          |
      |             | Everything             16 |      Ava, 00:10                                          |
-     |             |   Oliver 03873      3 Nov |      ( I paid but premium is gone ... )  deep green      |
+     |             |   Oliver 03873      3 Nov |      ( I paid but premium is gone ... )  accent wash     |
      |             |   I cancelled the free    |  Case Desk, 00:10                                        |
      |             |   trial but I think ...   |  ( I checked your account: ... ) eucalyptus wash        |
      |             |   o Trial cancelled       |  v Checked against the account                           |
@@ -60,9 +61,9 @@
      |  subscription?                    |
      |        ( I paid but no premium )  |   user bubbles in deep green, right
      |  ( Reply in 17px ... )            |   Lumen's replies on eucalyptus wash
-     |  [Update payment method  /]       |
-     |   [I was charged after cancelling]|   suggestions wrap at the end of the
-     |       [New phone] [Refund]        |   conversation (no sideways scroll)
+     |  [Update payment method       /]  |   actions stacked, equal width
+     |  [I was charged after cancelling] |   suggestions wrap, left-aligned, under
+     |  [New phone] [Refund]             |   the conversation (no sideways scroll)
      |-----------------------------------|
      | ( Describe the problem...   (>) ) |   large composer
      +-----------------------------------+
@@ -85,8 +86,15 @@
        separate blue-gum hue for true/checked, the green stays the one accent.
      - Dark mode: the mint accent shouted at bubble size, so the subscriber's bubbles keep a deep green
        (#2A6249) after dark while buttons, links and focus use the mint.
-     - Stock chips scroll sideways in the footer. Changed: they are quick replies that wrap at the end of the
-       conversation, aligned to the subscriber's side, so the footer stays a single large composer.
+     - Stock chips scroll sideways in the footer. Changed: they are quick replies that wrap right under the
+       greeting (later under the conversation), so the footer stays a single large composer.
+   SECOND PASS (senior review)
+     - The console's user bubbles sat in solid green and read as buttons: now a quiet accent wash with ink text,
+       so the Give button is the only solid green. Help keeps the green bubble (it is the subscriber's own side).
+     - One hanging column in the letter: every icon or mark sits on the reading edge in a 16px lead, words start
+       8px after it; boxes (alerts, the waiting note) hang into the margin so their icons stay on that edge.
+     - Flair was invisible at 36 (and still at 100 below weight 700): now FLAR 100 at weight 800 on one thing,
+       the correspondent's name at 40px. Flair is gone everywhere else, help included.
    ========================================================================================================== */
 
 :root {
@@ -95,7 +103,7 @@
   --sheet: #fbfcfa;
   --wash: #e4ebe5;          /* bubbles from Lumen / Case Desk, hover */
   --line: #d3ddd5;
-  --line-strong: #8d9c93;   /* form-control edges (3:1) */
+  --line-strong: #7d8d84;   /* control edges and outlines: 3:1 on sheet and ground */
   --ink: #1e2a24;
   --ink-2: #4d5c54;
   --ink-3: #57665e;
@@ -116,7 +124,7 @@
   --float: 0 1px 2px rgba(30, 42, 36, .08), 0 12px 32px rgba(30, 42, 36, .14);
 
   --font: "Commissioner", "Noto Sans Arabic", "Geeza Pro", "Segoe UI", Tahoma, sans-serif;
-  --flair: "FLAR" 36;
+  --flair: "FLAR" 100;    /* only on the case name: the one memorable thing */
   --r-1: 8px; --r-2: 12px; --r-3: 20px;
   --ease-out: cubic-bezier(.2, .7, .2, 1);
   color-scheme: light;
@@ -128,10 +136,10 @@
     --sheet: #19211c;
     --wash: #232d27;
     --line: #2c3830;
-    --line-strong: #5f6e65;
+    --line-strong: #6e7d74;
     --ink: #e6ece7;
     --ink-2: #aebbb2;
-    --ink-3: #8a988f;
+    --ink-3: #97a59c;     /* AA on the selected-row wash too */
     --accent: #8fd0ae;
     --accent-ink: #0f1a14;
     --accent-wash: #1e3428;

@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="320" viewBox="0 0 1280 320" role="img" aria-labelledby="t d">
+<title id="t">Case Desk</title>
+<desc id="d">Case Desk: in-app subscription help, built on Adapty. A subscriber writes "I paid but have no premium"; Case Desk answers with a checked reply and asks the developer to give 3 days of premium.</desc>
+<defs>
+  <clipPath id="card"><rect x="0" y="0" width="1280" height="320" rx="22"/></clipPath>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#070B14"/><stop offset=".55" stop-color="#0B1324"/><stop offset="1" stop-color="#16274A"/>
+  </linearGradient>
+  <radialGradient id="glowA" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#FFA84C" stop-opacity=".30"/><stop offset="1" stop-color="#FFA84C" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="glowT" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#3FD0C0" stop-opacity=".55"/><stop offset="1" stop-color="#3FD0C0" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="haze" cx=".72" cy="1" r=".6">
+    <stop offset="0" stop-color="#1D3563" stop-opacity=".55"/><stop offset="1" stop-color="#1D3563" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="fadeL" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#070B14" stop-opacity=".85"/><stop offset=".45" stop-color="#070B14" stop-opacity="0"/>
+  </linearGradient>
+  <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%">
+    <feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#000" flood-opacity=".55"/>
+  </filter>
+</defs>
+<g clip-path="url(#card)" font-family="IBM Plex Sans, Inter, Segoe UI, Helvetica, Arial, sans-serif">
+  <rect width="1280" height="320" fill="url(#sky)"/>
+  <rect width="1280" height="320" fill="url(#haze)"/>
+  <circle cx="683" cy="52" r="0.9" fill="#E8EDF7" opacity="0.6"/><circle cx="118" cy="32" r="1.2" fill="#E8EDF7" opacity="0.25"/><circle cx="768" cy="28" r="1.2" fill="#E8EDF7" opacity="0.25"/><circle cx="96" cy="36" r="0.9" fill="#E8EDF7" opacity="0.4"/><circle cx="163" cy="75" r="0.7" fill="#E8EDF7" opacity="0.6"/><circle cx="889" cy="29" r="1.2" fill="#E8EDF7" opacity="0.25"/><circle cx="477" cy="29" r="1.2" fill="#E8EDF7" opacity="0.6"/><circle cx="832" cy="26" r="0.7" fill="#E8EDF7" opacity="0.25"/><circle cx="1160" cy="48" r="0.9" fill="#E8EDF7" opacity="0.4"/><circle cx="315" cy="44" r="1.2" fill="#E8EDF7" opacity="0.4"/><circle cx="1167" cy="60" r="0.7" fill="#E8EDF7" opacity="0.6"/><circle cx="1189" cy="62" r="0.9" fill="#E8EDF7" opacity="0.25"/><circle cx="1141" cy="30" r="1.2" fill="#E8EDF7" opacity="0.25"/><circle cx="441" cy="141" r="1.2" fill="#E8EDF7" opacity="0.6"/><circle cx="895" cy="94" r="0.9" fill="#E8EDF7" opacity="0.6"/><circle cx="948" cy="106" r="0.9" fill="#E8EDF7" opacity="0.25"/><circle cx="388" cy="76" r="0.7" fill="#E8EDF7" opacity="0.6"/><circle cx="634" cy="148" r="0.9" fill="#E8EDF7" opacity="0.4"/><circle cx="939" cy="87" r="1.2" fill="#E8EDF7" opacity="0.25"/><circle cx="261" cy="145" r="0.9" fill="#E8EDF7" opacity="0.25"/><circle cx="720" cy="52" r="0.9" fill="#E8EDF7" opacity="0.4"/><circle cx="100" cy="33" r="1.2" fill="#E8EDF7" opacity="0.6"/><circle cx="662" cy="101" r="1.2" fill="#E8EDF7" opacity="0.4"/><circle cx="1237" cy="141" r="1.2" fill="#E8EDF7" opacity="0.4"/><circle cx="160" cy="37" r="0.9" fill="#E8EDF7" opacity="0.4"/><circle cx="153" cy="29" r="1.2" fill="#E8EDF7" opacity="0.6"/><circle cx="654" cy="128" r="0.9" fill="#E8EDF7" opacity="0.6"/><circle cx="810" cy="102" r="0.7" fill="#E8EDF7" opacity="0.4"/><circle cx="747" cy="57" r="1.2" fill="#E8EDF7" opacity="0.25"/><circle cx="1031" cy="29" r="0.7" fill="#E8EDF7" opacity="0.4"/><circle cx="284" cy="77" r="0.9" fill="#E8EDF7" opacity="0.4"/><circle cx="1036" cy="34" r="0.7" fill="#E8EDF7" opacity="0.4"/><circle cx="842" cy="85" r="0.7" fill="#E8EDF7" opacity="0.4"/><circle cx="1146" cy="85" r="1.2" fill="#E8EDF7" opacity="0.4"/><circle cx="754" cy="111" r="0.7" fill="#E8EDF7" opacity="0.25"/><circle cx="189" cy="59" r="0.7" fill="#E8EDF7" opacity="0.25"/><circle cx="497" cy="17" r="0.9" fill="#E8EDF7" opacity="0.6"/><circle cx="393" cy="81" r="0.9" fill="#E8EDF7" opacity="0.25"/><circle cx="318" cy="121" r="1.2" fill="#E8EDF7" opacity="0.4"/><circle cx="1179" cy="95" r="0.7" fill="#E8EDF7" opacity="0.6"/><circle cx="1075" cy="27" r="0.9" fill="#E8EDF7" opacity="0.6"/><circle cx="1165" cy="114" r="0.9" fill="#E8EDF7" opacity="0.4"/><circle cx="827" cy="40" r="0.9" fill="#E8EDF7" opacity="0.6"/><circle cx="840" cy="29" r="0.7" fill="#E8EDF7" opacity="0.25"/><circle cx="447" cy="126" r="0.7" fill="#E8EDF7" opacity="0.25"/><circle cx="716" cy="27" r="0.7" fill="#E8EDF7" opacity="0.25"/>
+  <path d="M1196 44 A16 16 0 1 0 1206 70 A13 13 0 1 1 1196 44 Z" fill="#E8EDF7" opacity=".85"/>
+  <g fill="#111D38"><rect x="0" y="241" width="46" height="99"/><rect x="48" y="215" width="28" height="125"/><rect x="76" y="181" width="40" height="159"/><rect x="116" y="241" width="18" height="99"/><rect x="124" y="231" width="2" height="10"/><rect x="134" y="253" width="46" height="87"/><rect x="180" y="203" width="18" height="137"/><rect x="188" y="193" width="2" height="10"/><rect x="200" y="228" width="28" height="112"/><rect x="228" y="231" width="22" height="109"/><rect x="250" y="253" width="34" height="87"/><rect x="284" y="240" width="22" height="100"/><rect x="306" y="200" width="46" height="140"/><rect x="328" y="190" width="2" height="10"/><rect x="356" y="222" width="22" height="118"/><rect x="382" y="196" width="30" height="144"/><rect x="396" y="186" width="2" height="10"/><rect x="416" y="212" width="40" height="128"/><rect x="435" y="202" width="2" height="10"/><rect x="460" y="257" width="40" height="83"/><rect x="504" y="225" width="18" height="115"/><rect x="524" y="213" width="28" height="127"/><rect x="552" y="234" width="22" height="106"/><rect x="574" y="208" width="22" height="132"/><rect x="596" y="256" width="28" height="84"/><rect x="624" y="247" width="46" height="93"/><rect x="672" y="229" width="30" height="111"/><rect x="702" y="235" width="40" height="105"/><rect x="746" y="213" width="18" height="127"/><rect x="766" y="205" width="18" height="135"/><rect x="774" y="195" width="2" height="10"/><rect x="788" y="212" width="22" height="128"/><rect x="798" y="202" width="2" height="10"/><rect x="810" y="231" width="18" height="109"/><rect x="818" y="221" width="2" height="10"/><rect x="832" y="259" width="28" height="81"/><rect x="860" y="256" width="30" height="84"/><rect x="894" y="230" width="46" height="110"/><rect x="940" y="183" width="40" height="157"/><rect x="982" y="194" width="28" height="146"/><rect x="995" y="184" width="2" height="10"/><rect x="1010" y="219" width="30" height="121"/><rect x="1024" y="209" width="2" height="10"/><rect x="1040" y="244" width="22" height="96"/><rect x="1050" y="234" width="2" height="10"/><rect x="1062" y="244" width="28" height="96"/><rect x="1094" y="185" width="28" height="155"/><rect x="1124" y="260" width="30" height="80"/><rect x="1156" y="232" width="46" height="108"/><rect x="1206" y="182" width="18" height="158"/><rect x="1214" y="172" width="2" height="10"/><rect x="1224" y="227" width="22" height="113"/><rect x="1234" y="217" width="2" height="10"/><rect x="1246" y="196" width="22" height="144"/><rect x="1256" y="186" width="2" height="10"/><rect x="1268" y="181" width="40" height="159"/></g><g></g>
+  <g fill="#0A1020"><rect x="-10" y="275" width="28" height="85"/><rect x="3" y="265" width="2" height="10"/><rect x="20" y="289" width="18" height="71"/><rect x="38" y="252" width="40" height="108"/><rect x="80" y="257" width="18" height="103"/><rect x="98" y="290" width="34" height="70"/><rect x="134" y="285" width="40" height="75"/><rect x="153" y="275" width="2" height="10"/><rect x="178" y="288" width="18" height="72"/><rect x="196" y="291" width="30" height="69"/><rect x="226" y="275" width="34" height="85"/><rect x="260" y="272" width="30" height="88"/><rect x="290" y="285" width="34" height="75"/><rect x="328" y="292" width="28" height="68"/><rect x="356" y="260" width="34" height="100"/><rect x="390" y="250" width="22" height="110"/><rect x="412" y="252" width="40" height="108"/><rect x="452" y="300" width="46" height="60"/><rect x="498" y="289" width="22" height="71"/><rect x="520" y="275" width="34" height="85"/><rect x="554" y="256" width="40" height="104"/><rect x="598" y="298" width="40" height="62"/><rect x="638" y="302" width="40" height="58"/><rect x="682" y="285" width="22" height="75"/><rect x="708" y="260" width="40" height="100"/><rect x="750" y="264" width="18" height="96"/><rect x="772" y="278" width="30" height="82"/><rect x="806" y="268" width="34" height="92"/><rect x="822" y="258" width="2" height="10"/><rect x="842" y="270" width="40" height="90"/><rect x="882" y="253" width="40" height="107"/><rect x="926" y="296" width="22" height="64"/><rect x="952" y="261" width="18" height="99"/><rect x="960" y="251" width="2" height="10"/><rect x="970" y="302" width="30" height="58"/><rect x="1000" y="263" width="22" height="97"/><rect x="1026" y="262" width="22" height="98"/><rect x="1048" y="273" width="34" height="87"/><rect x="1082" y="251" width="40" height="109"/><rect x="1124" y="291" width="28" height="69"/><rect x="1154" y="257" width="18" height="103"/><rect x="1172" y="251" width="46" height="109"/><rect x="1218" y="281" width="18" height="79"/><rect x="1238" y="277" width="18" height="83"/><rect x="1256" y="296" width="34" height="64"/></g><g><rect x="-5" y="292" width="3" height="4" fill="#E8EDF7" opacity="0.25"/><rect x="50" y="296" width="3" height="4" fill="#9CC8F2" opacity="0.5"/><rect x="167" y="293" width="3" height="4" fill="#E8EDF7" opacity="0.35"/><rect x="231" y="283" width="3" height="4" fill="#E8EDF7" opacity="0.5"/><rect x="238" y="301" width="3" height="4" fill="#FFA84C" opacity="0.25"/><rect x="295" y="293" width="3" height="4" fill="#FFA84C" opacity="0.35"/><rect x="375" y="295" width="3" height="4" fill="#9CC8F2" opacity="0.35"/><rect x="402" y="285" width="3" height="4" fill="#9CC8F2" opacity="0.35"/><rect x="417" y="278" width="3" height="4" fill="#E8EDF7" opacity="0.5"/><rect x="431" y="287" width="3" height="4" fill="#E8EDF7" opacity="0.25"/><rect x="532" y="283" width="3" height="4" fill="#9CC8F2" opacity="0.35"/><rect x="587" y="264" width="3" height="4" fill="#E8EDF7" opacity="0.5"/><rect x="566" y="273" width="3" height="4" fill="#E8EDF7" opacity="0.5"/><rect x="573" y="282" width="3" height="4" fill="#E8EDF7" opacity="0.5"/><rect x="566" y="291" width="3" height="4" fill="#FFA84C" opacity="0.5"/><rect x="573" y="291" width="3" height="4" fill="#FFA84C" opacity="0.35"/><rect x="566" y="309" width="3" height="4" fill="#FFA84C" opacity="0.25"/><rect x="694" y="302" width="3" height="4" fill="#FFA84C" opacity="0.5"/><rect x="734" y="268" width="3" height="4" fill="#FFA84C" opacity="0.5"/><rect x="755" y="272" width="3" height="4" fill="#FFA84C" opacity="0.5"/><rect x="777" y="295" width="3" height="4" fill="#9CC8F2" opacity="0.35"/><rect x="791" y="304" width="3" height="4" fill="#FFA84C" opacity="0.5"/><rect x="875" y="287" width="3" height="4" fill="#E8EDF7" opacity="0.35"/><rect x="847" y="305" width="3" height="4" fill="#9CC8F2" opacity="0.5"/><rect x="894" y="270" width="3" height="4" fill="#FFA84C" opacity="0.5"/><rect x="887" y="315" width="3" height="4" fill="#FFA84C" opacity="0.25"/><rect x="1038" y="306" width="3" height="4" fill="#9CC8F2" opacity="0.35"/><rect x="1067" y="281" width="3" height="4" fill="#FFA84C" opacity="0.5"/><rect x="1067" y="308" width="3" height="4" fill="#9CC8F2" opacity="0.25"/><rect x="1094" y="268" width="3" height="4" fill="#E8EDF7" opacity="0.25"/><rect x="1115" y="295" width="3" height="4" fill="#E8EDF7" opacity="0.5"/><rect x="1136" y="299" width="3" height="4" fill="#9CC8F2" opacity="0.5"/><rect x="1129" y="308" width="3" height="4" fill="#E8EDF7" opacity="0.5"/><rect x="1136" y="308" width="3" height="4" fill="#9CC8F2" opacity="0.5"/><rect x="1177" y="259" width="3" height="4" fill="#FFA84C" opacity="0.25"/><rect x="1184" y="268" width="3" height="4" fill="#FFA84C" opacity="0.35"/><rect x="1191" y="268" width="3" height="4" fill="#E8EDF7" opacity="0.5"/><rect x="1191" y="304" width="3" height="4" fill="#E8EDF7" opacity="0.5"/><rect x="1243" y="285" width="3" height="4" fill="#FFA84C" opacity="0.5"/><rect x="1261" y="304" width="3" height="4" fill="#E8EDF7" opacity="0.25"/><rect x="1275" y="304" width="3" height="4" fill="#FFA84C" opacity="0.35"/></g>
+  <rect width="1280" height="320" fill="url(#fadeL)"/>
+
+  <!-- left: wordmark -->
+  <text x="64" y="66" font-family="IBM Plex Mono, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill="#7D8BA8">Adapty Hackathon Belgrade 2026 · Team 2</text>
+  <text x="61" y="146" font-size="76" font-weight="600" letter-spacing="-1.5" fill="#E8EDF7">Case <tspan fill="#FFA84C">Desk</tspan></text>
+  <text x="64" y="186" font-size="23" fill="#A7B3CC">In-app subscription help, built on Adapty</text>
+  <rect x="64" y="214" width="104" height="28" rx="14" fill="#101A30" stroke="#2A3A5C"/><text x="116.0" y="232.5" text-anchor="middle" font-size="13" fill="#A7B3CC">any language</text><rect x="178" y="214" width="123" height="28" rx="14" fill="#101A30" stroke="#2A3A5C"/><text x="239.5" y="232.5" text-anchor="middle" font-size="13" fill="#A7B3CC">facts from code</text><rect x="311" y="214" width="149" height="28" rx="14" fill="#0F2B2F" stroke="#2E8F87"/><text x="385.5" y="232.5" text-anchor="middle" font-size="13" fill="#3FD0C0">every reply checked</text><rect x="470" y="214" width="161" height="28" rx="14" fill="#2A2117" stroke="#9A6630"/><text x="550.5" y="232.5" text-anchor="middle" font-size="13" fill="#FFA84C">you approve the money</text>
+
+  <!-- right: the phone, rising out of the city -->
+  <g filter="url(#shadow)">
+    <rect x="702" y="30" width="214" height="330" rx="34" fill="#05080F" stroke="#24324F"/>
+  </g>
+  <rect x="711" y="39" width="196" height="320" rx="26" fill="#0B1324"/>
+  <rect x="779" y="47" width="60" height="14" rx="7" fill="#05080F"/>
+  <rect x="723" y="72" width="14" height="14" rx="4" fill="#FFA84C"/>
+  <text x="744" y="83.5" font-size="12.5" font-weight="600" fill="#E8EDF7">Lumen Help</text>
+  <rect x="711" y="94" width="196" height="40" fill="#101A30"/>
+  <rect x="723" y="104" width="8" height="8" rx="1.5" fill="#FF7A6B"/>
+  <text x="737" y="111.5" font-size="11" font-weight="600" fill="#E8EDF7">Ended: payment failed</text>
+  <text x="723" y="126" font-family="IBM Plex Mono, SFMono-Regular, Menlo, Consolas, monospace" font-size="9.5" fill="#8592AE">paid 15 Oct · ended 22 Oct</text>
+
+  <rect x="768" y="146" width="128" height="40" rx="12" fill="#1F2E52"/>
+  <text x="780" y="162" font-size="11.5" fill="#E8EDF7">I paid but have</text>
+  <text x="780" y="177" font-size="11.5" fill="#E8EDF7">no premium</text>
+
+  <rect x="721" y="198" width="170" height="92" rx="10" fill="#121D36"/>
+  <rect x="721" y="198" width="3" height="92" fill="#FFA84C"/>
+  <text font-size="10.5" fill="#E8EDF7">
+    <tspan x="733" y="216">You paid on 15 Oct, then the</tspan>
+    <tspan x="733" y="230">App Store couldn&#8217;t take the</tspan>
+    <tspan x="733" y="244">renewal. I&#8217;ve asked the team</tspan>
+    <tspan x="733" y="258">for 3 days of premium.</tspan>
+  </text>
+  <path d="M734 274.5l3 3 5.5-6" fill="none" stroke="#3FD0C0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="747" y="279" font-size="9.5" fill="#3FD0C0">every fact matches</text>
+  <!-- glowing check -->
+  <circle cx="891" cy="198" r="28" fill="url(#glowT)"/>
+  <circle cx="891" cy="198" r="13" fill="#0F2B2F" stroke="#3FD0C0" stroke-width="1.5"/>
+  <path d="M885 198.5l4 4 7.5-8" fill="none" stroke="#3FD0C0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- connector to the developer's decision -->
+  <path d="M906 238 C 930 238, 936 200, 966 200" fill="none" stroke="#FFA84C" stroke-width="1.5" stroke-dasharray="3 5" stroke-linecap="round" opacity=".8"/>
+  <circle cx="966" cy="200" r="3" fill="#FFA84C"/>
+
+  <!-- the decision dock -->
+  <ellipse cx="1100" cy="236" rx="170" ry="70" fill="url(#glowA)"/>
+  <g filter="url(#shadow)">
+    <rect x="972" y="118" width="258" height="146" rx="14" fill="#101A30" stroke="#2D3E62"/>
+  </g>
+  <text x="990" y="144" font-size="11.5" fill="#FFA84C">Waiting for your OK</text>
+  <text x="990" y="168" font-size="15" font-weight="600" fill="#E8EDF7">Ava <tspan font-family="IBM Plex Mono, SFMono-Regular, Menlo, Consolas, monospace" font-weight="400" font-size="12" fill="#8592AE">00239</tspan></text>
+  <text x="990" y="186" font-size="11" fill="#A7B3CC">Paid, then lost premium to a billing error</text>
+  <rect x="990" y="204" width="222" height="40" rx="6" fill="#FFA84C"/>
+  <text x="1101" y="229" text-anchor="middle" font-size="14" font-weight="600" fill="#1F1200">Give Ava 3 days of premium</text>
+</g>
+<rect x="0.5" y="0.5" width="1279" height="319" rx="21.5" fill="none" stroke="#1F2D4B"/>
+</svg>

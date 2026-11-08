@@ -94,6 +94,10 @@
 .c-group h3 .ic { width: 14px; height: 14px; }
 .c-group.person h3 { color: var(--person); }
 .c-group.rest h3 { padding-top: 16px; }
+.c-group.amber h3 { color: var(--ink-2); }
+.c-group.amber.has h3 { color: var(--amber); }
+.c-wait-empty { padding: 0 16px 6px; font-size: var(--t-xs); color: var(--ink-3); }
+.c-item.wait { box-shadow: inset 2px 0 0 var(--amber); }
 .c-item .r1 { grid-row: 1; grid-column: 2; }
 .c-item .r2 { grid-row: 2; grid-column: 2; }
 .c-item[aria-current="true"] { background: var(--sel); box-shadow: inset 2px 0 0 var(--ink); }
@@ -269,13 +273,13 @@
 .dock-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; padding: 14px var(--gut) 4px; }
 .dock-head h2 { font-size: var(--t-l); color: var(--amber); }
 .dock-head .q-n { font-variant-numeric: tabular-nums; }
-.dock.all-done .dock-head h2 { color: var(--ink-2); }
+.dock.all-done .dock-head h2, .dock.is-empty .dock-head h2 { color: var(--ink-2); }
 .dock.all-done .dock-head .keys { display: none; }
 .q-days { color: var(--ink-2); }
 .dock-head .keys { margin-left: auto; }
 .dock #qEmpty { padding: 13px var(--gut); color: var(--ink-2); }
 .dock.rising { animation: dock-rise 220ms ease-out; }
-@keyframes dock-rise { from { transform: translateY(100%); } }
+@keyframes dock-rise { from { transform: translateY(calc(100% - 44px)); } }
 .q-list { min-width: 0; }
 
 /* the big card: who, what, why, what changes, and the brightest button on the screen */
@@ -362,8 +366,15 @@
   .list { grid-area: list; overflow-y: auto; border-right: 1px solid var(--line); }
   .list-top { position: sticky; top: 0; z-index: 2; }
   .detail { grid-area: detail; overflow-y: auto; }
-  .dock { grid-area: dock; max-height: 56vh; overflow-y: auto; }
-  .dock.is-empty { display: none; }  /* collapsed until a grant arrives, so its rise is a real moment */
+  .dock { grid-area: dock; max-height: 34vh; overflow-y: auto; }
+  /* nothing waiting: a quiet 44px strip, so the place approvals land is visible before the first one does */
+  .dock.is-empty { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 12px; padding: 6px var(--gut); min-height: 44px; }
+  .dock.is-empty::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 2px; box-shadow: inset 0 0 0 1.5px var(--ink-3); }
+  .dock.is-empty .dock-head { padding: 0; }
+  .dock.is-empty .dock-head h2 { font-size: var(--t-s); font-weight: 600; }
+  .dock.is-empty .dock-head .keys, .dock.is-empty .q-days { display: none; }
+  .dock.is-empty #qEmpty { padding: 0; font-size: var(--t-xs); color: var(--ink-3); }
+  .dock.is-empty .q-list { display: none; }
   .dock .q-rows { max-height: 24vh; overflow-y: auto; }
   .inspector { border-top: 1px solid var(--line); }
   /* collapsed: clipped to nothing and inert (no focus), but still in the page so its headings stay findable */
@@ -380,7 +391,8 @@
   .inspector { border-top: 0; border-left: 1px solid var(--line); overflow-x: hidden; }
   .inspector > .sec { width: calc(var(--insp-w) - 1px); }
   .detail:not(.ev-open) .inspector { height: auto; border-left-width: 0; }
-  .dock { max-height: 50vh; overflow: hidden; display: flex; flex-direction: column; }
+  .dock { max-height: 34vh; overflow: hidden auto; display: flex; flex-direction: column; }
+  .dock.is-empty { flex-direction: row; }
   .dock .q-list { min-height: 0; flex: 1; }
   .dock .q-list.has-rest { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 38%); align-items: start; }
   .q-list.has-rest > .q-done { grid-column: 1 / -1; }

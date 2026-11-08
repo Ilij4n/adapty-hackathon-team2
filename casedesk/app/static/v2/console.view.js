@@ -146,7 +146,7 @@ window.CaseDeskConsoleView = (h) => {
     const body = el("div", "q-body");
     body.append(b);
     const sentence = why.get(a.case_id) || devLabel(c.state_badge && c.state_badge.label);
-    if (sentence) body.append(el("p", "q-why", sentence));
+    if (sentence && a.case_id !== S.selected) body.append(el("p", "q-why", sentence)); // the open case already says why
     body.append(el("p", "q-change", `${cap(name)} gets premium for ${days} days. Nothing else changes.`));
     li.append(kick, body);
     if (a.status === "failed") li.append(el("p", "fail", "Adapty couldn't give it: " + ((a.result && a.result.error) || "error") + ". Nothing changed for " + name + "."));
@@ -206,6 +206,11 @@ window.CaseDeskConsoleView = (h) => {
       dock.addEventListener("animationend", () => dock.classList.remove("rising"), { once: true });
     }
 
+    // a grant arrives (or is waiting on load) and no case is open: open its case, so the facts sit above the button
+    const fresh = pend.find((a) => !seenQ.has(a.id));
+    if (!S.selected && pend.length && (firstList || fresh) && matchMedia("(min-width: 980px)").matches) {
+      const t = fresh || pend[0]; setTimeout(() => { if (!S.selected) h.select(t.case_id); }, 0);
+    }
     const q = $("#queue"); q.textContent = "";
     // the green line a decided card collapses into
     for (const a of done) {
@@ -239,17 +244,18 @@ window.CaseDeskConsoleView = (h) => {
     }
   }
 
-  function caseRow(c) {
-    const li = el("li"); const b = el("button", "c-item" + (c.escalated ? " esc" : "")); b.type = "button";
+  function caseRow(c, wait) {
+    const esc = c.escalated && c.status !== "resolved";
+    const li = el("li"); const b = el("button", "c-item" + (esc && !wait ? " esc" : "") + (wait ? " wait" : "")); b.type = "button";
     b.setAttribute("aria-current", String(c.id === S.selected)); b.dataset.id = c.id;
     const st = c.state_badge || {};
     const r1 = el("span", "r1"); r1.append(who(c.customer_user_id), timeEl(c.updated_at));
     const r2 = el("span", "r2"); r2.append(auto(el("span", "c-msg", c.first_message || "…")));
     const flags = el("span", "flags");
     if (c.pending_approval) flags.append(el("span", "flag", "waiting for your OK"));
-    if (c.escalated) flags.append(el("span", "flag person", personReason(c)));
+    if (esc) flags.append(el("span", "flag person", personReason(c)));
     if (flags.children.length) r2.append(flags);
-    if (c.escalated) {
+    if (esc && !wait) {
       const m = icon("person"); m.setAttribute("role", "img"); m.setAttribute("aria-label", "Needs a person"); m.removeAttribute("aria-hidden");
       b.append(m, r1, r2);
     } else b.append(lamp(st.tone, devLabel(st.label) || "No status yet"), r1, r2);
@@ -277,9 +283,14 @@ window.CaseDeskConsoleView = (h) => {
 
     const f = h.FILTERS.find((x) => x[0] === S.filter) || h.FILTERS[0];
     const matched = S.cases.filter(f[2]);
-    // "Needs a person" is pinned above the rest: a group of its own, in its own ink
-    const people = matched.filter((c) => c.escalated), others = matched.filter((c) => !c.escalated);
-    shown = [...people, ...others];
+    // "Waiting for your OK" is pinned first (always, on All and Waiting), then "Needs a person", then the rest
+    const waitIds = new Set(S.approvals.filter((a) => a.status === "pending" || a.status === "failed").map((a) => a.case_id));
+    const isWait = (c) => c.pending_approval || waitIds.has(c.id);
+    const showWait = S.filter === "all" || S.filter === "waiting";
+    const waits = showWait ? matched.filter(isWait) : [];
+    const people = matched.filter((c) => !waits.includes(c) && c.escalated && c.status !== "resolved");
+    const others = matched.filter((c) => !waits.includes(c) && !people.includes(c));
+    shown = [...waits, ...people, ...others];
     $("#cCount").textContent = shown.length === S.cases.length ? String(S.cases.length) : `${shown.length} of ${S.cases.length}`;
     const empty = $("#cEmpty");
     empty.hidden = shown.length > 0;
@@ -305,9 +316,14 @@ window.CaseDeskConsoleView = (h) => {
       hd.append(el("span", null, title), document.createTextNode(" "), mono("n", String(n)));
       g.append(hd); list.append(g);
     };
+    if (showWait) {
+      group("amber" + (waits.length ? " has" : ""), "Waiting for your OK", waits.length);
+      if (!waits.length) { const e = el("li", "c-wait-empty", "Nothing waiting. Grants Case Desk asks you to confirm appear here."); e.setAttribute("role", "presentation"); list.append(e); }
+    }
+    for (const c of waits) { const { li, b } = caseRow(c, true); if (c.id === S.selected) current = b; list.append(li); }
     if (people.length) group("person", "Needs a person", people.length);
     for (const c of people) { const { li, b } = caseRow(c); if (c.id === S.selected) current = b; list.append(li); }
-    if (people.length && others.length) group("rest", "Other cases", others.length);
+    if ((people.length || showWait) && others.length) group("rest", "Other cases", others.length);
     for (const c of others) { const { li, b } = caseRow(c); if (c.id === S.selected) current = b; list.append(li); }
     // a row whose state, flags or message count changed since the last refresh: its time flashes
     const now = new Map();

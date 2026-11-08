@@ -29,6 +29,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from casedesk.adapty.models import Profile
+from casedesk import clock
 from casedesk.app import auth, deps
 from casedesk.app.store import Store
 
@@ -148,7 +149,7 @@ def _age_s(iso: str | None) -> float:
         t = datetime.fromisoformat(str(iso))
     except (TypeError, ValueError):
         return float("inf")
-    return (datetime.now(timezone.utc) - (t if t.tzinfo else t.replace(tzinfo=timezone.utc))).total_seconds()
+    return (now_utc() - (t if t.tzinfo else t.replace(tzinfo=timezone.utc))).total_seconds()
 
 
 def now_utc() -> datetime:
@@ -670,7 +671,10 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
 
     @app.get("/api/console/meta", dependencies=[console])
     async def console_meta():
-        return {"demo": auth.demo_mode(), "app_name": APP_NAME, "modules": deps.status()}
+        # server_now: the app's clock (the demo clock under CASEDESK_NOW). The console shifts its own "now" to it so
+        # relative labels ("now", "3 min") and same-day checks compare against the dates the server writes.
+        return {"demo": auth.demo_mode(), "app_name": APP_NAME, "modules": deps.status(),
+                "server_now": _iso(now_utc()), "clock": clock.mode()}
 
     # ------------------------------------------------------------------ pages
     @app.get("/", include_in_schema=False)

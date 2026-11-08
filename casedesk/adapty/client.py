@@ -72,10 +72,9 @@ class AdaptyRequestError(AdaptyError):
 # --------------------------------------------------------------------------- helpers
 
 def get_now() -> datetime:
-    env = os.environ.get("CASEDESK_NOW")
-    if env:
-        return parse_dt(env)
-    return datetime.now(timezone.utc)
+    """The app's one clock (casedesk.clock): CASEDESK_NOW, frozen or ticking per CASEDESK_CLOCK, else real UTC."""
+    from casedesk import clock
+    return clock.now()
 
 
 def parse_dt(v: Any) -> datetime | None:

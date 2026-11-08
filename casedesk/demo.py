@@ -9,7 +9,7 @@ except the LLM). Listens on 0.0.0.0, port from --port / env PORT / CASEDESK_PORT
     python -m casedesk.demo --fresh --seed       # clean DB, then scripted demo cases in the console (no LLM calls)
 
 Env defaults it sets when unset: CASEDESK_DEMO=1, CASEDESK_NOW=<seed snapshot time from data/demo_users.json>,
-CASEDESK_DB=./var/casedesk.db, CONSOLE_TOKEN=demo-console (the /console page is pre-authorised in demo mode).
+CASEDESK_CLOCK=ticking (the demo clock starts at CASEDESK_NOW now and runs at real speed; =frozen pins it), CASEDESK_DB=./var/casedesk.db, CONSOLE_TOKEN=demo-console (the /console page is pre-authorised in demo mode).
 """
 from __future__ import annotations
 
@@ -68,6 +68,9 @@ def main() -> None:
     now = _seed_now()
     if now:
         os.environ.setdefault("CASEDESK_NOW", now)
+    os.environ.setdefault("CASEDESK_CLOCK", "ticking")
+    from casedesk import clock
+    clock.start()   # one clock for the seeder and the server: CASEDESK_NOW from this moment on
     if a.llm:
         os.environ["CASEDESK_LLM"] = a.llm
     if a.seed:
@@ -91,7 +94,7 @@ def main() -> None:
     print(f"    landing   http://{shown}:{a.port}/")
     print(f"    help      http://{shown}:{a.port}/help" + (f"   (phones on the LAN: http://{lan}:{a.port}/help)" if lan else ""))
     print(f"    console   http://{shown}:{a.port}/console")
-    print(f"    clock     CASEDESK_NOW={os.environ.get('CASEDESK_NOW', '(real time)')}   "
+    print(f"    clock     CASEDESK_NOW={os.environ.get('CASEDESK_NOW', '(real time)')} ({clock.mode()})   "
           f"LLM={os.environ.get('CASEDESK_LLM') or '(auto)'}   db={os.environ['CASEDESK_DB']}\n")
     if a.open:
         threading.Timer(1.5, lambda: webbrowser.open(f"http://localhost:{a.port}/help")).start()

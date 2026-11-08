@@ -6,8 +6,9 @@ import os
 import sqlite3
 import threading
 import uuid
-from datetime import datetime, timezone
 from pathlib import Path
+
+from casedesk import clock
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS cases (
@@ -57,7 +58,9 @@ CREATE TABLE IF NOT EXISTS audit (
 
 
 def now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+    """Default stamp for cases, messages, approvals and the audit log: the app's one clock (casedesk.clock), so in
+    demo mode they share the demo date with the Adapty state and grant expiry."""
+    return clock.now_iso()
 
 
 def default_path() -> Path:

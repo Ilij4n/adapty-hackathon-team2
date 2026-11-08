@@ -228,5 +228,15 @@
   (async () => { for (let i = 0; ; i = (i + 1) % SCRIPTS.length) { await play(SCRIPTS[i]); await wait(4200); } })();
 })();
 </script>
+<script>
+/* /?v=N (a design variant of /help and /console): the page's links to them keep it */
+(() => {
+  const v = new URLSearchParams(location.search).get("v");
+  if (!/^\d{1,2}$/.test(v || "")) return;
+  document.querySelectorAll('a[href^="/help"], a[href^="/console"]').forEach((a) => {
+    const u = new URL(a.getAttribute("href"), location.origin); u.searchParams.set("v", v); a.setAttribute("href", u.pathname + u.search);
+  });
+})();
+</script>
 </body>
 </html>

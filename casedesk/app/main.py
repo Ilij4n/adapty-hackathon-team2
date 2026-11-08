@@ -177,6 +177,14 @@ def make_adapty():
         return _stubs.AdaptyClient()
 
 
+def tidy_scenario(s: str) -> str:
+    """Demo picker text: 'Pro Annual - AI Studio (App Store), x' -> 'Pro Annual (AI Studio, App Store), x' and
+    'Premium Weekly (3-day trial) (Google Play)' -> 'Premium Weekly (3-day trial, Google Play)'."""
+    import re
+    s = re.sub(r"^([^(]*?) - ([^(]*?) \(", r"\1 (\2, ", s)
+    return s.replace(") (", ", ").replace(" - ", ", ")
+
+
 def load_demo_users() -> list[dict]:
     seed = deps.get("adapty_seed")
     if deps.status()["adapty_seed"] == "real":
@@ -255,7 +263,7 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
             out.append({"customer_user_id": cuid,
                         "display_name": u.get("display_name") or u.get("name") or cuid,
                         "locale": str(u.get("locale") or "en").replace("_", "-"),
-                        "scenario": u.get("scenario") or u.get("label") or u.get("description") or "",
+                        "scenario": tidy_scenario(u.get("scenario") or u.get("label") or u.get("description") or ""),
                         "signature": auth.sign(cuid)})
         return out
 

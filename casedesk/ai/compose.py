@@ -40,7 +40,12 @@ _HIDDEN_FACTS = {"as_of", "state", "refund_policy", "restore_steps_key", "days_s
 # Claim flags the writer may see (booleans / closed enums only — never amounts, dates or free text).
 _WRITER_FLAGS = {"wants_refund", "wants_to_cancel", "says_cancelled", "says_charged", "says_new_device", "says_paid",
                  "says_no_access", "wants_human", "thanks", "angry", "wants_agent_to_act", "chargeback_threat",
-                 "third_party_account", "about_other_app", "privacy_request", "discount_request"}
+                 "third_party_account", "about_other_app", "privacy_request", "discount_request", "says_never_bought",
+                 "wants_free_access", "says_tried_restore"}
+
+
+# No follow-up offer on these (the reply is a hand-off, a thank-you or off-topic). Escalations are added in case_file.
+_NO_FOLLOW_UP_INTENTS = {"ACKNOWLEDGEMENT", "OTHER_APP", "THIRD_PARTY_ACCOUNT", "HUMAN_REQUEST", "PRIVACY_REQUEST"}
 
 
 class Reply(BaseModel):
@@ -87,7 +92,13 @@ Write the reply:
   REFUND_PATH_APPLE: Apple alone decides App Store refunds; the user can request one at refund_url. We cannot refund.
   REFUND_PATH_GOOGLE: the user can request a refund in Google Play at refund_url; Google reviews it.
   RESTORE_PURCHASES_STEPS: sign in with the same Apple ID / Google account used to buy (request.claimed_platform ios =
-    Apple ID, android = Google account), open the app, tap Restore Purchases.
+    Apple ID, android = Google account), open the app, tap Restore Purchases. Say "on your new device" ONLY if
+    request.says_new_device is true; otherwise talk about "this device". If request.says_tried_restore is true, the
+    user already tried Restore / reinstalling: acknowledge that and do NOT lead with Restore again. Give the next step
+    instead: check this device is signed in with the same Apple ID / Google account they bought with, look for the
+    purchase in the store's purchase history (facts.refund_url is that history page; use it only as the purchase
+    history, not to talk about refunds), and if the purchase is there and premium is still locked, they can write
+    here and a person from the team can look into it (do not say it was passed on).
   UPDATE_PAYMENT_METHOD: update the payment method (payment_url if given); the store then retries the charge.
   PROPOSE_GRANT: say you have REQUESTED a short courtesy extension and the team will review it; it is NOT active yet.
   ESCALATE_TO_HUMAN: say the case was passed to the support team and a person will reply.
@@ -103,7 +114,22 @@ Write the reply:
     someone else's; they can write from their own account. Do not state this account's details.
   DISCOUNT_REQUEST: say you cannot offer discounts or free time yourself. If request.chargeback_threat: a store refund
     request is usually faster than a chargeback, and a chargeback can get the store account locked.
+  FREE_ACCESS_REQUEST: the user wants premium without paying. Do NOT talk about discounts or prices being set by the
+    store. Politely say you can't switch premium on without a purchase, then what the account shows (one sentence)
+    and what they can do: subscribe in the app (a free trial, if one is on offer, is shown there before paying),
+    restore if they already paid with another Apple ID / Google account (when RESTORE_PURCHASES_STEPS is an action),
+    or fix the payment (when UPDATE_PAYMENT_METHOD is an action). Never promise or hint at free time unless
+    PROPOSE_GRANT is an action (then only say it was requested).
+  UNRECOGNISED_CHARGE: the user says they never bought anything / don't recognise a charge. This is NOT a
+    cancellation complaint: never say "I don't see a cancellation". Say plainly what this account shows: the charges
+    with their dates and amounts from facts (last_charged_on, price, purchased_on, product_name, store_name). If a
+    REFUND_PATH action is present, say where they can request a refund from their store (never promise one). Then
+    suggest checking whether someone in their Family Sharing group or another Apple ID / Google account made the
+    purchase; the store's purchase history shows which account paid. If facts.ever_charged is "no", say no charge
+    for this app is on this account and the charge may come from another account or app.
 - If request.angry: one short, sincere empathy clause, then the facts.
+- End with ONE short, natural follow-up offer in the user's language ("Did that sort it out?", "Let me know if that
+  works.") unless request.no_follow_up is true. It adds no facts, numbers, dates or promises.
 Output only the reply text."""
 
 GLOSS_SUFFIX = """
@@ -152,6 +178,9 @@ def request_view(intent: Any, history: Iterable[Any] | None = None) -> dict:
         prev_intent = claims.get("previous_intent")
         if isinstance(prev_intent, str) and re.fullmatch(r"[A-Z_]{2,30}", prev_intent):
             view["previous_intent"] = prev_intent
+    if (getattr(intent, "injection_suspected", False) or view["intent"] in _NO_FOLLOW_UP_INTENTS
+            or claims.get("says_tried_restore") is True):
+        view["no_follow_up"] = True
     view["status_already_given"] = prev_reply is not None
     if prev_reply:
         view["previous_reply"] = prev_reply[:600]
@@ -163,6 +192,10 @@ def case_file(state: Any, facts: Any, actions: Iterable[Any], language: str, int
     """Exactly what the writer LLM is allowed to see."""
     code = str(getattr(state, "code", state) or "")
     base = language.split("-")[0]
+    actions = list(actions)
+    request = request_view(intent, history)
+    if any(_kind(a) == "ESCALATE_TO_HUMAN" for a in actions):
+        request["no_follow_up"] = True
     return {
         "language": language,
         "language_name": LANG_NAMES.get(language, LANG_NAMES.get(base, language)),
@@ -170,7 +203,7 @@ def case_file(state: Any, facts: Any, actions: Iterable[Any], language: str, int
         "facts": {k: v for k, v in _fields(facts).items() if k not in _HIDDEN_FACTS},
         "actions": [{"kind": _kind(a), "params": {k: v for k, v in _params(a).items() if k in _SAFE_PARAMS}}
                     for a in actions],
-        "request": request_view(intent, history),
+        "request": request,
     } | ({"charge_check": "the charge the user describes (store/amount) is NOT on this account: say clearly you don't "
                           "see that charge on their account; it may be another Apple ID/Google account or another app; "
                           "their store's purchase history shows who charged them"}
@@ -205,7 +238,8 @@ def reply(intent: Any, state: Any, facts: Any, actions: Iterable[Any] | None, la
     history = [h for h in (history or []) if isinstance(h, dict)][-4:]
 
     def fallback(violations: list[str], attempts: int) -> Reply:
-        text = templates.render(state, actions, facts, language, intent_type=itype, claims=claims, history=history)
+        text = templates.render(state, actions, facts, language, intent_type=itype, claims=claims, history=history,
+                                injection=bool(getattr(intent, "injection_suspected", False)))
         return Reply(text=text, used_fallback=True, violations=violations, source="template", attempts=attempts)
 
     if llm is _UNSET:

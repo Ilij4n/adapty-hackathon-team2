@@ -1060,6 +1060,241 @@ for _lang, _add in ROUND2.items():
     _T["status"].update(_add["status"])
     _T["status"]["TRIAL_ACTIVE"] = _add["trial_first"] + _T["status"]["TRIAL_ACTIVE"]
 
+# =====================================================================================================================
+# Round 3 (head-to-head test, 2026-11-08): unrecognised charges, free-access asks, restore that was already tried,
+# a short follow-up offer, and the drafts a person sends for escalated cases (casedesk.ai.suggest).
+# =====================================================================================================================
+ROUND3: dict[str, dict] = {
+    "en": {
+        "intent": {
+            "UNRECOGNISED_CHARGE": ["I understand you don't recognise this charge."],
+            "FREE_ACCESS_REQUEST": ["I can't switch premium on without a purchase, but here's what you can do."],
+        },
+        "extra": {
+            "unrec_charges": ["The last charge on this account was {price} on {last_charged_on} through {store_name}, for {product_name}, first bought on {purchased_on}.",
+                              "The last charge on this account was {price} on {last_charged_on} through {store_name}, for {product_name}.",
+                              "The last charge on this account was on {last_charged_on} through {store_name}, for {product_name}."],
+            "unrec_hint": ["If it still isn't familiar, check whether someone in your Family Sharing group, or another Apple ID or Google account, made it: your store's purchase history shows which account paid."],
+            "free_options": ["You can subscribe in the app at any time, and if a free trial is on offer you'll see it there before you pay."],
+            "follow_up": ["Did that answer your question?"],
+            "follow_up_steps": ["Let me know if that sorts it out."],
+        },
+        "action": {
+            "RESTORE_PURCHASES_STEPS:app_store": ["Open the app on this device, make sure you're signed in with the same Apple ID you bought with, and tap Restore Purchases in its settings."],
+            "RESTORE_PURCHASES_STEPS:play_store": ["Open the app on this device, make sure you're signed in with the same Google account you bought with, and tap Restore Purchases in its settings."],
+            "RESTORE_PURCHASES_STEPS:app_store:new_device": ["On your new device, sign in with the same Apple ID you bought with, open the app and tap Restore Purchases in its settings."],
+            "RESTORE_PURCHASES_STEPS:play_store:new_device": ["On your new device, sign in with the same Google account you bought with, open the app and tap Restore Purchases in its settings."],
+            "RESTORE_PURCHASES_STEPS:app_store:tried": [
+                "Since you've already tried Restore, please check that this device is signed in with the same Apple ID you bought with. Your purchases are listed at {refund_url}. If the purchase is there and premium is still locked, write here and a person from our team can look into it.",
+                "Since you've already tried Restore, please check that this device is signed in with the same Apple ID you bought with, and look for the purchase in your App Store purchase history. If it's there and premium is still locked, write here and a person from our team can look into it."],
+            "RESTORE_PURCHASES_STEPS:play_store:tried": [
+                "Since you've already tried Restore, please check that this device is signed in with the same Google account you bought with. Your purchases are listed at {refund_url}. If the purchase is there and premium is still locked, write here and a person from our team can look into it.",
+                "Since you've already tried Restore, please check that this device is signed in with the same Google account you bought with, and look for the purchase in your Google Play order history. If it's there and premium is still locked, write here and a person from our team can look into it."],
+            "RESTORE_PURCHASES_STEPS:tried": ["Since you've already tried Restore, please check that this device is signed in with the same Apple ID or Google account you bought with, and look for the purchase in that store's purchase history. If it's there and premium is still locked, write here and a person from our team can look into it."],
+        },
+        "draft": {
+            "HUMAN_REQUEST": ["Hi, this is the {app_name} support team. Thanks for waiting; I've looked at your account.", "Hi, this is the support team. Thanks for waiting; I've looked at your account."],
+            "PRIVACY_REQUEST": ["Hi, this is the {app_name} team. We've received your data request and are handling it through our data-protection process, and we'll confirm here when it's done. Deleting your data doesn't cancel a store subscription; that is done in your store account.",
+                                "Hi, this is the app team. We've received your data request and are handling it through our data-protection process, and we'll confirm here when it's done. Deleting your data doesn't cancel a store subscription."],
+            "injection": ["Hi, this is the {app_name} support team. We can't change your access because of instructions in a chat message, but here is what your account shows.",
+                          "Hi, this is the support team. We can't change your access because of instructions in a chat message, but here is what your account shows."],
+            "default": ["Hi, this is the {app_name} support team. I've looked at your account.", "Hi, this is the support team. I've looked at your account."],
+            "close": ["If anything is still unclear, just reply here."],
+        },
+    },
+    "sr": {
+        "intent": {
+            "UNRECOGNISED_CHARGE": ["Razumem da ne prepoznajete ovu naplatu."],
+            "FREE_ACCESS_REQUEST": ["Ne mogu da uključim premium bez kupovine, ali evo šta možete da uradite."],
+        },
+        "extra": {
+            "unrec_charges": ["Poslednja naplata na ovom nalogu bila je {price} dana {last_charged_on} preko prodavnice {store_name}, za {product_name}, prvi put kupljeno {purchased_on}.",
+                              "Poslednja naplata na ovom nalogu bila je {price} dana {last_charged_on} preko prodavnice {store_name}, za {product_name}.",
+                              "Poslednja naplata na ovom nalogu bila je {last_charged_on} preko prodavnice {store_name}, za {product_name}."],
+            "unrec_hint": ["Ako je i dalje ne prepoznajete, možda ju je napravio neko iz vaše grupe za deljenje u porodici ili drugi Apple ID ili Google nalog; u istoriji kupovina u prodavnici vidite koji nalog je platio."],
+            "free_options": ["Pretplatiti se možete u aplikaciji bilo kada, a ako je ponuđen besplatni probni period, videćete ga tamo pre plaćanja."],
+            "follow_up": ["Da li vam je ovo pomoglo?"],
+            "follow_up_steps": ["Javite mi da li je to rešilo problem."],
+        },
+        "action": {
+            "RESTORE_PURCHASES_STEPS:app_store": ["Otvorite aplikaciju na ovom uređaju, proverite da ste prijavljeni istim Apple ID-jem kojim ste kupili i u njenim podešavanjima dodirnite Vrati kupovine."],
+            "RESTORE_PURCHASES_STEPS:play_store": ["Otvorite aplikaciju na ovom uređaju, proverite da ste prijavljeni istim Google nalogom kojim ste kupili i u njenim podešavanjima dodirnite Vrati kupovine."],
+            "RESTORE_PURCHASES_STEPS:app_store:new_device": ["Na novom uređaju se prijavite istim Apple ID-jem kojim ste kupili, otvorite aplikaciju i u njenim podešavanjima dodirnite Vrati kupovine."],
+            "RESTORE_PURCHASES_STEPS:play_store:new_device": ["Na novom uređaju se prijavite istim Google nalogom kojim ste kupili, otvorite aplikaciju i u njenim podešavanjima dodirnite Vrati kupovine."],
+            "RESTORE_PURCHASES_STEPS:app_store:tried": [
+                "Pošto ste Vrati kupovine već probali, proverite da li je ovaj uređaj prijavljen istim Apple ID-jem kojim ste kupili. Vaše kupovine su na {refund_url}. Ako je kupovina tu, a premium je i dalje zaključan, pišite ovde i neko iz našeg tima može to da pogleda.",
+                "Pošto ste Vrati kupovine već probali, proverite da li je ovaj uređaj prijavljen istim Apple ID-jem kojim ste kupili i potražite kupovinu u istoriji kupovina u App Store-u. Ako je tu, a premium je i dalje zaključan, pišite ovde i neko iz našeg tima može to da pogleda."],
+            "RESTORE_PURCHASES_STEPS:play_store:tried": [
+                "Pošto ste Vrati kupovine već probali, proverite da li je ovaj uređaj prijavljen istim Google nalogom kojim ste kupili. Vaše kupovine su na {refund_url}. Ako je kupovina tu, a premium je i dalje zaključan, pišite ovde i neko iz našeg tima može to da pogleda.",
+                "Pošto ste Vrati kupovine već probali, proverite da li je ovaj uređaj prijavljen istim Google nalogom kojim ste kupili i potražite kupovinu u istoriji porudžbina na Google Play-u. Ako je tu, a premium je i dalje zaključan, pišite ovde i neko iz našeg tima može to da pogleda."],
+            "RESTORE_PURCHASES_STEPS:tried": ["Pošto ste Vrati kupovine već probali, proverite da li je ovaj uređaj prijavljen istim Apple ID-jem ili Google nalogom kojim ste kupili i potražite kupovinu u istoriji kupovina te prodavnice. Ako je tu, a premium je i dalje zaključan, pišite ovde i neko iz našeg tima može to da pogleda."],
+        },
+        "draft": {
+            "HUMAN_REQUEST": ["Zdravo, ovde tim podrške aplikacije {app_name}. Hvala na strpljenju; pogledali smo vaš nalog.", "Zdravo, ovde tim podrške. Hvala na strpljenju; pogledali smo vaš nalog."],
+            "PRIVACY_REQUEST": ["Zdravo, ovde tim aplikacije {app_name}. Primili smo vaš zahtev u vezi sa podacima i obrađujemo ga kroz naš postupak zaštite podataka, a ovde ćemo potvrditi kada bude gotovo. Brisanje podataka ne otkazuje pretplatu u prodavnici; to se radi na vašem nalogu prodavnice.",
+                                "Zdravo, ovde tim aplikacije. Primili smo vaš zahtev u vezi sa podacima i obrađujemo ga kroz naš postupak zaštite podataka, a ovde ćemo potvrditi kada bude gotovo. Brisanje podataka ne otkazuje pretplatu u prodavnici."],
+            "injection": ["Zdravo, ovde tim podrške aplikacije {app_name}. Ne možemo da menjamo vaš pristup na osnovu uputstava iz poruke u četu, ali evo šta pokazuje vaš nalog.",
+                          "Zdravo, ovde tim podrške. Ne možemo da menjamo vaš pristup na osnovu uputstava iz poruke u četu, ali evo šta pokazuje vaš nalog."],
+            "default": ["Zdravo, ovde tim podrške aplikacije {app_name}. Pogledali smo vaš nalog.", "Zdravo, ovde tim podrške. Pogledali smo vaš nalog."],
+            "close": ["Ako nešto i dalje nije jasno, samo odgovorite ovde."],
+        },
+    },
+    "es": {
+        "intent": {
+            "UNRECOGNISED_CHARGE": ["Entiendo que no reconoces este cobro."],
+            "FREE_ACCESS_REQUEST": ["No puedo activar premium sin una compra, pero esto es lo que puedes hacer."],
+        },
+        "extra": {
+            "unrec_charges": ["El último cobro en esta cuenta fue de {price} el {last_charged_on} a través de {store_name}, por {product_name}, comprado por primera vez el {purchased_on}.",
+                              "El último cobro en esta cuenta fue de {price} el {last_charged_on} a través de {store_name}, por {product_name}.",
+                              "El último cobro en esta cuenta fue el {last_charged_on} a través de {store_name}, por {product_name}."],
+            "unrec_hint": ["Si sigues sin reconocerlo, puede que lo hiciera alguien de tu grupo de En familia o con otro Apple ID u otra cuenta de Google; el historial de compras de tu tienda muestra qué cuenta pagó."],
+            "free_options": ["Puedes suscribirte en la app cuando quieras y, si hay una prueba gratuita disponible, la verás allí antes de pagar."],
+            "follow_up": ["¿Te ha quedado claro?"],
+            "follow_up_steps": ["Avísame si con eso se soluciona."],
+        },
+        "action": {
+            "RESTORE_PURCHASES_STEPS:app_store": ["Abre la app en este dispositivo, comprueba que has iniciado sesión con el mismo Apple ID con el que compraste y toca Restaurar compras en sus ajustes."],
+            "RESTORE_PURCHASES_STEPS:play_store": ["Abre la app en este dispositivo, comprueba que has iniciado sesión con la misma cuenta de Google con la que compraste y toca Restaurar compras en sus ajustes."],
+            "RESTORE_PURCHASES_STEPS:app_store:new_device": ["En tu nuevo dispositivo, inicia sesión con el mismo Apple ID con el que compraste, abre la app y toca Restaurar compras en sus ajustes."],
+            "RESTORE_PURCHASES_STEPS:play_store:new_device": ["En tu nuevo dispositivo, inicia sesión con la misma cuenta de Google con la que compraste, abre la app y toca Restaurar compras en sus ajustes."],
+            "RESTORE_PURCHASES_STEPS:app_store:tried": [
+                "Como ya probaste Restaurar, comprueba que este dispositivo tiene iniciada la sesión con el mismo Apple ID con el que compraste. Tus compras aparecen en {refund_url}. Si la compra está ahí y premium sigue bloqueado, escribe aquí y una persona de nuestro equipo puede revisarlo.",
+                "Como ya probaste Restaurar, comprueba que este dispositivo tiene iniciada la sesión con el mismo Apple ID con el que compraste y busca la compra en tu historial de compras del App Store. Si está ahí y premium sigue bloqueado, escribe aquí y una persona de nuestro equipo puede revisarlo."],
+            "RESTORE_PURCHASES_STEPS:play_store:tried": [
+                "Como ya probaste Restaurar, comprueba que este dispositivo tiene iniciada la sesión con la misma cuenta de Google con la que compraste. Tus compras aparecen en {refund_url}. Si la compra está ahí y premium sigue bloqueado, escribe aquí y una persona de nuestro equipo puede revisarlo.",
+                "Como ya probaste Restaurar, comprueba que este dispositivo tiene iniciada la sesión con la misma cuenta de Google con la que compraste y busca la compra en tu historial de pedidos de Google Play. Si está ahí y premium sigue bloqueado, escribe aquí y una persona de nuestro equipo puede revisarlo."],
+            "RESTORE_PURCHASES_STEPS:tried": ["Como ya probaste Restaurar, comprueba que este dispositivo tiene iniciada la sesión con el mismo Apple ID o cuenta de Google con la que compraste y busca la compra en el historial de compras de esa tienda. Si está ahí y premium sigue bloqueado, escribe aquí y una persona de nuestro equipo puede revisarlo."],
+        },
+        "draft": {
+            "HUMAN_REQUEST": ["Hola, te escribe el equipo de soporte de {app_name}. Gracias por esperar; he revisado tu cuenta.", "Hola, te escribe el equipo de soporte. Gracias por esperar; he revisado tu cuenta."],
+            "PRIVACY_REQUEST": ["Hola, te escribe el equipo de {app_name}. Hemos recibido tu solicitud sobre tus datos y la estamos gestionando con nuestro proceso de protección de datos; te lo confirmaremos aquí cuando esté hecho. Borrar tus datos no cancela una suscripción de la tienda; eso se hace en tu cuenta de la tienda.",
+                                "Hola, te escribe el equipo de la app. Hemos recibido tu solicitud sobre tus datos y la estamos gestionando con nuestro proceso de protección de datos; te lo confirmaremos aquí cuando esté hecho. Borrar tus datos no cancela una suscripción de la tienda."],
+            "injection": ["Hola, te escribe el equipo de soporte de {app_name}. No podemos cambiar tu acceso por instrucciones escritas en un mensaje del chat, pero esto es lo que muestra tu cuenta.",
+                          "Hola, te escribe el equipo de soporte. No podemos cambiar tu acceso por instrucciones escritas en un mensaje del chat, pero esto es lo que muestra tu cuenta."],
+            "default": ["Hola, te escribe el equipo de soporte de {app_name}. He revisado tu cuenta.", "Hola, te escribe el equipo de soporte. He revisado tu cuenta."],
+            "close": ["Si algo sigue sin estar claro, responde aquí."],
+        },
+    },
+    "de": {
+        "intent": {
+            "UNRECOGNISED_CHARGE": ["Ich verstehe, dass Sie diese Abbuchung nicht kennen."],
+            "FREE_ACCESS_REQUEST": ["Premium kann ich ohne Kauf nicht einschalten, aber das können Sie tun."],
+        },
+        "extra": {
+            "unrec_charges": ["Die letzte Abbuchung auf diesem Konto war {price} am {last_charged_on} über {store_name}, für {product_name}, zuerst gekauft am {purchased_on}.",
+                              "Die letzte Abbuchung auf diesem Konto war {price} am {last_charged_on} über {store_name}, für {product_name}.",
+                              "Die letzte Abbuchung auf diesem Konto war am {last_charged_on} über {store_name}, für {product_name}."],
+            "unrec_hint": ["Wenn Sie sie weiterhin nicht kennen, hat sie vielleicht jemand aus Ihrer Familienfreigabe oder eine andere Apple-ID oder ein anderes Google-Konto ausgelöst; im Kaufverlauf Ihres Stores sehen Sie, welches Konto bezahlt hat."],
+            "free_options": ["Sie können das Abo jederzeit in der App abschließen, und wenn dort eine kostenlose Testphase angeboten wird, sehen Sie sie vor dem Bezahlen."],
+            "follow_up": ["Hilft Ihnen das weiter?"],
+            "follow_up_steps": ["Sagen Sie mir gern, ob es damit klappt."],
+        },
+        "action": {
+            "RESTORE_PURCHASES_STEPS:app_store": ["Öffnen Sie die App auf diesem Gerät, prüfen Sie, dass Sie mit derselben Apple-ID angemeldet sind, mit der Sie gekauft haben, und tippen Sie in ihren Einstellungen auf Käufe wiederherstellen."],
+            "RESTORE_PURCHASES_STEPS:play_store": ["Öffnen Sie die App auf diesem Gerät, prüfen Sie, dass Sie mit demselben Google-Konto angemeldet sind, mit dem Sie gekauft haben, und tippen Sie in ihren Einstellungen auf Käufe wiederherstellen."],
+            "RESTORE_PURCHASES_STEPS:app_store:new_device": ["Melden Sie sich auf dem neuen Gerät mit derselben Apple-ID an, mit der Sie gekauft haben, öffnen Sie die App und tippen Sie in ihren Einstellungen auf Käufe wiederherstellen."],
+            "RESTORE_PURCHASES_STEPS:play_store:new_device": ["Melden Sie sich auf dem neuen Gerät mit demselben Google-Konto an, mit dem Sie gekauft haben, öffnen Sie die App und tippen Sie in ihren Einstellungen auf Käufe wiederherstellen."],
+            "RESTORE_PURCHASES_STEPS:app_store:tried": [
+                "Da Sie Wiederherstellen schon versucht haben, prüfen Sie bitte, ob dieses Gerät mit derselben Apple-ID angemeldet ist, mit der Sie gekauft haben. Ihre Käufe sehen Sie unter {refund_url}. Wenn der Kauf dort steht und Premium noch gesperrt ist, schreiben Sie hier, dann kann sich eine Person aus unserem Team das ansehen.",
+                "Da Sie Wiederherstellen schon versucht haben, prüfen Sie bitte, ob dieses Gerät mit derselben Apple-ID angemeldet ist, mit der Sie gekauft haben, und suchen Sie den Kauf in Ihrem App-Store-Kaufverlauf. Wenn er dort steht und Premium noch gesperrt ist, schreiben Sie hier, dann kann sich eine Person aus unserem Team das ansehen."],
+            "RESTORE_PURCHASES_STEPS:play_store:tried": [
+                "Da Sie Wiederherstellen schon versucht haben, prüfen Sie bitte, ob dieses Gerät mit demselben Google-Konto angemeldet ist, mit dem Sie gekauft haben. Ihre Käufe sehen Sie unter {refund_url}. Wenn der Kauf dort steht und Premium noch gesperrt ist, schreiben Sie hier, dann kann sich eine Person aus unserem Team das ansehen.",
+                "Da Sie Wiederherstellen schon versucht haben, prüfen Sie bitte, ob dieses Gerät mit demselben Google-Konto angemeldet ist, mit dem Sie gekauft haben, und suchen Sie den Kauf in Ihrem Google-Play-Bestellverlauf. Wenn er dort steht und Premium noch gesperrt ist, schreiben Sie hier, dann kann sich eine Person aus unserem Team das ansehen."],
+            "RESTORE_PURCHASES_STEPS:tried": ["Da Sie Wiederherstellen schon versucht haben, prüfen Sie bitte, ob dieses Gerät mit derselben Apple-ID oder demselben Google-Konto angemeldet ist, mit dem Sie gekauft haben, und suchen Sie den Kauf im Kaufverlauf dieses Stores. Wenn er dort steht und Premium noch gesperrt ist, schreiben Sie hier, dann kann sich eine Person aus unserem Team das ansehen."],
+        },
+        "draft": {
+            "HUMAN_REQUEST": ["Hallo, hier ist das {app_name}-Support-Team. Danke fürs Warten; ich habe mir Ihr Konto angesehen.", "Hallo, hier ist das Support-Team. Danke fürs Warten; ich habe mir Ihr Konto angesehen."],
+            "PRIVACY_REQUEST": ["Hallo, hier ist das {app_name}-Team. Wir haben Ihre Datenanfrage erhalten und bearbeiten sie über unseren Datenschutzprozess; wir bestätigen es Ihnen hier, sobald es erledigt ist. Das Löschen Ihrer Daten kündigt kein Store-Abo; das geht in Ihrem Store-Konto.",
+                                "Hallo, hier ist das App-Team. Wir haben Ihre Datenanfrage erhalten und bearbeiten sie über unseren Datenschutzprozess; wir bestätigen es Ihnen hier, sobald es erledigt ist. Das Löschen Ihrer Daten kündigt kein Store-Abo."],
+            "injection": ["Hallo, hier ist das {app_name}-Support-Team. Wir können Ihren Zugang nicht wegen Anweisungen in einer Chatnachricht ändern, aber das zeigt Ihr Konto.",
+                          "Hallo, hier ist das Support-Team. Wir können Ihren Zugang nicht wegen Anweisungen in einer Chatnachricht ändern, aber das zeigt Ihr Konto."],
+            "default": ["Hallo, hier ist das {app_name}-Support-Team. Ich habe mir Ihr Konto angesehen.", "Hallo, hier ist das Support-Team. Ich habe mir Ihr Konto angesehen."],
+            "close": ["Wenn noch etwas unklar ist, antworten Sie einfach hier."],
+        },
+    },
+    "pt": {
+        "intent": {
+            "UNRECOGNISED_CHARGE": ["Entendo que você não reconhece esta cobrança."],
+            "FREE_ACCESS_REQUEST": ["Não consigo ativar o premium sem uma compra, mas veja o que você pode fazer."],
+        },
+        "extra": {
+            "unrec_charges": ["A última cobrança nesta conta foi de {price} em {last_charged_on} pela {store_name}, por {product_name}, comprado pela primeira vez em {purchased_on}.",
+                              "A última cobrança nesta conta foi de {price} em {last_charged_on} pela {store_name}, por {product_name}.",
+                              "A última cobrança nesta conta foi em {last_charged_on} pela {store_name}, por {product_name}."],
+            "unrec_hint": ["Se ainda não reconhecer, talvez alguém do seu grupo de Compartilhamento Familiar ou outro ID Apple ou conta Google tenha feito a compra; o histórico de compras da sua loja mostra qual conta pagou."],
+            "free_options": ["Você pode assinar no app quando quiser e, se houver um teste grátis disponível, vai vê-lo lá antes de pagar."],
+            "follow_up": ["Isso respondeu sua dúvida?"],
+            "follow_up_steps": ["Me avise se isso resolver."],
+        },
+        "action": {
+            "RESTORE_PURCHASES_STEPS:app_store": ["Abra o app neste aparelho, confira se você entrou com o mesmo ID Apple usado na compra e toque em Restaurar compras nas configurações dele."],
+            "RESTORE_PURCHASES_STEPS:play_store": ["Abra o app neste aparelho, confira se você entrou com a mesma conta Google usada na compra e toque em Restaurar compras nas configurações dele."],
+            "RESTORE_PURCHASES_STEPS:app_store:new_device": ["No novo aparelho, entre com o mesmo ID Apple usado na compra, abra o app e toque em Restaurar compras nas configurações dele."],
+            "RESTORE_PURCHASES_STEPS:play_store:new_device": ["No novo aparelho, entre com a mesma conta Google usada na compra, abra o app e toque em Restaurar compras nas configurações dele."],
+            "RESTORE_PURCHASES_STEPS:app_store:tried": [
+                "Como você já tentou Restaurar, confira se este aparelho está conectado ao mesmo ID Apple usado na compra. Suas compras aparecem em {refund_url}. Se a compra estiver lá e o premium continuar bloqueado, escreva aqui e uma pessoa da nossa equipe pode analisar.",
+                "Como você já tentou Restaurar, confira se este aparelho está conectado ao mesmo ID Apple usado na compra e procure a compra no histórico de compras da App Store. Se estiver lá e o premium continuar bloqueado, escreva aqui e uma pessoa da nossa equipe pode analisar."],
+            "RESTORE_PURCHASES_STEPS:play_store:tried": [
+                "Como você já tentou Restaurar, confira se este aparelho está conectado à mesma conta Google usada na compra. Suas compras aparecem em {refund_url}. Se a compra estiver lá e o premium continuar bloqueado, escreva aqui e uma pessoa da nossa equipe pode analisar.",
+                "Como você já tentou Restaurar, confira se este aparelho está conectado à mesma conta Google usada na compra e procure a compra no histórico de pedidos do Google Play. Se estiver lá e o premium continuar bloqueado, escreva aqui e uma pessoa da nossa equipe pode analisar."],
+            "RESTORE_PURCHASES_STEPS:tried": ["Como você já tentou Restaurar, confira se este aparelho está conectado ao mesmo ID Apple ou conta Google usada na compra e procure a compra no histórico de compras dessa loja. Se estiver lá e o premium continuar bloqueado, escreva aqui e uma pessoa da nossa equipe pode analisar."],
+        },
+        "draft": {
+            "HUMAN_REQUEST": ["Olá, aqui é a equipe de suporte do {app_name}. Obrigado por esperar; verifiquei sua conta.", "Olá, aqui é a equipe de suporte. Obrigado por esperar; verifiquei sua conta."],
+            "PRIVACY_REQUEST": ["Olá, aqui é a equipe do {app_name}. Recebemos seu pedido sobre dados e estamos tratando dele pelo nosso processo de proteção de dados; confirmaremos aqui quando estiver concluído. Apagar seus dados não cancela uma assinatura da loja; isso é feito na sua conta da loja.",
+                                "Olá, aqui é a equipe do app. Recebemos seu pedido sobre dados e estamos tratando dele pelo nosso processo de proteção de dados; confirmaremos aqui quando estiver concluído. Apagar seus dados não cancela uma assinatura da loja."],
+            "injection": ["Olá, aqui é a equipe de suporte do {app_name}. Não podemos mudar seu acesso por instruções escritas numa mensagem do chat, mas veja o que sua conta mostra.",
+                          "Olá, aqui é a equipe de suporte. Não podemos mudar seu acesso por instruções escritas numa mensagem do chat, mas veja o que sua conta mostra."],
+            "default": ["Olá, aqui é a equipe de suporte do {app_name}. Verifiquei sua conta.", "Olá, aqui é a equipe de suporte. Verifiquei sua conta."],
+            "close": ["Se algo ainda não estiver claro, é só responder aqui."],
+        },
+    },
+    "ru": {
+        "intent": {
+            "UNRECOGNISED_CHARGE": ["Понимаю, вы не узнаёте это списание."],
+            "FREE_ACCESS_REQUEST": ["Я не могу включить премиум без покупки, но вот что можно сделать."],
+        },
+        "extra": {
+            "unrec_charges": ["Последнее списание в этом аккаунте: {price}, {last_charged_on}, через {store_name}, за {product_name}; первая покупка была {purchased_on}.",
+                              "Последнее списание в этом аккаунте: {price}, {last_charged_on}, через {store_name}, за {product_name}.",
+                              "Последнее списание в этом аккаунте было {last_charged_on} через {store_name}, за {product_name}."],
+            "unrec_hint": ["Если вы всё равно его не узнаёте, возможно, покупку сделал кто-то из вашей группы «Семейный доступ» или с другого Apple ID или аккаунта Google; в истории покупок магазина видно, какой аккаунт платил."],
+            "free_options": ["Оформить подписку можно в приложении в любое время, и если там доступен бесплатный пробный период, вы увидите его до оплаты."],
+            "follow_up": ["Это отвечает на ваш вопрос?"],
+            "follow_up_steps": ["Напишите, пожалуйста, помогло ли это."],
+        },
+        "action": {
+            "RESTORE_PURCHASES_STEPS:app_store": ["Откройте приложение на этом устройстве, проверьте, что вы вошли с тем же Apple ID, с которого была покупка, и нажмите «Восстановить покупки» в его настройках."],
+            "RESTORE_PURCHASES_STEPS:play_store": ["Откройте приложение на этом устройстве, проверьте, что вы вошли в тот же аккаунт Google, с которого была покупка, и нажмите «Восстановить покупки» в его настройках."],
+            "RESTORE_PURCHASES_STEPS:app_store:new_device": ["На новом устройстве войдите с тем же Apple ID, с которого была покупка, откройте приложение и нажмите «Восстановить покупки» в его настройках."],
+            "RESTORE_PURCHASES_STEPS:play_store:new_device": ["На новом устройстве войдите в тот же аккаунт Google, с которого была покупка, откройте приложение и нажмите «Восстановить покупки» в его настройках."],
+            "RESTORE_PURCHASES_STEPS:app_store:tried": [
+                "Раз «Восстановить покупки» вы уже пробовали, убедитесь, что на этом устройстве выполнен вход с тем же Apple ID, с которого была покупка. Ваши покупки видны на {refund_url}. Если покупка там есть, а премиум всё ещё закрыт, напишите сюда, и сотрудник нашей команды сможет это проверить.",
+                "Раз «Восстановить покупки» вы уже пробовали, убедитесь, что на этом устройстве выполнен вход с тем же Apple ID, с которого была покупка, и найдите покупку в истории покупок App Store. Если она там есть, а премиум всё ещё закрыт, напишите сюда, и сотрудник нашей команды сможет это проверить."],
+            "RESTORE_PURCHASES_STEPS:play_store:tried": [
+                "Раз «Восстановить покупки» вы уже пробовали, убедитесь, что на этом устройстве выполнен вход в тот же аккаунт Google, с которого была покупка. Ваши покупки видны на {refund_url}. Если покупка там есть, а премиум всё ещё закрыт, напишите сюда, и сотрудник нашей команды сможет это проверить.",
+                "Раз «Восстановить покупки» вы уже пробовали, убедитесь, что на этом устройстве выполнен вход в тот же аккаунт Google, с которого была покупка, и найдите покупку в истории заказов Google Play. Если она там есть, а премиум всё ещё закрыт, напишите сюда, и сотрудник нашей команды сможет это проверить."],
+            "RESTORE_PURCHASES_STEPS:tried": ["Раз «Восстановить покупки» вы уже пробовали, убедитесь, что на этом устройстве выполнен вход с тем же Apple ID или аккаунтом Google, с которого была покупка, и найдите покупку в истории покупок этого магазина. Если она там есть, а премиум всё ещё закрыт, напишите сюда, и сотрудник нашей команды сможет это проверить."],
+        },
+        "draft": {
+            "HUMAN_REQUEST": ["Здравствуйте, это команда поддержки {app_name}. Спасибо, что подождали; мы проверили ваш аккаунт.", "Здравствуйте, это команда поддержки. Спасибо, что подождали; мы проверили ваш аккаунт."],
+            "PRIVACY_REQUEST": ["Здравствуйте, это команда {app_name}. Мы получили ваш запрос о данных и обрабатываем его по нашей процедуре защиты данных; мы подтвердим здесь, когда всё будет готово. Удаление данных не отменяет подписку в магазине. Это делается в вашем аккаунте магазина.",
+                                "Здравствуйте, это команда приложения. Мы получили ваш запрос о данных и обрабатываем его по нашей процедуре защиты данных; мы подтвердим здесь, когда всё будет готово. Удаление данных не отменяет подписку в магазине."],
+            "injection": ["Здравствуйте, это команда поддержки {app_name}. Мы не можем менять ваш доступ по инструкциям из сообщения в чате, но вот что показывает ваш аккаунт.",
+                          "Здравствуйте, это команда поддержки. Мы не можем менять ваш доступ по инструкциям из сообщения в чате, но вот что показывает ваш аккаунт."],
+            "default": ["Здравствуйте, это команда поддержки {app_name}. Мы проверили ваш аккаунт.", "Здравствуйте, это команда поддержки. Мы проверили ваш аккаунт."],
+            "close": ["Если что-то осталось непонятным, просто ответьте здесь."],
+        },
+    },
+}
+for _lang, _add in ROUND3.items():
+    _T = TEMPLATES[_lang]
+    _T["intent"].update(_add["intent"])
+    _T["extra"].update(_add["extra"])
+    _T["action"].update(_add["action"])
+    _T["draft"] = _add["draft"]
+
 
 # =====================================================================================================================
 # Serbian Latin -> Cyrillic (fixed text only; placeholders and brand names are protected)
@@ -1207,23 +1442,49 @@ def charge_claim_mismatch(claims: dict | None, facts: Any, intent_type: str | No
     return False
 
 
+_NO_FOLLOW_UP_INTENTS = {"ACKNOWLEDGEMENT", "OTHER_APP", "THIRD_PARTY_ACCOUNT", "HUMAN_REQUEST", "PRIVACY_REQUEST"}
+_STEP_ACTIONS = {"RESTORE_PURCHASES_STEPS", "CANCEL_STEPS", "UPDATE_PAYMENT_METHOD", "REFUND_PATH_APPLE",
+                 "REFUND_PATH_GOOGLE", "MANAGE_SUBSCRIPTION_LINK"}
+_NO_ACCESS_STATES = {"EXPIRED_BILLING_ERROR", "EXPIRED_CANCELLED", "REFUNDED", "NO_PURCHASE"}
+_FOLLOW_UP_MAX_WORDS = 90   # validate.MAX_WORDS: the follow-up offer is dropped rather than make a reply too long
+
+
+def draft_actions(actions: Iterable[Any] | None, intent_type: str | None = None) -> list[Any]:
+    """The actions a person's suggested reply covers: the bot's actions minus the escalation (the person IS the
+    escalation), with the status explained first unless it is a privacy request."""
+    out = [a for a in (actions or []) if _kind(a) != "ESCALATE_TO_HUMAN"]
+    if intent_type != "PRIVACY_REQUEST" and not any(_kind(a) == "EXPLAIN_STATUS" for a in out):
+        out.insert(0, {"kind": "EXPLAIN_STATUS", "params": {}})
+    return out
+
+
 def render(state: Any, actions: Iterable[Any] | None, facts: Any, language: str | None = "en",
-           intent_type: str | None = None, claims: dict | None = None, history: Iterable[Any] | None = None) -> str:
+           intent_type: str | None = None, claims: dict | None = None, history: Iterable[Any] | None = None,
+           injection: bool = False, draft: bool = False) -> str:
     """Deterministic reply. `state` may be a CaseState or a state code string; `facts` a FactSheet or dict.
     `claims` = sanitised intent claims (booleans/enums only); `history` = earlier turns (used to avoid repeating
-    the status that was just given)."""
+    the status that was just given). `injection` = the message tried to give orders (no follow-up offer).
+    `draft=True` writes the suggested reply a PERSON sends on an escalated case (see casedesk.ai.suggest): a support-
+    team opening, the status and steps, no escalation sentence and no bot follow-up offer."""
     code = str(getattr(state, "code", state) or "NO_PURCHASE")
     raw = facts.get("fields", {}) if isinstance(facts, dict) else getattr(facts, "fields", {})
     raw = {k: str(v) for k, v in (raw or {}).items() if v not in (None, "")}
     lang, cyr = template_lang(language)
     fields = localize_fields(raw, lang)
     T = TEMPLATES[lang]
-    actions = list(actions or [])
-    kinds = [_kind(a) for a in actions]
-    store = raw.get("store") or ""
     claims = claims or {}
     itype = intent_type or ""
     prev = _last_assistant(history)
+    if draft:
+        actions = draft_actions(actions, itype)
+        draft_key = ("PRIVACY_REQUEST" if itype == "PRIVACY_REQUEST" else "injection" if injection
+                     else "HUMAN_REQUEST" if itype == "HUMAN_REQUEST" else "default")
+        if itype == "HUMAN_REQUEST":
+            itype = ""          # the person answers the underlying question: status and steps
+        prev = None
+    actions = list(actions or [])
+    kinds = [_kind(a) for a in actions]
+    store = raw.get("store") or ""
     escalated = "ESCALATE_TO_HUMAN" in kinds
     never_charged = raw.get("ever_charged", "").lower() == "no"
 
@@ -1237,7 +1498,7 @@ def render(state: Any, actions: Iterable[Any] | None, facts: Any, language: str 
         lead_key = f"{itype}:escalated"
     elif itype == "ACKNOWLEDGEMENT" and claims.get("thanks"):
         lead_key = "ACKNOWLEDGEMENT:thanks"
-    lead = _pick(T["intent"].get(lead_key), fields, cyr)
+    lead = _pick(T["draft"][draft_key], fields, cyr) if draft else _pick(T["intent"].get(lead_key), fields, cyr)
     if lead:
         parts.append(lead)
 
@@ -1269,7 +1530,12 @@ def render(state: Any, actions: Iterable[Any] | None, facts: Any, language: str 
     skip_status = (itype in _NO_STATUS_INTENTS
                    or (prev is not None and itype not in _STATUS_AGAIN_INTENTS and not contradicted)
                    or (prev is not None and status is not None and status in prev and itype != "STATUS_QUESTION"))
-    if status and (explain is not None or not actions) and not skip_status:
+    charges = None
+    if itype == "UNRECOGNISED_CHARGE" and not contradicted and raw.get("last_charged_on") and not never_charged:
+        charges = _pick(T["extra"]["unrec_charges"], fields, cyr)
+    if charges:
+        parts.append(charges)   # the charges ARE the status here
+    elif status and (explain is not None or not actions) and not skip_status:
         parts.append(status)
 
     # 4. one sentence per decided action
@@ -1284,6 +1550,8 @@ def render(state: Any, actions: Iterable[Any] | None, facts: Any, language: str 
             continue  # the lead line already says it
         if k == "MANAGE_SUBSCRIPTION_LINK" and "CANCEL_STEPS" in kinds:
             continue  # the cancel sentence carries the link
+        if k in ("CANCEL_STEPS", "MANAGE_SUBSCRIPTION_LINK") and itype in ("UNRECOGNISED_CHARGE", "FREE_ACCESS_REQUEST"):
+            continue  # kept short: the charge + refund path / the options line say what matters
         key = k
         if k == "ESCALATE_TO_HUMAN" and str(_params(a).get("reason", "")).startswith("no_store_self_service"):
             key = "ESCALATE_TO_HUMAN:no_store"
@@ -1295,6 +1563,11 @@ def render(state: Any, actions: Iterable[Any] | None, facts: Any, language: str 
                 key = f"{k}:{hint}"
             elif f"{k}:{store}" in T["action"]:
                 key = f"{k}:{store}"
+            # Already tried Restore: the next step, not Restore again. "New device" only if they said so.
+            if claims.get("says_tried_restore") and f"{key}:tried" in T["action"]:
+                key = f"{key}:tried"
+            elif claims.get("says_new_device") and f"{key}:new_device" in T["action"]:
+                key = f"{key}:new_device"
         elif f"{k}:{store}" in T["action"]:
             key = f"{k}:{store}"
         if key in seen or (key.startswith("ESCALATE_TO_HUMAN") and any(x.startswith("ESCALATE_TO_HUMAN") for x in seen)):
@@ -1312,12 +1585,27 @@ def render(state: Any, actions: Iterable[Any] | None, facts: Any, language: str 
     if claims.get("chargeback_threat"):
         parts.append(_pick(T["extra"]["chargeback"], fields, cyr) or "")
 
+    if itype == "UNRECOGNISED_CHARGE":
+        parts.append(_pick(T["extra"]["unrec_hint"], fields, cyr) or "")
+    if itype == "FREE_ACCESS_REQUEST" and code in _NO_ACCESS_STATES and "UPDATE_PAYMENT_METHOD" not in kinds:
+        parts.append(_pick(T["extra"]["free_options"], fields, cyr) or "")
+
     parts = [p for p in parts if p]
     if not parts or parts == [_pick(T["extra"]["angry"], fields, cyr)]:
         parts.append(status or "")
+
+    # 6. one short follow-up offer (never on escalations, injection attempts or off-topic intents)
+    if draft:
+        parts.append(_pick(T["draft"]["close"], fields, cyr) or "")
+    elif not (injection or escalated or itype in _NO_FOLLOW_UP_INTENTS or any(k.endswith(":tried") for k in seen)):
+        steps = any(k in _STEP_ACTIONS for k in kinds) and itype not in ("STATUS_QUESTION", "OTHER")
+        offer = _pick(T["extra"]["follow_up_steps" if steps else "follow_up"], fields, cyr) or ""
+        n_words = len(re.findall(r"\S+", re.sub(r"https?://\S+", "URL", " ".join(parts + [offer]))))
+        if n_words <= _FOLLOW_UP_MAX_WORDS:
+            parts.append(offer)
     return " ".join(p for p in parts if p).strip()
 
 
 def all_keys() -> dict[str, list[str]]:
     """Every template key per section (tests use it to check that all languages are complete)."""
-    return {sec: sorted(EN[sec]) for sec in ("ack", "status", "contra", "action", "intent", "extra")}
+    return {sec: sorted(EN[sec]) for sec in ("ack", "status", "contra", "action", "intent", "extra", "draft")}

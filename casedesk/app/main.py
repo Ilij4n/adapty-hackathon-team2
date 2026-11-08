@@ -28,6 +28,7 @@ from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from casedesk.ai import suggest
 from casedesk.adapty.models import Profile
 from casedesk.app import auth, deps
 from casedesk.app.store import Store
@@ -392,6 +393,16 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
                                              "approval_id": approval_id, "grant_request": g_status if not
                                              any(a.kind == "PROPOSE_GRANT" for a in actions) else "pending",
                                              "abandoned": abandoned})
+        if suggest.needs_suggestion(intent, actions):
+            # A draft for the person who picks the case up (never sent to the user). It runs after the reply is
+            # stored, so the user never waits for it; any failure leaves the case without a draft.
+            try:
+                sug = suggest.suggested_reply(intent, state, facts, actions, language, history=convo)
+                st.update_case(case_id, suggested_reply=suggest.as_record(sug, language))
+                st.audit("system", "suggested_reply_ready", case_id, {"source": sug.source,
+                                                                      "used_fallback": sug.used_fallback})
+            except Exception:  # noqa: BLE001
+                log.exception("suggested reply failed for case %s", case_id)
         st.audit("system", "reply_ready", case_id, {"intent": getattr(intent, "type", None),
                                                     "injection_suspected": getattr(intent, "injection_suspected",
                                                                                    False),

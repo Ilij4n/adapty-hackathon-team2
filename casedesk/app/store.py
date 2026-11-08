@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS cases (
   facts TEXT,           -- JSON FactSheet.fields
   actions TEXT,         -- JSON list of Action
   sale_context TEXT,    -- JSON
-  validator TEXT        -- JSON {used_fallback, violations, status}
+  validator TEXT,       -- JSON {used_fallback, violations, status}
+  suggested_reply TEXT  -- JSON {text, language, source, used_fallback, violations, sent}: a draft for a person
 );
 CREATE INDEX IF NOT EXISTS cases_user ON cases(customer_user_id, updated_at);
 CREATE TABLE IF NOT EXISTS messages (
@@ -76,6 +77,9 @@ class Store:
         self._db.row_factory = sqlite3.Row
         with self._lock:
             self._db.executescript(SCHEMA)
+            cols = {r[1] for r in self._db.execute("PRAGMA table_info(cases)").fetchall()}
+            if "suggested_reply" not in cols:   # databases created before suggested replies existed
+                self._db.execute("ALTER TABLE cases ADD COLUMN suggested_reply TEXT")
             self._db.commit()
 
     # ------------------------------------------------------------------ helpers
@@ -127,7 +131,7 @@ class Store:
 
     @staticmethod
     def _decode_case(r: dict) -> dict:
-        for k in ("intent", "state", "facts", "actions", "sale_context", "validator"):
+        for k in ("intent", "state", "facts", "actions", "sale_context", "validator", "suggested_reply"):
             if r.get(k):
                 try:
                     r[k] = json.loads(r[k])

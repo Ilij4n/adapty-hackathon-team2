@@ -15,6 +15,25 @@
     if (!r.ok) { const e = new Error((body && body.detail) || r.statusText); e.status = r.status; throw e; }
     return body;
   }
+  // Demo clock: under CASEDESK_NOW the server stamps everything with its demo date (4 Nov 2026, ticking at real speed).
+  // Shift this page's own "now" (Date.now() and new Date()) by the same amount, so "now" / "3 min" labels and
+  // same-day checks in every design variant compare against the server's clock, not the browser's.
+  function syncClock(meta, sentAt) {
+    if (!meta || !meta.server_now || !meta.clock || meta.clock === "real") return;
+    const server = new RealDate(meta.server_now).getTime();
+    if (isNaN(server)) return;
+    // server_now has whole seconds; take the request's midpoint as "when the server read it"
+    const off = server - (sentAt + RealDate.now()) / 2;
+    if (Math.abs(off) < 2000) return;
+    clockOffset = off;
+    if (window.Date === RealDate) {
+      window.Date = class extends RealDate {
+        constructor(...a) { if (a.length) super(...a); else super(RealDate.now() + clockOffset); }
+        static now() { return RealDate.now() + clockOffset; }
+      };
+    }
+  }
+  const RealDate = window.Date; let clockOffset = 0;
   const fmtTime = (iso) => { const d = new Date(iso); return isNaN(d) ? iso : d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); };
   const ago = (iso) => { const s = (Date.now() - new Date(iso)) / 1000; if (s < 60) return "just now"; if (s < 3600) return Math.floor(s / 60) + " min ago"; if (s < 86400) return Math.floor(s / 3600) + " h ago"; return fmtTime(iso); };
   function toast(text, ms = 3200) { const t = el("div", "toast", text); t.setAttribute("role", "status"); document.body.append(t); setTimeout(() => t.remove(), ms); }
@@ -377,7 +396,9 @@
   }
   async function start() {
     try {
+      const sentAt = RealDate.now();
       const meta = await api("/api/console/meta");
+      syncClock(meta, sentAt);
       $("#gate").hidden = true; $("#app").hidden = false;
       S.meta = meta; S.modules = meta.modules || {};
       if (meta.demo) await loadNames();

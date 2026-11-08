@@ -366,7 +366,8 @@
   .dock.is-empty { display: none; }  /* collapsed until a grant arrives, so its rise is a real moment */
   .dock .q-rows { max-height: 24vh; overflow-y: auto; }
   .inspector { border-top: 1px solid var(--line); }
-  .detail:not(.ev-open) .inspector { display: none; }
+  /* collapsed: clipped to nothing and inert (no focus), but still in the page so its headings stay findable */
+  .detail:not(.ev-open) .inspector { height: 0; overflow: hidden; border: 0; padding: 0; }
 }
 @media (min-width: 1200px) {
   /* the evidence column slides open from the right edge (200ms); collapsed, the case takes the width */
@@ -378,7 +379,7 @@
   .transcript, .inspector { overflow-y: auto; min-height: 0; }
   .inspector { border-top: 0; border-left: 1px solid var(--line); overflow-x: hidden; }
   .inspector > .sec { width: calc(var(--insp-w) - 1px); }
-  .detail:not(.ev-open) .inspector { display: block; visibility: hidden; transition: visibility 0s linear 200ms; }
+  .detail:not(.ev-open) .inspector { height: auto; border-left-width: 0; }
   .dock { max-height: 50vh; overflow: hidden; display: flex; flex-direction: column; }
   .dock .q-list { min-height: 0; flex: 1; }
   .dock .q-list.has-rest { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 38%); align-items: start; }

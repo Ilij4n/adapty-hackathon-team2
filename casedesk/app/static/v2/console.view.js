@@ -659,6 +659,7 @@ window.CaseDeskConsoleView = (h) => {
 
     box.append(tr, ins);
     box.classList.toggle("ev-open", evOpen);
+    ins.inert = !evOpen;
     // the decision card reads the status sentence of the case it is about
     const sentence = h.stateLine(c.state, f);
     if (sentence && why.get(c.id) !== sentence) { why.set(c.id, sentence); if (S.approvals.some((a) => a.case_id === c.id && (a.status === "pending" || a.status === "failed"))) setTimeout(() => h.rerenderList(), 0); }
@@ -722,6 +723,7 @@ window.CaseDeskConsoleView = (h) => {
     evOpen = open;
     try { localStorage.setItem(EV_KEY, open ? "open" : "closed"); } catch { /* private mode: still toggles */ }
     const box = $("#detail"); box.classList.toggle("ev-open", open);
+    const ev = $("#evidence"); if (ev) ev.inert = !open;
     const b = $("#evToggle");
     if (b) { b.setAttribute("aria-expanded", String(open)); b.title = (open ? "Hide" : "Show") + " the evidence: claims, facts, reply check, records, audit log (e)"; }
     if (open && !matchMedia("(min-width: 1200px)").matches) { const ev = $("#evidence"); if (ev) ev.scrollIntoView({ behavior: "smooth", block: "start" }); }

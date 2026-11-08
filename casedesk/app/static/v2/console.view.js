@@ -140,7 +140,7 @@ window.CaseDeskConsoleView = (h) => {
   }
 
   function bigCard(a, c) { // the one-click moment: who, what, why, what changes, then the amber button
-    const name = h.nameOf(a.customer_user_id) || "them";
+    const name = h.nameOf(a.customer_user_id) || "this user";
     const days = a.days || 3, what = `${days} days of premium`;
     const li = el("li", "q-item big" + (a.status === "failed" ? " failed" : ""));
     li.setAttribute("aria-current", String(a.case_id === S.selected));
@@ -170,7 +170,7 @@ window.CaseDeskConsoleView = (h) => {
   }
 
   function rowItem(a) { // a compact row with its own small Give / Deny
-    const name = h.nameOf(a.customer_user_id) || "them";
+    const name = h.nameOf(a.customer_user_id) || "this user";
     const days = a.days || 3, what = `${days} days of premium`;
     const li = el("li", "q-item row" + (a.status === "failed" ? " failed" : ""));
     li.setAttribute("aria-current", String(a.case_id === S.selected));
@@ -390,7 +390,7 @@ window.CaseDeskConsoleView = (h) => {
 
   function grantEl(a, c) {
     const f = c.facts || {};
-    const name = h.nameOf(a.customer_user_id) || "them";
+    const name = h.nameOf(a.customer_user_id) || "this user";
     const what = `${a.days || f.grant_days || 3} days of premium`;
     const w = el("div", "grant " + a.status);
     w.dataset.k = "g:" + a.id; w.dataset.v = a.status;
@@ -406,7 +406,7 @@ window.CaseDeskConsoleView = (h) => {
       p.append(icon("tick"), el("span", null, "Premium given" + (a.result && a.result.expires_at ? " until " + human(a.result.expires_at) : "")));
       w.append(p);
     } else if (a.status === "denied") {
-      w.append(el("p", "done no", `You said no to ${what}. ${cap(h.nameOf(a.customer_user_id) || "the user")} will see that.`));
+      w.append(el("p", "done no", `Denied by the team: no ${what}. ${cap(h.nameOf(a.customer_user_id) || "the user")} sees that in the chat.`));
     } else w.append(el("p", "done no", `${cap(what)} is ${a.status}.`));
     return w;
   }
@@ -596,7 +596,8 @@ window.CaseDeskConsoleView = (h) => {
         const done = a.kind === "PROPOSE_GRANT" && gave;
         const li = el("li", a.requires_approval ? "needs" + (done ? " done" : "") : null);
         const body = el("div", "did-b");
-        const t = el("span", "did-t", done ? "Premium given" : h.actionText(a)); t.title = a.kind;
+        const t = el("span", "did-t", done ? "Premium given" : injected && a.kind === "ESCALATE_TO_HUMAN"
+          ? "Ignored instructions in the message and handed it to a person" : h.actionText(a)); t.title = a.kind;
         body.append(t);
         if (a.kind === "PROPOSE_GRANT") grants.splice(0).forEach((g) => body.append(g));
         li.append(a.requires_approval && !done ? lamp("warn") : icon("tick"), body);

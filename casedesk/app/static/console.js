@@ -102,7 +102,7 @@
     for (const a of pend) {
       // the queue is the action column: the ONE Approve / Deny for each grant lives here
       const c = byCase[a.case_id] || {};
-      const who = nameOf(a.customer_user_id) || "them";
+      const who = nameOf(a.customer_user_id) || "this user";
       const what = `${a.days || 3} days of premium`;
       const li = el("li", "q-item" + (a.status === "failed" ? " failed" : ""));
       li.setAttribute("aria-current", String(a.case_id === S.selected));
@@ -167,7 +167,7 @@
 
   function grantBox(a, c) {
     const f = c.facts || {};
-    const who = nameOf(a.customer_user_id) || "them";
+    const who = nameOf(a.customer_user_id) || "this user";
     const what = `${a.days || f.grant_days || 3} days of premium`;
     const w = el("div", "grant " + a.status);
     if (a.status === "pending" || a.status === "failed") {
@@ -180,7 +180,7 @@
       const t = el("p", "done"); t.append(el("span", "tick", "✓"), document.createTextNode("Premium given" + (a.result && a.result.expires_at ? " · expires " + day(a.result.expires_at, true) : "")));
       w.append(t);
     } else if (a.status === "denied") {
-      w.append(el("p", "done no", `You said no to ${what}. ${cap(nameOf(a.customer_user_id) || "the user")} will see that.`));
+      w.append(el("p", "done no", `Denied by the team: no ${what}. ${cap(nameOf(a.customer_user_id) || "the user")} sees that in the chat.`));
     } else w.append(el("p", "done no", `${cap(what)}: ${a.status}`));
     return w;
   }

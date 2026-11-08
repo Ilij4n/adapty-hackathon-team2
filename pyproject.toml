@@ -14,6 +14,8 @@ dependencies = [
 [project.optional-dependencies]
 # The Anthropic API backend (CASEDESK_LLM=anthropic). The default backend is the `claude` CLI and needs no package.
 anthropic = ["anthropic>=0.40"]
+# The MCP server (python -m casedesk.mcp_server): run your support from Claude Code / Claude Desktop.
+mcp = ["mcp>=1.2,<2"]   # 2.x renamed FastMCP to MCPServer
 
 [dependency-groups]
 dev = [

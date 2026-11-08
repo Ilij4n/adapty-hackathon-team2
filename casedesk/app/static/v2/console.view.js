@@ -51,20 +51,30 @@ window.CaseDeskConsoleView = (h) => {
     if (ISO_TS.test(v)) { const d = new Date(v); return isNaN(d) ? v : dmy(d) + " " + hm(d); }
     return v;
   }
-  function short(iso) {
+  function short(iso) { // age, not clock time: "now", "12 min", "3 h", "2 d"
     const d = new Date(iso); if (isNaN(d)) return "";
-    const s = (Date.now() - d) / 1000;
+    const s = Math.max(0, (Date.now() - d) / 1000);
     if (s < 60) return "now";
     if (s < 3600) return Math.floor(s / 60) + " min";
-    return d.toDateString() === new Date().toDateString() ? hm(d) : dm(d);
+    if (s < 86400) return Math.floor(s / 3600) + " h";
+    return Math.floor(s / 86400) + " d";
   }
   function timeEl(iso, mode, sameDayAs) {
     let text = short(iso);
+    if (mode === "wait") return waitEl(iso);
     if (mode === "full") text = clock(iso);
     if (mode === "turn") { const d = new Date(iso), o = new Date(sameDayAs); text = !isNaN(d) && !isNaN(o) && d.toDateString() === o.toDateString() ? hm(d) : clock(iso); }
     const t = el("time", "mono t", text); t.dateTime = iso || ""; t.title = clock(iso); return t;
   }
   const words = (k) => String(k).replace(/_/g, " ");
+  // how long a request has waited; amber past an hour
+  // a request cannot predate its case: if it seems to, its stamp is on the engine (demo) clock, so use the case's
+  const since = (a) => { const c = S.cases.find((x) => x.id === a.case_id); return c && String(c.created_at) > String(a.created_at) ? c.created_at : a.created_at; };
+  function waitEl(iso) {
+    const d = new Date(iso);
+    const t = el("time", "mono t" + (!isNaN(d) && Date.now() - d > 3600e3 ? " late" : ""), short(iso));
+    t.dateTime = iso || ""; t.title = "Waiting since " + clock(iso); return t;
+  }
 
   // reverse video, label-sized: the element gets a chip in its own colour for 700ms
   const TONE_C = { ok: "var(--teal)", warn: "var(--amber)", bad: "var(--coral)", info: "var(--ink)", amber: "var(--amber)" };
@@ -97,8 +107,7 @@ window.CaseDeskConsoleView = (h) => {
   const rowSig = new Map();
   const seenQ = new Set();
   let navFocus = false;
-  const given = new Map();       // approval id -> when it was given from this page (its green line stays a moment)
-  const GIVEN_MS = 4500;
+  const given = new Map();       // approval id -> the case open when it was given here (its green line stays until you move on)
   const why = new Map();         // case id -> the status sentence, learnt when the case was open
   const orders = new Map();      // case id -> the message tried to give Case Desk orders (from the case itself)
   const asked = new Set();
@@ -123,8 +132,7 @@ window.CaseDeskConsoleView = (h) => {
 
   function decideBtn(a, ok, label, busy) {
     ok.onclick = () => {
-      given.set(a.id, Date.now());
-      setTimeout(() => h.rerenderList(), GIVEN_MS + 50);
+      given.set(a.id, S.selected);
       ok.closest(".q-item").classList.add("deciding");
       ok.textContent = busy;
       Promise.resolve(h.decide(a.id, "approve", ok)).finally(() => { if (!ok.disabled) { ok.textContent = label; given.delete(a.id); } });
@@ -132,12 +140,12 @@ window.CaseDeskConsoleView = (h) => {
   }
 
   function bigCard(a, c) { // the one-click moment: who, what, why, what changes, then the amber button
-    const name = h.nameOf(a.customer_user_id) || "them";
+    const name = h.nameOf(a.customer_user_id) || "this user";
     const days = a.days || 3, what = `${days} days of premium`;
     const li = el("li", "q-item big" + (a.status === "failed" ? " failed" : ""));
     li.setAttribute("aria-current", String(a.case_id === S.selected));
     const kick = el("p", "q-kick");
-    kick.append(lamp("warn"), el("span", null, a.status === "failed" ? "Adapty refused the last try" : "Case Desk asks you to confirm"), timeEl(a.created_at));
+    kick.append(lamp("warn"), el("span", null, a.status === "failed" ? "Adapty refused the last try" : "Case Desk asks you to confirm"), timeEl(since(a), "wait"));
     const b = el("button", "q-open"); b.type = "button"; b.title = "Open the case";
     const want = el("span", "q-want", what);
     const l1 = el("span", "q-l1"); l1.append(who(a.customer_user_id), want);
@@ -146,7 +154,7 @@ window.CaseDeskConsoleView = (h) => {
     const body = el("div", "q-body");
     body.append(b);
     const sentence = why.get(a.case_id) || devLabel(c.state_badge && c.state_badge.label);
-    if (sentence) body.append(el("p", "q-why", sentence));
+    if (sentence && a.case_id !== S.selected) body.append(el("p", "q-why", sentence)); // the open case already says why
     body.append(el("p", "q-change", `${cap(name)} gets premium for ${days} days. Nothing else changes.`));
     li.append(kick, body);
     if (a.status === "failed") li.append(el("p", "fail", "Adapty couldn't give it: " + ((a.result && a.result.error) || "error") + ". Nothing changed for " + name + "."));
@@ -162,14 +170,14 @@ window.CaseDeskConsoleView = (h) => {
   }
 
   function rowItem(a) { // a compact row with its own small Give / Deny
-    const name = h.nameOf(a.customer_user_id) || "them";
+    const name = h.nameOf(a.customer_user_id) || "this user";
     const days = a.days || 3, what = `${days} days of premium`;
     const li = el("li", "q-item row" + (a.status === "failed" ? " failed" : ""));
     li.setAttribute("aria-current", String(a.case_id === S.selected));
     const b = el("button", "q-open"); b.type = "button"; b.title = "Open the case";
     const want = el("span", "q-want", `${days} ${days === 1 ? "day" : "days"}`);
     const l1 = el("span", "q-l1"); l1.append(who(a.customer_user_id), want);
-    b.append(l1, timeEl(a.created_at));
+    b.append(l1, timeEl(since(a), "wait"));
     b.onclick = () => h.select(a.case_id);
     li.append(b);
     if (a.status === "failed") li.append(el("p", "fail", "Adapty refused the last try."));
@@ -188,8 +196,8 @@ window.CaseDeskConsoleView = (h) => {
   function renderDock(byCase) {
     const pend = S.approvals.filter((a) => a.status === "pending" || a.status === "failed")
       .sort((x, y) => String(x.created_at).localeCompare(String(y.created_at)));
-    const now = Date.now();
-    const done = S.approvals.filter((a) => a.status === "approved" && given.has(a.id) && now - given.get(a.id) < GIVEN_MS);
+    for (const [id, at] of given) if (at !== S.selected) given.delete(id);  // you moved on: the green line goes
+    const done = S.approvals.filter((a) => a.status === "approved" && given.has(a.id));
     const dock = $("#dock");
     const days = pend.reduce((n, a) => n + (a.days || 3), 0);
     $("#qCount").textContent = pend.length;
@@ -206,15 +214,18 @@ window.CaseDeskConsoleView = (h) => {
       dock.addEventListener("animationend", () => dock.classList.remove("rising"), { once: true });
     }
 
+    // a grant arrives (or is waiting on load) and no case is open: open its case, so the facts sit above the button
+    const fresh = pend.find((a) => !seenQ.has(a.id));
+    if (!S.selected && pend.length && (firstList || fresh) && matchMedia("(min-width: 980px)").matches) {
+      const t = fresh || pend[0]; setTimeout(() => { if (!S.selected) h.select(t.case_id); }, 0);
+    }
     const q = $("#queue"); q.textContent = "";
     // the green line a decided card collapses into
     for (const a of done) {
       const li = el("li", "q-done"); const p = el("p", "done");
-      const ex = a.result && a.result.expires_at ? new Date(a.result.expires_at) : null;
-      const until = ex && !isNaN(ex) ? " until " + dmy(ex) : "";
-      const t = el("span", null, `Premium given to ${h.nameOf(a.customer_user_id) || "them"}${until}`);
+      const until = a.result && a.result.expires_at ? " until " + human(String(a.result.expires_at).slice(0, 10)) : "";
+      const t = el("span", null, `Premium given to ${h.nameOf(a.customer_user_id) || "this user"}${until}`);
       p.append(icon("tick"), t); li.append(p); q.append(li);
-      if (!seenQ.has("g" + a.id)) { seenQ.add("g" + a.id); requestAnimationFrame(() => flash(t, "ok")); }
     }
     // the big card belongs to the case on screen; with no case open, the oldest request gets it.
     // Reading a case with nothing to approve (an escalated one, say), every request stays a compact row.
@@ -239,22 +250,26 @@ window.CaseDeskConsoleView = (h) => {
     }
   }
 
-  function caseRow(c) {
-    const li = el("li"); const b = el("button", "c-item" + (c.escalated ? " esc" : "")); b.type = "button";
+  function caseRow(c, wait) {
+    const esc = c.escalated && c.status !== "resolved";
+    const li = el("li"); const b = el("button", "c-item" + (esc && !wait ? " esc" : "") + (wait ? " wait" : "")); b.type = "button";
     b.setAttribute("aria-current", String(c.id === S.selected)); b.dataset.id = c.id;
     const st = c.state_badge || {};
-    const r1 = el("span", "r1"); r1.append(who(c.customer_user_id), timeEl(c.updated_at));
+    const wa = wait && S.approvals.find((a) => a.case_id === c.id && (a.status === "pending" || a.status === "failed"));
+    const r1 = el("span", "r1"); r1.append(who(c.customer_user_id), wa ? timeEl(since(wa), "wait") : timeEl(c.updated_at));
     const r2 = el("span", "r2"); r2.append(auto(el("span", "c-msg", c.first_message || "…")));
     const flags = el("span", "flags");
     if (c.pending_approval) flags.append(el("span", "flag", "waiting for your OK"));
     // rules hook: a grant the owner's rule gave (static/v2/rules.js)
     else if (window.CaseDeskRules && S.approvals.some((a) => a.case_id === c.id && window.CaseDeskRules.byRule(a))) flags.append(el("span", "flag auto", "given automatically"));
-    if (c.escalated) flags.append(el("span", "flag person", personReason(c)));
+    if (esc) flags.append(el("span", "flag person", personReason(c)));
+    if (c.status === "resolved") flags.append(el("span", "flag done", "Resolved"));
     if (flags.children.length) r2.append(flags);
-    if (c.escalated) {
+    if (esc && !wait) {
       const m = icon("person"); m.setAttribute("role", "img"); m.setAttribute("aria-label", "Needs a person"); m.removeAttribute("aria-hidden");
       b.append(m, r1, r2);
-    } else b.append(lamp(st.tone, devLabel(st.label) || "No status yet"), r1, r2);
+    } else if (givenOf(S.approvals.filter((a) => a.case_id === c.id).sort((x, y) => String(x.created_at).localeCompare(String(y.created_at))))) b.append(lamp("ok", "Premium given"), r1, r2);
+    else b.append(lamp(st.tone, devLabel(st.label) || "No status yet"), r1, r2);
     b.onclick = () => h.select(c.id);
     li.append(b);
     return { li, b };
@@ -271,7 +286,8 @@ window.CaseDeskConsoleView = (h) => {
       const n = S.cases.filter(pred).length;
       const b = el("button", "filt"); b.type = "button";
       b.setAttribute("aria-pressed", String(S.filter === key));
-      b.append(el("span", "fl", label), document.createTextNode(" "), el("span", "fn", String(n)));
+      b.append(el("span", "fl", label));
+      if (n || key === "all") b.append(document.createTextNode(" "), el("span", "fn", String(n))); // no "Waiting 0": five filters fit one line
       if (key !== "all" && n) b.classList.add("has", key === "waiting" ? "amber" : "person");
       b.onclick = () => { S.filter = key; S.sig.list = ""; renderList(); };
       fb.append(b);
@@ -279,10 +295,16 @@ window.CaseDeskConsoleView = (h) => {
 
     const f = h.FILTERS.find((x) => x[0] === S.filter) || h.FILTERS[0];
     const matched = S.cases.filter(f[2]);
-    // "Needs a person" is pinned above the rest: a group of its own, in its own ink
-    const people = matched.filter((c) => c.escalated), others = matched.filter((c) => !c.escalated);
-    shown = [...people, ...others];
-    $("#cCount").textContent = shown.length === S.cases.length ? String(S.cases.length) : `${shown.length} of ${S.cases.length}`;
+    // "Waiting for your OK" is pinned first (always, on All and Waiting), then "Needs a person", then the rest
+    const waitIds = new Set(S.approvals.filter((a) => a.status === "pending" || a.status === "failed").map((a) => a.case_id));
+    const isWait = (c) => c.pending_approval || waitIds.has(c.id);
+    const showWait = S.filter === "all" || S.filter === "waiting";
+    const waits = showWait ? matched.filter(isWait) : [];
+    const people = matched.filter((c) => !waits.includes(c) && c.escalated && c.status !== "resolved");
+    const others = matched.filter((c) => !waits.includes(c) && !people.includes(c));
+    shown = [...waits, ...people, ...others];
+    const capped = S.total > S.cases.length ? `${S.cases.length} newest of ${S.total}` : String(S.cases.length);
+    $("#cCount").textContent = shown.length === S.cases.length ? capped : `${shown.length} of ${capped}`;
     const empty = $("#cEmpty");
     empty.hidden = shown.length > 0;
     if (!shown.length) {
@@ -291,7 +313,7 @@ window.CaseDeskConsoleView = (h) => {
         const a = el("a", null, "Lumen Help"); a.href = "/help?v=2"; a.target = "_blank"; a.rel = "noopener";
         empty.append(document.createTextNode("No cases yet. Open "), a, document.createTextNode(" and send a message; it shows up here."));
       } else {
-        const what = { escalated: "No case needs a person right now.", privacy: "No privacy or data requests.", waiting: "No case is waiting for a grant." }[S.filter] || "Nothing here.";
+        const what = { escalated: "No case needs a person right now.", privacy: "No privacy or data requests.", waiting: "No case is waiting for a grant.", resolved: "No resolved cases yet." }[S.filter] || "Nothing here.";
         empty.append(document.createTextNode(what + " "));
         const back = el("button", "linkish", "Show all cases"); back.type = "button";
         back.onclick = () => { S.filter = "all"; S.sig.list = ""; renderList(); };
@@ -307,15 +329,21 @@ window.CaseDeskConsoleView = (h) => {
       hd.append(el("span", null, title), document.createTextNode(" "), mono("n", String(n)));
       g.append(hd); list.append(g);
     };
+    if (showWait) {
+      group("amber" + (waits.length ? " has" : ""), "Waiting for your OK", waits.length);
+      if (!waits.length) { const e = el("li", "c-wait-empty", "Nothing waiting. Grants Case Desk asks you to confirm appear here."); e.setAttribute("role", "presentation"); list.append(e); }
+    }
+    for (const c of waits) { const { li, b } = caseRow(c, true); if (c.id === S.selected) current = b; list.append(li); }
     if (people.length) group("person", "Needs a person", people.length);
     for (const c of people) { const { li, b } = caseRow(c); if (c.id === S.selected) current = b; list.append(li); }
-    if (people.length && others.length) group("rest", "Other cases", others.length);
+    if ((people.length || showWait) && others.length) group("rest", "Other cases", others.length);
     for (const c of others) { const { li, b } = caseRow(c); if (c.id === S.selected) current = b; list.append(li); }
     // a row whose state, flags or message count changed since the last refresh: its time flashes
     const now = new Map();
     for (const c of S.cases) now.set(c.id, [c.state_badge && c.state_badge.code, c.pending_approval, c.escalated, c.privacy, c.messages].join("|"));
     if (!firstList) {
-      for (const b of list.querySelectorAll(".c-item")) if (rowSig.get(b.dataset.id) !== now.get(b.dataset.id)) flash(b.querySelector(".t"), "info");
+      const mine = new Set(S.approvals.filter((a) => given.has(a.id)).map((a) => a.case_id)); // your own click: no list flash
+      for (const b of list.querySelectorAll(".c-item")) if (rowSig.get(b.dataset.id) !== now.get(b.dataset.id) && !mine.has(b.dataset.id)) flash(b.querySelector(".t"), "info");
     }
     rowSig.clear(); now.forEach((v, k) => rowSig.set(k, v));
     firstList = false;
@@ -364,7 +392,7 @@ window.CaseDeskConsoleView = (h) => {
 
   function grantEl(a, c) {
     const f = c.facts || {};
-    const name = h.nameOf(a.customer_user_id) || "them";
+    const name = h.nameOf(a.customer_user_id) || "this user";
     const what = `${a.days || f.grant_days || 3} days of premium`;
     const w = el("div", "grant " + a.status);
     w.dataset.k = "g:" + a.id; w.dataset.v = a.status;
@@ -388,7 +416,7 @@ window.CaseDeskConsoleView = (h) => {
       p.append(icon("tick"), el("span", null, "Premium given" + (a.result && a.result.expires_at ? " until " + human(a.result.expires_at) : "")));
       w.append(p);
     } else if (a.status === "denied") {
-      w.append(el("p", "done no", `You said no to ${what}. ${cap(h.nameOf(a.customer_user_id) || "the user")} will see that.`));
+      w.append(el("p", "done no", `Denied by the team: no ${what}. ${cap(h.nameOf(a.customer_user_id) || "the user")} sees that in the chat.`));
     } else w.append(el("p", "done no", `${cap(what)} is ${a.status}.`));
     return w;
   }
@@ -458,6 +486,8 @@ window.CaseDeskConsoleView = (h) => {
     return { text: bits.join(", ") + ".", bad: rv.length > 0 || meta.status === "error", rv, le };
   }
 
+  // the case's latest grant request, when it was approved
+  const givenOf = (aps) => { const l = (aps || [])[aps.length - 1]; return l && l.status === "approved" ? l : null; };
   const EV_KEY = "casedesk.v2.evidence";
   let evOpen = false;
   try { evOpen = localStorage.getItem(EV_KEY) === "open"; } catch { /* default: collapsed */ }
@@ -497,7 +527,8 @@ window.CaseDeskConsoleView = (h) => {
     box.classList.add("has-case");
 
     // ================= the case: who, the status, the conversation, what Case Desk did
-    const tr = el("section", "transcript scroll"); tr.setAttribute("aria-label", "The case");
+    const resolved = c.status === "resolved";
+    const tr = el("section", "transcript scroll" + (resolved ? " resolved" : "")); tr.setAttribute("aria-label", "The case");
     const head = el("header", "d-head");
     const h2 = el("h2"); h2.append(who(c.customer_user_id, "span"));
     const meta = el("dl", "d-meta");
@@ -512,16 +543,37 @@ window.CaseDeskConsoleView = (h) => {
     evb.append(el("span", null, "Evidence"), icon("chev"), el("kbd", null, "e"));
     evb.lastChild.setAttribute("aria-hidden", "true");
     evb.onclick = () => setEvidence(!evOpen);
-    head.append(h2, meta, evb);
+    // escalations can be closed: Mark resolved / Reopen (POST /api/cases/{id}/resolve | /reopen)
+    const acts2 = el("div", "d-acts");
+    if (resolved) acts2.append(el("span", "tag-resolved", "Resolved"));
+    if (fl.escalated || fl.privacy || resolved) {
+      const rb = el("button", "btn resolve", resolved ? "Reopen" : "Mark resolved"); rb.type = "button";
+      rb.onclick = () => {
+        rb.disabled = true;
+        h.api(`/api/cases/${encodeURIComponent(c.id)}/${resolved ? "reopen" : "resolve"}`, { method: "POST" }).then((r) => {
+          const lc = S.cases.find((x) => x.id === c.id); if (lc) lc.status = r.status;
+          h.toast(r.status === "resolved" ? "Marked resolved. It left Needs a person." : "Open again.");
+          return h.select(c.id);
+        }).catch((e) => { rb.disabled = false; h.toast(e.message || "Failed", 7000); });
+      };
+      acts2.append(rb);
+    }
+    acts2.append(evb);
+    head.append(h2, meta, acts2);
     tr.append(head);
 
     const tone = (c.state && c.state.tone) || "info";
-    const ro = el("div", "readout " + tone);
+    const gave = givenOf(d.approvals);   // approved: the headline says what the click did, the old state below it, struck
+    const ro = el("div", "readout " + (gave ? "given" : tone));
     const rl = el("p", "ro-label");
-    const rlt = el("span", "ro-l", devLabel(c.state && c.state.label) || "No status yet");
-    rlt.dataset.k = "status"; rlt.dataset.v = (c.state && c.state.code) + "|" + h.stateLine(c.state, f); rlt.dataset.tone = tone;
-    rl.append(lamp(tone), rlt);
-    ro.append(rl, el("p", "ro-line", h.stateLine(c.state, f)), verdictLine(c));
+    const rlt = el("span", "ro-l", gave ? "Premium given by the team" : devLabel(c.state && c.state.label) || "No status yet");
+    rlt.dataset.k = "status"; rlt.dataset.v = (c.state && c.state.code) + "|" + h.stateLine(c.state, f) + "|" + !!gave; rlt.dataset.tone = tone;
+    rl.append(gave ? icon("tick") : lamp(tone), rlt);
+    if (gave) {
+      const until = gave.result && gave.result.expires_at ? " until " + human(String(gave.result.expires_at).slice(0, 10)) : "";
+      ro.append(rl, el("p", "ro-line", `${cap(h.nameOf(c.customer_user_id) || "This user")} has premium${until}`),
+        el("p", "ro-was", h.stateLine(c.state, f)), verdictLine(c));
+    } else ro.append(rl, el("p", "ro-line", h.stateLine(c.state, f)), verdictLine(c));
     tr.append(ro);
     // escalated: Case Desk could not help, so no button can settle it. Its own ink, not amber (amber asks you to confirm).
     const injected = !!(c.intent && c.intent.injection_suspected);
@@ -580,12 +632,15 @@ window.CaseDeskConsoleView = (h) => {
     if (acts.length) {
       const ul = el("ul", "did");
       for (const a of acts) {
-        const li = el("li", a.requires_approval ? "needs" : null);
+        const done = a.kind === "PROPOSE_GRANT" && gave;
+        const li = el("li", a.requires_approval ? "needs" + (done ? " done" : "") : null);
         const body = el("div", "did-b");
-        const t = el("span", "did-t", a.params && a.params.given_by_rule ? `Gave a ${a.params.days || 3}-day courtesy extension on its own (your rule)` : h.actionText(a)); t.title = a.kind;
+        const t = el("span", "did-t", a.params && a.params.given_by_rule ? `Gave a ${a.params.days || 3}-day courtesy extension on its own (your rule)`
+          : done ? "Premium given" : injected && a.kind === "ESCALATE_TO_HUMAN"
+          ? "Ignored instructions in the message and handed it to a person" : h.actionText(a)); t.title = a.kind;
         body.append(t);
         if (a.kind === "PROPOSE_GRANT") grants.splice(0).forEach((g) => body.append(g));
-        li.append(a.requires_approval ? lamp("warn") : icon("tick"), body);
+        li.append(a.requires_approval && !done ? lamp("warn") : icon("tick"), body);
         ul.append(li);
       }
       did.append(ul);
@@ -707,7 +762,11 @@ window.CaseDeskConsoleView = (h) => {
     // reverse video for whatever changed on this case since the last refresh (labels only)
     const vals = new Map();
     box.querySelectorAll("[data-k]").forEach((n) => vals.set(n.dataset.k, n.dataset.v));
-    if (same) box.querySelectorAll("[data-k]").forEach((n) => { if (prev.vals.get(n.dataset.k) !== n.dataset.v) flash(n, n.dataset.tone); });
+    if (same) {
+      const changed = [...box.querySelectorAll("[data-k]")].filter((n) => prev.vals.get(n.dataset.k) !== n.dataset.v);
+      const g = changed.filter((n) => n.dataset.k.startsWith("g:")); // a decision: flash only its grant chip, once
+      (g.length ? g : changed).forEach((n) => flash(n, n.dataset.tone));
+    }
     prev.id = c.id; prev.vals = vals;
   }
 
@@ -767,6 +826,14 @@ window.CaseDeskConsoleView = (h) => {
     if (b) { b.setAttribute("aria-expanded", String(open)); b.title = (open ? "Hide" : "Show") + " the evidence: claims, facts, reply check, records, audit log (e)"; }
     if (open && !matchMedia("(min-width: 1200px)").matches) { const ev = $("#evidence"); if (ev) ev.scrollIntoView({ behavior: "smooth", block: "start" }); }
   }
+
+  // skip link: straight to the first Give button (or the dock when nothing waits)
+  const skip = document.getElementById("skipQ");
+  if (skip) skip.addEventListener("click", (e) => {
+    e.preventDefault();
+    const t = document.querySelector("#queue .btn.approve:not([disabled])") || document.getElementById("dock");
+    if (t) { t.focus(); t.scrollIntoView({ block: "nearest" }); }
+  });
 
   // the dock is a fixed sheet on phones: the page is padded by its height so it never hides the end of the page
   const dock = document.getElementById("dock");

@@ -249,7 +249,7 @@ def main() -> int:
             expect(con.locator(".q-item")).to_have_count(1, timeout=10000)
             con.locator(".q-item .q-open").click()   # opening the case; Approve / Deny live only on this queue card
             expect(con.locator(".d-head h2")).to_contain_text(grant_user.split("_")[-1])  # "Ava · 00239"
-            expect(con.locator("#filters .filt")).to_have_count(4)
+            expect(con.locator("#filters .filt")).to_have_count(5)  # All, Escalated, Privacy, Waiting, Resolved
             expect(con.get_by_role("heading", name="What Case Desk did")).to_be_visible()
             # the technical panels sit in one collapsed "Details" disclosure (a variant may show them openly)
             if con.locator("details.more").count():

@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="/static/v2/rules.css"><!-- rules drawer (rules.js) -->
 </head>
 <body class="console">
+<a class="skip" href="#dock" id="skipQ">Jump to approvals</a>
 <header class="top">
   <a class="mark" href="/?v=2" title="Back to the Lumen landing page"><span class="mk" aria-hidden="true"></span><span class="cd">Case Desk</span><span class="for">for Lumen</span></a>
   <div class="top-meta" id="topMeta"></div>
@@ -52,14 +53,14 @@
     </div>
   </section>
 
-  <aside class="dock is-empty" id="dock" aria-labelledby="qH">
+  <aside class="dock is-empty" id="dock" aria-labelledby="qH" tabindex="-1">
     <div class="dock-head">
       <h2 id="qH"><span class="q-n" id="qCount">0</span> <span id="qWord">waiting for your OK</span></h2>
       <span class="q-days" id="qDays"></span>
       <span class="keys" aria-hidden="true"><kbd>a</kbd> give <kbd>d</kbd> deny <kbd>j</kbd><kbd>k</kbd> move</span>
     </div>
     <ol class="q-list" id="queue"></ol>
-    <p class="empty" id="qEmpty">Nothing to decide. When Case Desk asks to give someone premium, the request waits here.</p>
+    <p class="empty" id="qEmpty">When Case Desk asks to give someone premium, the request waits here for your OK.</p>
   </aside>
 </main>
 <script src="/static/v2/rules.js"></script><!-- rules drawer: GET/PUT /api/rules -->

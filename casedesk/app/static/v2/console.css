@@ -3,8 +3,9 @@
 .console {
   --chrome: var(--raised);   /* top bar, case list, evidence column */
   --read: var(--pane);       /* the case: the reading surface */
-  --hover: #eef2f8;
-  --list-w: clamp(300px, 22vw, 330px);
+  --hover: #e6ebf3;
+  --line-ctl: #8a97b3;       /* control outlines: 3:1 on white */
+  --list-w: clamp(340px, 24vw, 360px);
   --insp-w: clamp(360px, 31vw, 460px);
   --gut: 28px;               /* the case column's side gutter */
   background: var(--chrome);
@@ -12,7 +13,7 @@
   line-height: 1.45;
 }
 @media (prefers-color-scheme: dark) {
-  .console { --chrome: var(--pane); --read: var(--page); --hover: #111b31; }
+  .console { --chrome: var(--pane); --read: var(--page); --hover: #142039; --line-ctl: #4f6088; }
 }
 /* the dock and the toast are the night strip in both modes: one set of dark tokens */
 .night, .dock, .toast {
@@ -20,6 +21,7 @@
   --ink: #e8edf7; --ink-2: #a7b3cc; --ink-3: #8592ae;
   --amber: #ffa84c; --teal: #3fd0c0; --coral: #ff7a6b; --info: #a7b3cc; --focus: #e8edf7;
   --amber-soft: #2a2117; --teal-soft: #0f2b2f; --coral-soft: #2d1a20; --person: #9cc8f2; --person-soft: #102238;
+  --line-ctl: #55678f;
   color-scheme: dark;
 }
 .console * { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
@@ -64,7 +66,7 @@
 .keys kbd:last-of-type { margin-right: 3px; }
 @media (hover: none), (pointer: coarse) { .keys { display: none !important; } }
 
-.filters { display: flex; flex-wrap: wrap; gap: 0 13px; padding: 0 16px; border-bottom: 1px solid var(--line); }
+.filters { display: flex; flex-wrap: wrap; gap: 0 9px; padding: 0 16px; border-bottom: 1px solid var(--line); }
 .filt {
   min-height: 34px; padding: 0; border: 0; background: none; color: var(--ink-2);
   font-size: var(--t-s); box-shadow: inset 0 -2px 0 transparent;
@@ -94,6 +96,10 @@
 .c-group h3 .ic { width: 14px; height: 14px; }
 .c-group.person h3 { color: var(--person); }
 .c-group.rest h3 { padding-top: 16px; }
+.c-group.amber h3 { color: var(--ink-2); }
+.c-group.amber.has h3 { color: var(--amber); }
+.c-wait-empty { padding: 0 16px 6px; font-size: var(--t-xs); color: var(--ink-3); }
+.c-item.wait { box-shadow: inset 2px 0 0 var(--amber); }
 .c-item .r1 { grid-row: 1; grid-column: 2; }
 .c-item .r2 { grid-row: 2; grid-column: 2; }
 .c-item[aria-current="true"] { background: var(--sel); box-shadow: inset 2px 0 0 var(--ink); }
@@ -105,10 +111,17 @@
 .who-name .uid { font-size: var(--t-xs); font-weight: 400; color: var(--ink-3); }
 .who-name .uid.solo { font-size: var(--t-s); color: var(--ink); }
 .t { font-size: var(--t-xs); color: var(--ink-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.t.late { color: var(--amber); }
 .c-msg { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-2); }
 .flags { flex: none; display: flex; gap: 8px; }
 .flag { color: var(--amber); font-size: var(--t-xs); font-weight: 600; }
 .flag.person { color: var(--person); }
+.flag.done { color: var(--ink-3); font-weight: 400; }
+.d-acts { display: flex; align-items: center; gap: 8px; margin-inline-start: auto; align-self: center; }
+.d-acts .ev-toggle { margin-inline-start: 0; }
+.btn.resolve { min-height: 32px; padding: 0 12px; font-size: var(--t-s); background: transparent; }
+.tag-resolved { font-size: var(--t-xs); color: var(--ink-2); padding: 2px 8px; border-radius: 3px; background: var(--sel); }
+.transcript.resolved .person-note { opacity: .7; }
 .empty { padding: 12px 16px; color: var(--ink-3); }
 .linkish { padding: 0; border: 0; background: none; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line-2); }
 
@@ -172,6 +185,9 @@
 .readout.ok .ro-label { color: var(--teal); }
 .readout.warn .ro-label { color: var(--amber); }
 .readout.bad .ro-label { color: var(--coral); }
+.readout.given .ro-label, .readout.given .ro-line { color: var(--teal); }
+.ro-label .ic { width: 16px; height: 16px; }
+.ro-was { font-size: var(--t-s); color: var(--ink-3); text-decoration: line-through; text-decoration-color: var(--coral); }
 .ro-line { max-width: 34ch; font-size: var(--t-xl); line-height: 1.16; font-weight: 600; font-stretch: 85%; letter-spacing: -.005em; text-wrap: balance; color: var(--ink); }
 .verdict { display: flex; align-items: flex-start; gap: 6px; color: var(--teal); }
 .verdict .ic { width: 16px; height: 16px; margin-top: 1px; }
@@ -208,6 +224,7 @@
 .did-b { display: grid; gap: 2px; min-width: 0; }
 .did-t { font-size: var(--t-m); color: var(--ink); }
 .did li.needs .did-t { font-weight: 600; }
+.did li.needs.done .did-t { color: var(--teal); }
 
 .grant { width: fit-content; max-width: 100%; margin-top: 6px; padding: 7px 10px; border-radius: var(--r-ctl); font-size: var(--t-s); }
 .did-sec > .grant { margin-top: 0; }
@@ -277,13 +294,13 @@
 .dock-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; padding: 14px var(--gut) 4px; }
 .dock-head h2 { font-size: var(--t-l); color: var(--amber); }
 .dock-head .q-n { font-variant-numeric: tabular-nums; }
-.dock.all-done .dock-head h2 { color: var(--ink-2); }
+.dock.all-done .dock-head h2, .dock.is-empty .dock-head h2 { color: var(--ink-2); }
 .dock.all-done .dock-head .keys { display: none; }
 .q-days { color: var(--ink-2); }
 .dock-head .keys { margin-left: auto; }
 .dock #qEmpty { padding: 13px var(--gut); color: var(--ink-2); }
 .dock.rising { animation: dock-rise 220ms ease-out; }
-@keyframes dock-rise { from { transform: translateY(100%); } }
+@keyframes dock-rise { from { transform: translateY(calc(100% - 44px)); } }
 .q-list { min-width: 0; }
 
 /* the big card: who, what, why, what changes, and the brightest button on the screen */
@@ -337,7 +354,7 @@
 
 /* ------------------------------------------------------------ toast: the night strip, above the dock (no slide) */
 .toast {
-  position: fixed; z-index: 40; left: 50%; bottom: calc(var(--dock-h, 0px) + 16px); translate: -50% 0;
+  position: fixed; z-index: 40; top: calc(var(--top-h, 48px) + 12px); right: 16px;  /* top-right: never over the result it confirms */
   display: flex; align-items: center; gap: 10px; max-width: calc(100vw - 32px);
   padding: 10px 16px; border-radius: var(--r-ctl); background: #16223d; color: var(--ink);
   border: 1px solid var(--line-2); box-shadow: 0 12px 32px rgba(3, 6, 12, .45);
@@ -347,15 +364,34 @@
 
 /* ------------------------------------------------------------ hover, only where there is a pointer that hovers */
 @media (hover: hover) {
-  .filt:hover { color: var(--ink); }
-  .c-item:hover { background: var(--hover); }
-  .c-item[aria-current="true"]:hover { background: var(--sel); }
+  .filt:hover { color: var(--ink); box-shadow: inset 0 -2px 0 var(--line-2); }
+  .filt[aria-pressed="true"]:hover { box-shadow: inset 0 -2px 0 var(--teal); }
+  .c-item:hover { background: var(--hover); box-shadow: inset 2px 0 0 var(--line-ctl); }
+  .c-item.esc:hover { background: color-mix(in srgb, var(--person-soft) 88%, var(--ink) 12%); }
+  .c-item.wait:hover { box-shadow: inset 2px 0 0 var(--amber); }
+  .c-item:hover .c-msg { color: var(--ink); }
+  .c-item[aria-current="true"]:hover { background: var(--sel); box-shadow: inset 2px 0 0 var(--ink); }
   .q-open:hover .nm { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--ink-3); }
-  .ev-toggle:hover { border-color: var(--ink-3); }
-  .btn.approve:hover { background: #ffb96d; border-color: #ffb96d; }
-  .q-item.row .btn.approve:hover { background: var(--amber-soft); border-color: var(--amber); }
-  .btn.deny:hover { border-color: var(--ink-2); }
+  .btn.approve:hover { background: #ffb766; border-color: #ffb766; transform: translateY(-1px);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--amber-fill) 28%, transparent); }
+  .btn.approve.big:hover { box-shadow: 0 0 0 4px color-mix(in srgb, var(--amber-fill) 24%, transparent); }
+  .btn.deny:hover, .ev-toggle:hover, .btn.resolve:hover { background: var(--sel); border-color: var(--ink-3); }
+  .q-item.row .btn.approve:hover { background: var(--amber-soft); border-color: var(--amber); color: var(--amber); }
 }
+/* press, everywhere (touch too): darker, no lift */
+.btn:active:not([disabled]) { transform: translateY(1px); }
+.btn.approve:active:not([disabled]) { background: #f09634; border-color: #f09634; box-shadow: none; transform: none; }
+.btn.deny:active, .ev-toggle:active { background: var(--line); }
+.c-item:active { background: var(--sel); }
+.btn { transition: background-color .12s ease-out, border-color .12s ease-out, box-shadow .12s ease-out, transform .06s ease-out; }
+/* control outlines that pass 3:1 against their surface */
+.btn.deny, .ev-toggle, .btn.resolve { border-color: var(--line-ctl); }
+.btn.approve:focus-visible { outline-offset: 3px; }
+/* skip link: the first Tab stop goes straight to the approvals */
+.skip { position: absolute; left: -9999px; top: 8px; }
+#dock:focus:not(:focus-visible) { outline: none; }
+.skip:focus-visible { position: fixed; left: 8px; z-index: 50; padding: 8px 12px; border-radius: var(--r-ctl);
+  background: var(--amber-fill); color: var(--amber-on); font-weight: 600; text-decoration: none; outline-color: var(--ink); }
 
 /* ------------------------------------------------------------ desktop: a full-height instrument, no page scroll */
 @media (min-width: 980px) {
@@ -370,8 +406,15 @@
   .list { grid-area: list; overflow-y: auto; border-right: 1px solid var(--line); }
   .list-top { position: sticky; top: 0; z-index: 2; }
   .detail { grid-area: detail; overflow-y: auto; }
-  .dock { grid-area: dock; max-height: 56vh; overflow-y: auto; }
-  .dock.is-empty { display: none; }  /* collapsed until a grant arrives, so its rise is a real moment */
+  .dock { grid-area: dock; max-height: 34vh; overflow-y: auto; }
+  /* nothing waiting: a quiet 44px strip, so the place approvals land is visible before the first one does */
+  .dock.is-empty { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 12px; padding: 6px var(--gut); min-height: 44px; }
+  .dock.is-empty::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 2px; box-shadow: inset 0 0 0 1.5px var(--ink-3); }
+  .dock.is-empty .dock-head { padding: 0; }
+  .dock.is-empty .dock-head h2 { font-size: var(--t-s); font-weight: 600; }
+  .dock.is-empty .dock-head .keys, .dock.is-empty .q-days { display: none; }
+  .dock.is-empty #qEmpty { padding: 0; font-size: var(--t-xs); color: var(--ink-3); }
+  .dock.is-empty .q-list { display: none; }
   .dock .q-rows { max-height: 24vh; overflow-y: auto; }
   .inspector { border-top: 1px solid var(--line); }
   /* collapsed: clipped to nothing and inert (no focus), but still in the page so its headings stay findable */
@@ -388,7 +431,8 @@
   .inspector { border-top: 0; border-left: 1px solid var(--line); overflow-x: hidden; }
   .inspector > .sec { width: calc(var(--insp-w) - 1px); }
   .detail:not(.ev-open) .inspector { height: auto; border-left-width: 0; }
-  .dock { max-height: 50vh; overflow: hidden; display: flex; flex-direction: column; }
+  .dock { max-height: 34vh; overflow: hidden auto; display: flex; flex-direction: column; }
+  .dock.is-empty { flex-direction: row; }
   .dock .q-list { min-height: 0; flex: 1; }
   .dock .q-list.has-rest { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 38%); align-items: start; }
   .q-list.has-rest > .q-done { grid-column: 1 / -1; }

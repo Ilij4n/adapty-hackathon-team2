@@ -370,3 +370,67 @@ def test_design_variant_pages(tmp_path, monkeypatch):
     monkeypatch.setenv("CASEDESK_DESIGN", n)
     assert client.get("/help").text == want
     assert client.get("/help?v=0").text == (main.STATIC / "help.html").read_text()
+
+
+def test_case_resolve_and_reopen(client):
+    d = chat(client, "lumen_marko", "I want to talk to a real person").json()
+    cid = d["case_id"]
+    assert client.get("/api/cases", headers=CON).json()["cases"][0]["status"] == "open"
+    assert client.post(f"/api/cases/{cid}/resolve").status_code == 401   # console auth
+    r = client.post(f"/api/cases/{cid}/resolve", headers=CON)
+    assert r.status_code == 200 and r.json() == {"case_id": cid, "status": "resolved"}
+    assert client.get("/api/cases", headers=CON).json()["cases"][0]["status"] == "resolved"
+    det = client.get(f"/api/cases/{cid}", headers=CON).json()
+    assert det["case"]["status"] == "resolved"
+    assert any(e["event"] == "case_resolved" and e["actor"] == "console" for e in det["audit"])
+    assert client.post(f"/api/cases/{cid}/reopen", headers=CON).json()["status"] == "open"
+    assert any(e["event"] == "case_reopened" for e in client.get(f"/api/cases/{cid}", headers=CON).json()["audit"])
+    assert client.post("/api/cases/c_nope/resolve", headers=CON).status_code == 404
+    # the customer writing again reopens a resolved case
+    client.post(f"/api/cases/{cid}/resolve", headers=CON)
+    chat(client, "lumen_marko", "hello again?", case_id=cid)
+    assert client.get(f"/api/cases/{cid}", headers=CON).json()["case"]["status"] == "open"
+
+
+def test_store_adds_status_to_an_old_db(tmp_path):
+    import sqlite3
+    p = tmp_path / "old.db"
+    db = sqlite3.connect(p)
+    db.execute("CREATE TABLE cases (id TEXT PRIMARY KEY, customer_user_id TEXT NOT NULL, created_at TEXT NOT NULL,"
+               " updated_at TEXT NOT NULL, language TEXT, intent TEXT, state TEXT, facts TEXT, actions TEXT,"
+               " sale_context TEXT, validator TEXT)")
+    db.execute("INSERT INTO cases(id, customer_user_id, created_at, updated_at) VALUES ('c_1','u','t','t')")
+    db.commit(); db.close()
+    st = Store(p)
+    assert st.get_case("c_1")["status"] == "open"
+    assert st.set_case_status("c_1", "resolved") and st.get_case("c_1")["status"] == "resolved"
+
+
+def test_console_approvals_scope_and_case_total(client):
+    st = client.app.state.store
+    cid = st.create_case("lumen_x", {})
+    for i in range(55):   # 55 decided approvals: the console scope keeps only the 50 most recently decided
+        aid = st.create_approval(cid, "lumen_x", "premium", 3, None, at=f"2026-10-01T00:00:{i:02d}+00:00")
+        st.decide_approval(aid, "denied", at=f"2026-10-02T00:00:{i:02d}+00:00")
+    pend = st.create_approval(cid, "lumen_x", "premium", 3, None, at="2026-09-01T00:00:00+00:00")
+    full = client.get("/api/approvals", headers=CON).json()["approvals"]
+    assert len(full) == 56   # the old default: every approval ever
+    con = client.get("/api/approvals", params={"scope": "console"}, headers=CON).json()["approvals"]
+    assert len(con) == 51 and pend in [a["id"] for a in con]
+    decided = sorted(a["decided_at"] for a in con if a["status"] == "denied")
+    assert decided[0] == "2026-10-02T00:00:05+00:00"   # the oldest five decisions dropped
+    assert client.get("/api/approvals", params={"status": "pending"}, headers=CON).json()["approvals"][0]["id"] == pend
+    assert client.get("/api/approvals", params={"scope": "console"}).status_code == 401
+    r = client.get("/api/cases", headers=CON)
+    assert r.json()["total"] == 1 and r.json()["cases"][0]["messages"] == 0
+
+
+def test_case_list_is_gzipped_and_summarised(client):
+    for i in range(3):
+        chat(client, "lumen_marko", f"hello {i}, how do I cancel my subscription please?")
+    r = client.get("/api/cases", headers={**CON, "Accept-Encoding": "gzip"})
+    assert r.headers.get("content-encoding") == "gzip"
+    cs = r.json()["cases"]
+    assert r.json()["total"] == len(cs) == 3
+    assert {c["first_message"] for c in cs} == {f"hello {i}, how do I cancel my subscription please?" for i in range(3)}
+    assert all(c["messages"] == 2 for c in cs)

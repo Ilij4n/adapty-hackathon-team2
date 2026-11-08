@@ -106,8 +106,9 @@
   const llmErrors = (v, field) => [...(field ? [field] : []), ...(v || []).filter(isLlmErr)].filter((x, i, a) => a.indexOf(x) === i);
   const REASON = { user_requested_human: "they asked for a person", privacy_request: "privacy / data request" };
   const reasonText = (r) => REASON[r] || String(r || "escalated").replace(/_/g, " ");
-  const FILTERS = [["all", "All", () => true], ["escalated", "Escalated", (c) => c.escalated],
-    ["privacy", "Privacy", (c) => c.privacy], ["waiting", "Waiting", (c) => c.pending_approval]];
+  const FILTERS = [["all", "All", () => true], ["escalated", "Escalated", (c) => c.escalated && c.status !== "resolved"],
+    ["privacy", "Privacy", (c) => c.privacy], ["waiting", "Waiting", (c) => c.pending_approval],
+    ["resolved", "Resolved", (c) => c.status === "resolved"]];
   const auto = (n) => { n.dir = "auto"; return n; };
   const dot = (tone) => el("span", "dot " + (tone || "info"));
 
@@ -120,7 +121,7 @@
     for (const a of pend) {
       // the queue is the action column: the ONE Approve / Deny for each grant lives here
       const c = byCase[a.case_id] || {};
-      const who = nameOf(a.customer_user_id) || "them";
+      const who = nameOf(a.customer_user_id) || "this user";
       const what = `${a.days || 3} days of premium`;
       const li = el("li", "q-item" + (a.status === "failed" ? " failed" : ""));
       li.setAttribute("aria-current", String(a.case_id === S.selected));
@@ -148,7 +149,7 @@
       fb.append(b);
     }
     const shown = S.cases.filter((FILTERS.find((f) => f[0] === S.filter) || FILTERS[0])[2]);
-    $("#cCount").textContent = shown.length === S.cases.length ? S.cases.length : `${shown.length} / ${S.cases.length}`;
+    $("#cCount").textContent = (shown.length === S.cases.length ? S.cases.length : `${shown.length} / ${S.cases.length}`) + (S.total > S.cases.length ? ` (newest of ${S.total})` : "");
     $("#cEmpty").hidden = shown.length > 0;
     const list = $("#cases"); list.textContent = "";
     for (const c of shown) {
@@ -185,7 +186,7 @@
 
   function grantBox(a, c) {
     const f = c.facts || {};
-    const who = nameOf(a.customer_user_id) || "them";
+    const who = nameOf(a.customer_user_id) || "this user";
     const what = `${a.days || f.grant_days || 3} days of premium`;
     const w = el("div", "grant " + a.status);
     if (a.status === "pending" || a.status === "failed") {
@@ -198,7 +199,7 @@
       const t = el("p", "done"); t.append(el("span", "tick", "✓"), document.createTextNode("Premium given" + (a.result && a.result.expires_at ? " · expires " + day(a.result.expires_at, true) : "")));
       w.append(t);
     } else if (a.status === "denied") {
-      w.append(el("p", "done no", `You said no to ${what}. ${cap(nameOf(a.customer_user_id) || "the user")} will see that.`));
+      w.append(el("p", "done no", `Denied by the team: no ${what}. ${cap(nameOf(a.customer_user_id) || "the user")} sees that in the chat.`));
     } else w.append(el("p", "done no", `${cap(what)}: ${a.status}`));
     return w;
   }
@@ -357,7 +358,16 @@
       V.toast(verb === "approve" ? `Gave ${callName(a.customer_user_id)} ${a.days || 3} days of premium` : `Denied. ${cap(callName(a.customer_user_id))} will see it`);
       await refresh();
     } catch (e) {
-      const msg = e.message || "Failed";
+      let msg = e.message || "Failed";
+      if (e.status === 409 && !/^Not eligible/.test(msg)) { // lost the race: say who-ish and when
+        try {
+          const a = ((await api("/api/approvals?scope=console")).approvals || []).find((x) => x.id === id);
+          if (a && a.decided_at && a.status !== "pending") {
+            const d = new Date(a.decided_at);
+            msg = `Already ${a.status} by someone else at ${isNaN(d) ? a.decided_at : d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}.`;
+          }
+        } catch { /* keep the server's message */ }
+      }
       V.toast(msg, 7000); btn.disabled = false;
       const host = btn.closest(".q-item, [data-approval-host]");
       if (host) { host.querySelector(".refused")?.remove(); const r = el("p", "refused", msg); r.setAttribute("role", "alert"); host.append(r); }
@@ -385,8 +395,9 @@
     } catch { /* names are a demo nicety; ids still work */ }
   }
   async function refresh() {
-    const [cs, ap] = await Promise.all([api("/api/cases"), api("/api/approvals")]);
-    S.cases = cs.cases; S.approvals = ap.approvals;
+    // scope=console: open requests + recently decided ones, not every approval ever
+    const [cs, ap] = await Promise.all([api("/api/cases"), api("/api/approvals?scope=console")]);
+    S.cases = cs.cases; S.approvals = ap.approvals; S.total = cs.total || cs.cases.length;
     // seeded demo cases carry a display name (GET /api/cases, demo only); the picker’s names win
     for (const c of S.cases) if (c.display_name && !S.names[c.customer_user_id]) S.names[c.customer_user_id] = c.display_name;
     const sig = JSON.stringify([S.cases, S.approvals, S.selected]);
@@ -405,7 +416,10 @@
       V.renderMeta(meta);
       await refresh();
       clearInterval(S.timer);
-      S.timer = setInterval(() => refresh().catch(() => V.live("offline, retrying", "bad")), 3000);
+      // no polling while the tab is hidden; catch up the moment it is visible again
+      const tick = () => { if (!document.hidden) refresh().catch(() => V.live("offline, retrying", "bad")); };
+      S.timer = setInterval(tick, 3000);
+      if (!S.visHook) { S.visHook = true; document.addEventListener("visibilitychange", tick); }
     } catch (e) {
       if (e.status === 401) { $("#gate").hidden = false; $("#app").hidden = true; if (S.token) $("#gateErr").hidden = false; $("#tok").focus(); }
       else { V.live("can’t reach the server", "bad"); setTimeout(start, 3000); }

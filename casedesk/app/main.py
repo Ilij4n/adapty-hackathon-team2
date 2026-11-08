@@ -24,6 +24,7 @@ from typing import Any
 
 from fastapi import Depends, FastAPI, HTTPException, Path as PathParam, Query, Request
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -219,6 +220,7 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
         yield
 
     app = FastAPI(title="Case Desk", docs_url=None, redoc_url=None, lifespan=lifespan)
+    app.add_middleware(GZipMiddleware, minimum_size=1000)  # the console polls /api/cases every 3 s: ~19x smaller
     app.state.store = store
     app.state.adapty = adapty
     app.state.limiter = RateLimiter(int(os.environ.get("CASEDESK_CHAT_RATE", "8")))
@@ -612,19 +614,20 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
         st = S()
         pending = {a["case_id"] for a in st.list_approvals("pending")}
         out = []
-        for c in st.list_cases():
-            msgs = st.messages(c["id"])
-            first = next((m["text"] for m in msgs if m["role"] == "user"), "")
+        cases = st.list_cases()
+        summ = st.message_summary([c["id"] for c in cases])  # one query, not one per case
+        for c in cases:
+            n_msgs, first = summ.get(c["id"], (0, ""))
             out.append({"id": c["id"], "customer_user_id": c["customer_user_id"], "created_at": c["created_at"],
                         "updated_at": c["updated_at"], "language": c.get("language"),
                         "intent": (c.get("intent") or {}).get("type") if isinstance(c.get("intent"), dict) else None,
                         "state_badge": c.get("state"), "sale_context": c.get("sale_context") or {},
-                        "first_message": first[:160], "messages": len(msgs),
-                        "pending_approval": c["id"] in pending,
+                        "first_message": (first or "")[:160], "messages": n_msgs,
+                        "pending_approval": c["id"] in pending, "status": c.get("status") or "open",
                         "used_fallback": (c.get("validator") or {}).get("used_fallback"),
                         **case_flags(c),
                         **({"display_name": n} if (n := seeded_name(c["customer_user_id"])) else {})})
-        return {"cases": out}
+        return {"cases": out, "total": st.count_cases()}
 
     @app.get("/api/cases/{case_id}", dependencies=[console])
     async def get_case(case_id: str):
@@ -635,8 +638,28 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
         return {"case": c, "flags": case_flags(c), "messages": st.messages(case_id),
                 "approvals": st.case_approvals(case_id), "audit": st.audit_log(case_id)}
 
+    def set_case_status(case_id: str, status: str) -> dict:
+        """Mark a case resolved (it leaves "Needs a person") or open again. A new customer message reopens it too."""
+        st = S()
+        if not st.set_case_status(case_id, status):
+            raise HTTPException(status_code=404, detail="No such case.")
+        st.audit("console", "case_resolved" if status == "resolved" else "case_reopened", case_id, {"status": status})
+        return {"case_id": case_id, "status": status}
+
+    @app.post("/api/cases/{case_id}/resolve", dependencies=[console])
+    async def resolve_case(case_id: str):
+        return set_case_status(case_id, "resolved")
+
+    @app.post("/api/cases/{case_id}/reopen", dependencies=[console])
+    async def reopen_case(case_id: str):
+        return set_case_status(case_id, "open")
+
     @app.get("/api/approvals", dependencies=[console])
-    async def list_approvals(status: str | None = None):
+    async def list_approvals(status: str | None = None, scope: str | None = None):
+        """Default: every approval (or one status). scope=console: what the console needs on each poll, i.e. every
+        pending or failed request plus the 50 most recently decided, instead of every approval ever."""
+        if scope == "console":
+            return {"approvals": S().console_approvals()}
         return {"approvals": S().list_approvals(status)}
 
     async def eligibility_now(a: dict, now: datetime) -> tuple[bool, str]:

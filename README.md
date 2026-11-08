@@ -135,7 +135,7 @@ validator (template fallback), stored as `suggested_reply` on the case and shown
 ## Tests
 
 ```bash
-uv run pytest -q                                      # 717 tests; 2 skip without the organisers' seed repo
+uv run pytest -q                                      # 721 tests; 2 skip without the organisers' seed repo
 uv run playwright install chromium && uv run python tests/e2e_ui.py   # UI end-to-end
 uv run python eval/run_eval.py --backend claude-cli --concurrency 4  # live eval with real Claude
 ```

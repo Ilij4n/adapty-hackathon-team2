@@ -83,6 +83,9 @@ class Store:
             cols = {r[1] for r in self._db.execute("PRAGMA table_info(cases)").fetchall()}
             if "suggested_reply" not in cols:   # databases created before suggested replies existed
                 self._db.execute("ALTER TABLE cases ADD COLUMN suggested_reply TEXT")
+            # additive: case status (open | resolved), so an escalation can leave "Needs a person"
+            if "status" not in {r[1] for r in self._db.execute("PRAGMA table_info(cases)")}:
+                self._db.execute("ALTER TABLE cases ADD COLUMN status TEXT NOT NULL DEFAULT 'open'")
             self._db.commit()
 
     # ------------------------------------------------------------------ helpers
@@ -128,6 +131,13 @@ class Store:
         return [self._decode_case(r) for r in
                 self._all("SELECT * FROM cases ORDER BY updated_at DESC, created_at DESC, rowid DESC LIMIT ?", (limit,))]
 
+    def set_case_status(self, case_id: str, status: str) -> bool:
+        """open | resolved. Does not touch updated_at (the list order is about the conversation). False if no case."""
+        return self._x("UPDATE cases SET status=? WHERE id=?", (status, case_id)).rowcount == 1
+
+    def count_cases(self) -> int:
+        return int(self._all("SELECT COUNT(*) AS n FROM cases")[0]["n"])
+
     def user_cases(self, customer_user_id: str) -> list[dict]:
         return [self._decode_case(r) for r in self._all(
             "SELECT * FROM cases WHERE customer_user_id=? ORDER BY created_at, rowid", (customer_user_id,))]
@@ -146,6 +156,8 @@ class Store:
     def add_message(self, case_id: str, role: str, text: str, meta: dict | None = None, at: str | None = None) -> int:
         cur = self._x("INSERT INTO messages(case_id, role, text, meta, created_at) VALUES (?,?,?,?,?)",
                       (case_id, role, text, self._j(meta or {}), at or now_iso()))
+        if role == "user":  # the customer wrote again: a resolved case is open again
+            self._x("UPDATE cases SET status='open' WHERE id=? AND status='resolved'", (case_id,))
         return int(cur.lastrowid)
 
     def update_message(self, msg_id: int, text: str, meta: dict) -> None:
@@ -157,6 +169,16 @@ class Store:
             return None
         rows[0]["meta"] = json.loads(rows[0]["meta"] or "{}")
         return rows[0]
+
+    def message_summary(self, case_ids: list[str]) -> dict[str, tuple[int, str]]:
+        """case id -> (message count, first user message), for the case list in one query."""
+        if not case_ids:
+            return {}
+        marks = ",".join("?" * len(case_ids))
+        rows = self._all(f"SELECT case_id, COUNT(*) AS n, (SELECT text FROM messages u WHERE u.case_id = m.case_id "
+                         f"AND u.role = 'user' ORDER BY u.id LIMIT 1) AS first FROM messages m "
+                         f"WHERE case_id IN ({marks}) GROUP BY case_id", tuple(case_ids))
+        return {r["case_id"]: (int(r["n"]), r["first"] or "") for r in rows}
 
     def messages(self, case_id: str) -> list[dict]:
         out = self._all("SELECT * FROM messages WHERE case_id=? ORDER BY id", (case_id,))
@@ -196,6 +218,14 @@ class Store:
             rows = self._all("SELECT * FROM approvals WHERE status=? ORDER BY created_at DESC, rowid DESC", (status,))
         else:
             rows = self._all("SELECT * FROM approvals ORDER BY created_at DESC, rowid DESC")
+        return [self._decode_appr(r) for r in rows]
+
+    def console_approvals(self, recent: int = 50) -> list[dict]:
+        """Open requests (pending, failed) plus the `recent` most recently decided ones, newest first."""
+        rows = self._all("SELECT * FROM approvals WHERE status IN ('pending', 'failed') ORDER BY created_at DESC")
+        rows += self._all("SELECT * FROM approvals WHERE status NOT IN ('pending', 'failed') "
+                          "ORDER BY decided_at DESC, created_at DESC LIMIT ?", (recent,))
+        rows.sort(key=lambda r: r["created_at"] or "", reverse=True)
         return [self._decode_appr(r) for r in rows]
 
     def user_approvals(self, customer_user_id: str) -> list[dict]:

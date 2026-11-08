@@ -270,6 +270,7 @@
 .dock-head h2 { font-size: var(--t-l); color: var(--amber); }
 .dock-head .q-n { font-variant-numeric: tabular-nums; }
 .dock.all-done .dock-head h2 { color: var(--ink-2); }
+.dock.all-done .dock-head .keys { display: none; }
 .q-days { color: var(--ink-2); }
 .dock-head .keys { margin-left: auto; }
 .dock #qEmpty { padding: 13px var(--gut); color: var(--ink-2); }

@@ -193,7 +193,8 @@ window.CaseDeskConsoleView = (h) => {
     const dock = $("#dock");
     const days = pend.reduce((n, a) => n + (a.days || 3), 0);
     $("#qCount").textContent = pend.length;
-    $("#qWord").textContent = pend.length ? "waiting for your OK" : "nothing waiting";
+    $("#qWord").textContent = pend.length ? "waiting for your OK" : "Nothing else waiting";
+    $("#qCount").hidden = !pend.length;
     $("#qDays").textContent = pend.length ? `${days} ${days === 1 ? "day" : "days"} of premium asked for` : "";
     $("#qEmpty").hidden = pend.length > 0 || done.length > 0;
     const busy = pend.length > 0 || done.length > 0;
@@ -209,7 +210,8 @@ window.CaseDeskConsoleView = (h) => {
     // the green line a decided card collapses into
     for (const a of done) {
       const li = el("li", "q-done"); const p = el("p", "done");
-      const until = a.result && a.result.expires_at ? " until " + human(a.result.expires_at) : "";
+      const ex = a.result && a.result.expires_at ? new Date(a.result.expires_at) : null;
+      const until = ex && !isNaN(ex) ? " until " + dmy(ex) : "";
       const t = el("span", null, `Premium given to ${h.nameOf(a.customer_user_id) || "them"}${until}`);
       p.append(icon("tick"), t); li.append(p); q.append(li);
       if (!seenQ.has("g" + a.id)) { seenQ.add("g" + a.id); requestAnimationFrame(() => flash(t, "ok")); }

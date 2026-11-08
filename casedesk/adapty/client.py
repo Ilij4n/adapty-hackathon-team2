@@ -29,6 +29,16 @@ import httpx
 from .models import AccessLevel, Money, Profile, Subscription
 
 DEFAULT_BASE = "https://api.adapty.io"
+
+
+def adapty_cuid(customer_user_id: str) -> str:
+    """Our demo ids are `lumen_demo_<i>`; a real Adapty account seeded by the organisers' script holds the same users
+    as `lumen_<run>_<i>`, with a random 6-digit run number. CASEDESK_ADAPTY_CUID_PREFIX (e.g. `lumen_123456_`) maps the
+    one to the other on the wire only; everything else (cases, signatures, the console) keeps the demo id."""
+    prefix = os.environ.get("CASEDESK_ADAPTY_CUID_PREFIX", "").strip()
+    if prefix and customer_user_id.startswith("lumen_demo_"):
+        return prefix + customer_user_id[len("lumen_demo_"):]
+    return customer_user_id
 API_PREFIX = "/api/v2/server-side-api"
 PROFILE_PATH = f"{API_PREFIX}/profile/"
 GRANT_PATH = f"{API_PREFIX}/purchase/profile/grant/access-level/"
@@ -270,7 +280,7 @@ class AdaptyClient:
         await self.aclose()
 
     def _headers(self, customer_user_id: str) -> dict[str, str]:
-        return {"Authorization": f"Api-Key {self.secret_key}", "adapty-customer-user-id": customer_user_id,
+        return {"Authorization": f"Api-Key {self.secret_key}", "adapty-customer-user-id": adapty_cuid(customer_user_id),
                 "Content-Type": "application/json", "Accept": "application/json"}
 
     async def _request(self, method: str, path: str, customer_user_id: str, body: dict | None = None

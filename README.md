@@ -62,7 +62,10 @@ Whichever backend runs, the validator checks every reply. If the LLM fails or a 
 
 ### Against real Adapty
 
-Set `ADAPTY_API_BASE` and `ADAPTY_SECRET_KEY`. Outside demo mode, set `CASEDESK_DEMO=0`, an `APP_SIGNING_SECRET`
+Set `ADAPTY_API_BASE=https://api.adapty.io` and `ADAPTY_SECRET_KEY` (a server-side secret key; put it in the
+environment or the submission form, never in this repo). If the account was filled by the organisers' seed script,
+its users are `lumen_<run>_<i>` (the script prints the run number): set `CASEDESK_ADAPTY_CUID_PREFIX=lumen_<run>_` and
+the demo ids map to them on the wire. Against a real account the demo uses real time, not the snapshot clock. Outside demo mode, set `CASEDESK_DEMO=0`, an `APP_SIGNING_SECRET`
 (the app signs `customer_user_id` with HMAC) and a `CONSOLE_TOKEN`. With `CASEDESK_PUBLIC=1` the server refuses to
 start while either is missing or still set to the demo value.
 

@@ -66,7 +66,12 @@ def main() -> None:
                 f.unlink()
         print(f"  fresh start: removed {db}")
     now = _seed_now()
-    if now:
+    # Against a real Adapty account (ADAPTY_API_BASE set and not our mock), its data is dated from when it was seeded:
+    # use real time, not the snapshot's demo clock. CASEDESK_NOW=real forces the same.
+    real_adapty = bool(os.environ.get("ADAPTY_API_BASE")) and "127.0.0.1" not in os.environ["ADAPTY_API_BASE"]
+    if os.environ.get("CASEDESK_NOW") == "real" or real_adapty:
+        os.environ.pop("CASEDESK_NOW", None)
+    elif now:
         os.environ.setdefault("CASEDESK_NOW", now)
     os.environ.setdefault("CASEDESK_CLOCK", "ticking")
     from casedesk import clock

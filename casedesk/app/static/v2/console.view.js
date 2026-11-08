@@ -97,8 +97,7 @@ window.CaseDeskConsoleView = (h) => {
   const rowSig = new Map();
   const seenQ = new Set();
   let navFocus = false;
-  const given = new Map();       // approval id -> when it was given from this page (its green line stays a moment)
-  const GIVEN_MS = 4500;
+  const given = new Map();       // approval id -> the case open when it was given here (its green line stays until you move on)
   const why = new Map();         // case id -> the status sentence, learnt when the case was open
   const orders = new Map();      // case id -> the message tried to give Case Desk orders (from the case itself)
   const asked = new Set();
@@ -123,8 +122,7 @@ window.CaseDeskConsoleView = (h) => {
 
   function decideBtn(a, ok, label, busy) {
     ok.onclick = () => {
-      given.set(a.id, Date.now());
-      setTimeout(() => h.rerenderList(), GIVEN_MS + 50);
+      given.set(a.id, S.selected);
       ok.closest(".q-item").classList.add("deciding");
       ok.textContent = busy;
       Promise.resolve(h.decide(a.id, "approve", ok)).finally(() => { if (!ok.disabled) { ok.textContent = label; given.delete(a.id); } });
@@ -188,8 +186,8 @@ window.CaseDeskConsoleView = (h) => {
   function renderDock(byCase) {
     const pend = S.approvals.filter((a) => a.status === "pending" || a.status === "failed")
       .sort((x, y) => String(x.created_at).localeCompare(String(y.created_at)));
-    const now = Date.now();
-    const done = S.approvals.filter((a) => a.status === "approved" && given.has(a.id) && now - given.get(a.id) < GIVEN_MS);
+    for (const [id, at] of given) if (at !== S.selected) given.delete(id);  // you moved on: the green line goes
+    const done = S.approvals.filter((a) => a.status === "approved" && given.has(a.id));
     const dock = $("#dock");
     const days = pend.reduce((n, a) => n + (a.days || 3), 0);
     $("#qCount").textContent = pend.length;
@@ -215,11 +213,9 @@ window.CaseDeskConsoleView = (h) => {
     // the green line a decided card collapses into
     for (const a of done) {
       const li = el("li", "q-done"); const p = el("p", "done");
-      const ex = a.result && a.result.expires_at ? new Date(a.result.expires_at) : null;
-      const until = ex && !isNaN(ex) ? " until " + dmy(ex) : "";
-      const t = el("span", null, `Premium given to ${h.nameOf(a.customer_user_id) || "them"}${until}`);
+      const until = a.result && a.result.expires_at ? " until " + human(String(a.result.expires_at).slice(0, 10)) : "";
+      const t = el("span", null, `Premium given to ${h.nameOf(a.customer_user_id) || "this user"}${until}`);
       p.append(icon("tick"), t); li.append(p); q.append(li);
-      if (!seenQ.has("g" + a.id)) { seenQ.add("g" + a.id); requestAnimationFrame(() => flash(t, "ok")); }
     }
     // the big card belongs to the case on screen; with no case open, the oldest request gets it.
     // Reading a case with nothing to approve (an escalated one, say), every request stays a compact row.
@@ -258,7 +254,8 @@ window.CaseDeskConsoleView = (h) => {
     if (esc && !wait) {
       const m = icon("person"); m.setAttribute("role", "img"); m.setAttribute("aria-label", "Needs a person"); m.removeAttribute("aria-hidden");
       b.append(m, r1, r2);
-    } else b.append(lamp(st.tone, devLabel(st.label) || "No status yet"), r1, r2);
+    } else if (givenOf(S.approvals.filter((a) => a.case_id === c.id).sort((x, y) => String(x.created_at).localeCompare(String(y.created_at))))) b.append(lamp("ok", "Premium given"), r1, r2);
+    else b.append(lamp(st.tone, devLabel(st.label) || "No status yet"), r1, r2);
     b.onclick = () => h.select(c.id);
     li.append(b);
     return { li, b };
@@ -329,7 +326,8 @@ window.CaseDeskConsoleView = (h) => {
     const now = new Map();
     for (const c of S.cases) now.set(c.id, [c.state_badge && c.state_badge.code, c.pending_approval, c.escalated, c.privacy, c.messages].join("|"));
     if (!firstList) {
-      for (const b of list.querySelectorAll(".c-item")) if (rowSig.get(b.dataset.id) !== now.get(b.dataset.id)) flash(b.querySelector(".t"), "info");
+      const mine = new Set(S.approvals.filter((a) => given.has(a.id)).map((a) => a.case_id)); // your own click: no list flash
+      for (const b of list.querySelectorAll(".c-item")) if (rowSig.get(b.dataset.id) !== now.get(b.dataset.id) && !mine.has(b.dataset.id)) flash(b.querySelector(".t"), "info");
     }
     rowSig.clear(); now.forEach((v, k) => rowSig.set(k, v));
     firstList = false;
@@ -464,6 +462,8 @@ window.CaseDeskConsoleView = (h) => {
     return { text: bits.join(", ") + ".", bad: rv.length > 0 || meta.status === "error", rv, le };
   }
 
+  // the case's latest grant request, when it was approved
+  const givenOf = (aps) => { const l = (aps || [])[aps.length - 1]; return l && l.status === "approved" ? l : null; };
   const EV_KEY = "casedesk.v2.evidence";
   let evOpen = false;
   try { evOpen = localStorage.getItem(EV_KEY) === "open"; } catch { /* default: collapsed */ }
@@ -496,12 +496,17 @@ window.CaseDeskConsoleView = (h) => {
     tr.append(head);
 
     const tone = (c.state && c.state.tone) || "info";
-    const ro = el("div", "readout " + tone);
+    const gave = givenOf(d.approvals);   // approved: the headline says what the click did, the old state below it, struck
+    const ro = el("div", "readout " + (gave ? "given" : tone));
     const rl = el("p", "ro-label");
-    const rlt = el("span", "ro-l", devLabel(c.state && c.state.label) || "No status yet");
-    rlt.dataset.k = "status"; rlt.dataset.v = (c.state && c.state.code) + "|" + h.stateLine(c.state, f); rlt.dataset.tone = tone;
-    rl.append(lamp(tone), rlt);
-    ro.append(rl, el("p", "ro-line", h.stateLine(c.state, f)), verdictLine(c));
+    const rlt = el("span", "ro-l", gave ? "Premium given by the team" : devLabel(c.state && c.state.label) || "No status yet");
+    rlt.dataset.k = "status"; rlt.dataset.v = (c.state && c.state.code) + "|" + h.stateLine(c.state, f) + "|" + !!gave; rlt.dataset.tone = tone;
+    rl.append(gave ? icon("tick") : lamp(tone), rlt);
+    if (gave) {
+      const until = gave.result && gave.result.expires_at ? " until " + human(String(gave.result.expires_at).slice(0, 10)) : "";
+      ro.append(rl, el("p", "ro-line", `${cap(h.nameOf(c.customer_user_id) || "This user")} has premium${until}`),
+        el("p", "ro-was", h.stateLine(c.state, f)), verdictLine(c));
+    } else ro.append(rl, el("p", "ro-line", h.stateLine(c.state, f)), verdictLine(c));
     tr.append(ro);
     // escalated: Case Desk could not help, so no button can settle it. Its own ink, not amber (amber asks you to confirm).
     const injected = !!(c.intent && c.intent.injection_suspected);
@@ -557,12 +562,13 @@ window.CaseDeskConsoleView = (h) => {
     if (acts.length) {
       const ul = el("ul", "did");
       for (const a of acts) {
-        const li = el("li", a.requires_approval ? "needs" : null);
+        const done = a.kind === "PROPOSE_GRANT" && gave;
+        const li = el("li", a.requires_approval ? "needs" + (done ? " done" : "") : null);
         const body = el("div", "did-b");
-        const t = el("span", "did-t", h.actionText(a)); t.title = a.kind;
+        const t = el("span", "did-t", done ? "Premium given" : h.actionText(a)); t.title = a.kind;
         body.append(t);
         if (a.kind === "PROPOSE_GRANT") grants.splice(0).forEach((g) => body.append(g));
-        li.append(a.requires_approval ? lamp("warn") : icon("tick"), body);
+        li.append(a.requires_approval && !done ? lamp("warn") : icon("tick"), body);
         ul.append(li);
       }
       did.append(ul);
@@ -684,7 +690,11 @@ window.CaseDeskConsoleView = (h) => {
     // reverse video for whatever changed on this case since the last refresh (labels only)
     const vals = new Map();
     box.querySelectorAll("[data-k]").forEach((n) => vals.set(n.dataset.k, n.dataset.v));
-    if (same) box.querySelectorAll("[data-k]").forEach((n) => { if (prev.vals.get(n.dataset.k) !== n.dataset.v) flash(n, n.dataset.tone); });
+    if (same) {
+      const changed = [...box.querySelectorAll("[data-k]")].filter((n) => prev.vals.get(n.dataset.k) !== n.dataset.v);
+      const g = changed.filter((n) => n.dataset.k.startsWith("g:")); // a decision: flash only its grant chip, once
+      (g.length ? g : changed).forEach((n) => flash(n, n.dataset.tone));
+    }
     prev.id = c.id; prev.vals = vals;
   }
 

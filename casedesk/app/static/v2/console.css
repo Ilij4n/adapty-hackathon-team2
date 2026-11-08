@@ -168,6 +168,9 @@
 .readout.ok .ro-label { color: var(--teal); }
 .readout.warn .ro-label { color: var(--amber); }
 .readout.bad .ro-label { color: var(--coral); }
+.readout.given .ro-label, .readout.given .ro-line { color: var(--teal); }
+.ro-label .ic { width: 16px; height: 16px; }
+.ro-was { font-size: var(--t-s); color: var(--ink-3); text-decoration: line-through; text-decoration-color: var(--coral); }
 .ro-line { max-width: 34ch; font-size: var(--t-xl); line-height: 1.16; font-weight: 600; font-stretch: 85%; letter-spacing: -.005em; text-wrap: balance; color: var(--ink); }
 .verdict { display: flex; align-items: flex-start; gap: 6px; color: var(--teal); }
 .verdict .ic { width: 16px; height: 16px; margin-top: 1px; }
@@ -204,6 +207,7 @@
 .did-b { display: grid; gap: 2px; min-width: 0; }
 .did-t { font-size: var(--t-m); color: var(--ink); }
 .did li.needs .did-t { font-weight: 600; }
+.did li.needs.done .did-t { color: var(--teal); }
 
 .grant { width: fit-content; max-width: 100%; margin-top: 6px; padding: 7px 10px; border-radius: var(--r-ctl); font-size: var(--t-s); }
 .did-sec > .grant { margin-top: 0; }
@@ -333,7 +337,7 @@
 
 /* ------------------------------------------------------------ toast: the night strip, above the dock (no slide) */
 .toast {
-  position: fixed; z-index: 40; left: 50%; bottom: calc(var(--dock-h, 0px) + 16px); translate: -50% 0;
+  position: fixed; z-index: 40; top: calc(var(--top-h, 48px) + 12px); right: 16px;  /* top-right: never over the result it confirms */
   display: flex; align-items: center; gap: 10px; max-width: calc(100vw - 32px);
   padding: 10px 16px; border-radius: var(--r-ctl); background: #16223d; color: var(--ink);
   border: 1px solid var(--line-2); box-shadow: 0 12px 32px rgba(3, 6, 12, .45);

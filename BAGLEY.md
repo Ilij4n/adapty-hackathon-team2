@@ -20,7 +20,7 @@ for a person or a rule the owner chose.** Never let the LLM decide a state, a fa
 | `casedesk/engine/` | `state.classify` (13 states), `facts.build` (FactSheet), `policy.decide` (fixed table) |
 | `casedesk/ai/` | intent (Haiku), compose (Sonnet), `validate.py` (blocks any fact not in the FactSheet), templates, `suggest.py` |
 | `casedesk/app/` | FastAPI app: `main.py` routes, `store.py` (sqlite), `auth.py` (HMAC ids, console token), `rules.py` (owner rules) |
-| `casedesk/app/static/` | UI variants: `v0` default; `v2` Night Shift (dark); `v5` = v2 + chat bubbles (**the demo design**); v1/v3/v4/v6 are design experiments |
+| `casedesk/app/static/` | UI variants: `v0` default; `v2` Night Shift (dark); `v6` = v2 + strips, composer, compact decision footer (**the demo design**, Ilijan's pick); v5 bubbles and v1/v3/v4 are design experiments |
 | `casedesk/mcp_server.py` | MCP server (9 tools) over the console API; approve, deny, reply and resolve all need `confirm: true` |
 | `casedesk/seed.py` | 16 realistic console cases through the real engine; never calls an LLM |
 | `casedesk/clock.py` | the only source of "now" (demo clock under `CASEDESK_NOW`) |
@@ -34,7 +34,7 @@ for a person or a rule the owner chose.** Never let the LLM decide a state, a fa
 
 ```bash
 uv sync
-CASEDESK_DB=/tmp/mycopy.db CASEDESK_DESIGN=5 uv run python -m casedesk.demo --port 8150 --fresh --seed
+CASEDESK_DB=/tmp/mycopy.db CASEDESK_DESIGN=6 uv run python -m casedesk.demo --port 8150 --fresh --seed
 uv run pytest -q
 uv run python tests/e2e_ui.py            # and: --variant 5
 ```

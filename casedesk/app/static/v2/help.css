@@ -126,7 +126,7 @@ body.help { overflow: hidden; background: var(--w-ground); }
 .log { display: flex; flex-direction: column; gap: 12px; padding: 16px 16px 20px; }
 /* once the conversation overflows, it fills the view, anchored to the bottom: scrolling to the end never leaves a
    sliver of the band (the compact state bar takes over). Short conversations keep the whole band in view. */
-.fill .log:not(:empty) { flex: 1 0 100%; justify-content: flex-end; }
+.fill .log:not(:empty) { flex: none; justify-content: flex-start; }   /* was flex: 1 0 100% + flex-end: left a 130–210px gap under the status band once the log overflowed by 1px (Ilijan, v6 handoff) */
 .msg { max-width: 88%; display: grid; gap: 8px; min-width: 0; }
 .msg .bubble { padding: 9px 13px; font-size: 16px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: break-word; color: var(--ink); }
 .msg.user { align-self: flex-end; }

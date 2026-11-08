@@ -15,6 +15,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import re
 import time
 from contextlib import asynccontextmanager
 from collections import defaultdict, deque
@@ -78,6 +79,53 @@ class ChatIn(BaseModel):
     message: str = Field(min_length=1, max_length=2000)
     locale: str | None = Field(default=None, max_length=35)
     case_id: str | None = Field(default=None, max_length=40)
+
+
+class TeamReplyIn(BaseModel):
+    text: str = Field(min_length=1, max_length=2000)
+    resolve: bool = False
+
+
+TEAM_AUTHOR = f"{APP_NAME} team"
+
+
+def team_fact_check(text: str, fields: dict | None) -> list[dict]:
+    """Advisory only: numbers, dates and links in the developer's own message that the case's FactSheet does not hold.
+    The same number/URL check the validator runs on every Case Desk reply, but it never blocks a person's message."""
+    from casedesk.ai import validate
+    f = {str(k): str(v) for k, v in (fields or {}).items() if v is not None}
+    allowed: set[str] = set()
+    try:
+        from casedesk.engine.facts import _numbers_of
+        for k, v in f.items():
+            allowed |= _numbers_of(k, v)
+    except Exception:  # noqa: BLE001 — engine missing: compare against the raw digit runs
+        for v in f.values():
+            allowed |= set(re.findall(r"\d+(?:[.,:/\-]\d+)*", v))
+    sheet = {"fields": f, "allowed_numbers": allowed}
+    url_v, stripped = validate._check_urls(text, sheet)
+    out, seen = [], set()
+    for v in validate._check_numbers(stripped, sheet) + url_v:
+        kind, _, tok = v.partition(":")
+        shown = tok
+        if kind == "unsupported_number":   # "12" in "12 Nov 2031" reads better as the whole date
+            for m in _DATE_PHRASE.finditer(stripped):
+                if re.search(rf"(?<!\d){re.escape(tok)}(?!\d)", m.group(0)):
+                    shown = m.group(0).strip(" ,.")
+                    break
+        if (kind, shown) in seen:
+            continue
+        seen.add((kind, shown))
+        out.append({"code": kind, "token": tok, "text": shown,
+                    "message": (f"“{shown}” isn't in the account facts." if kind == "unsupported_number"
+                                else f"The link “{tok}” isn't one of the account's links.")})
+    return out
+
+
+_MONTH = (r"(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|"
+          r"oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\.?")
+_DATE_PHRASE = re.compile(rf"\b\d{{1,2}}(?:st|nd|rd|th)?\.?\s+{_MONTH}(?:,?\s+\d{{4}})?\b|\b{_MONTH}\s+\d{{1,2}}"
+                          rf"(?:st|nd|rd|th)?(?:,?\s+\d{{4}})?\b", re.I)
 
 
 class RateLimiter:
@@ -571,6 +619,18 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
         _, _, block = status_block(profile, now_utc())
         return {**block, "approvals": approvals_view(customer_user_id)}
 
+    @app.get("/api/messages")
+    async def team_messages(request: Request, customer_user_id: str = Query(...), signature: str | None = None,
+                            after: int = Query(0, ge=0, le=2**63 - 1)):
+        """The team's replies to this user (signed, like /api/status): the widget polls it so a message the developer
+        sends from the console shows up in the open chat. `awaiting`: the user hasn't written in that case since."""
+        check_user(customer_user_id, signature, request)
+        rows = S().team_messages_for_user(customer_user_id, after)
+        msgs = [{"message_id": m["id"], "case_id": m["case_id"], "role": "team",
+                 "author": (m.get("meta") or {}).get("author") or TEAM_AUTHOR, "text": m["text"],
+                 "created_at": m["created_at"], "awaiting": m["awaiting"]} for m in rows]
+        return {"messages": msgs, "last_id": max([after] + [m["message_id"] for m in msgs])}
+
     @app.get("/api/demo/users")
     async def get_demo_users():
         if not auth.demo_mode():
@@ -646,6 +706,40 @@ def create_app(store: Store | None = None, adapty: Any | None = None) -> FastAPI
             raise HTTPException(status_code=404, detail="No such case.")
         st.audit("console", "case_resolved" if status == "resolved" else "case_reopened", case_id, {"status": status})
         return {"case_id": case_id, "status": status}
+
+    @app.post("/api/cases/{case_id}/reply", dependencies=[console])
+    async def team_reply(case_id: str, body: TeamReplyIn):
+        """The developer writes to the subscriber in their own words: stored as role "team", never passed through the
+        LLM, never blocked by the validator. `fact_check` lists numbers/links the FactSheet doesn't hold (advisory)."""
+        st = S()
+        c = st.get_case(case_id)
+        if not c:
+            raise HTTPException(status_code=404, detail="No such case.")
+        text = body.text.strip()
+        if not text:
+            raise HTTPException(status_code=422, detail="Write a message first.")
+        warnings = team_fact_check(text, c.get("facts") if isinstance(c.get("facts"), dict) else {})
+        mid = st.add_message(case_id, "team", text, {"status": "ready", "author": TEAM_AUTHOR,
+                                                     "fact_check": warnings})
+        st.update_case(case_id)   # the conversation moved: the case rises in the list
+        st.audit("console", "team_reply", case_id, {"message_id": mid, "chars": len(text),
+                                                    "fact_check": [w["token"] for w in warnings]})
+        status = c.get("status") or "open"
+        if body.resolve:
+            status = set_case_status(case_id, "resolved")["status"]
+        m = st.get_message(mid)
+        return {"message": {"id": m["id"], "case_id": case_id, "role": "team", "author": TEAM_AUTHOR,
+                            "text": m["text"], "created_at": m["created_at"]},
+                "fact_check": warnings, "status": status}
+
+    @app.post("/api/cases/{case_id}/fact-check", dependencies=[console])
+    async def team_fact_check_ep(case_id: str, body: TeamReplyIn):
+        """The same advisory check as /reply, without sending: the console shows it before the developer sends."""
+        c = S().get_case(case_id)
+        if not c:
+            raise HTTPException(status_code=404, detail="No such case.")
+        return {"fact_check": team_fact_check(body.text.strip(),
+                                              c.get("facts") if isinstance(c.get("facts"), dict) else {})}
 
     @app.post("/api/cases/{case_id}/resolve", dependencies=[console])
     async def resolve_case(case_id: str):

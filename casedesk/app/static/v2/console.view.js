@@ -506,7 +506,7 @@ window.CaseDeskConsoleView = (h) => {
     const top = el("div", "sug-head");
     const lbl = el("h4", null, "Suggested reply");
     const cp = el("button", "btn copy", "Copy"); cp.type = "button";
-    cp.title = "Copy the suggested reply, to edit and send from your support inbox";
+    cp.title = "Copy the suggested reply (or use “Use the draft” below to send it from here)";
     cp.onclick = () => copyText(sug.text).then(() => { cp.textContent = "Copied"; toast("Suggested reply copied"); setTimeout(() => { cp.textContent = "Copy"; }, 1800); },
       () => toast("Couldn't copy. Select the text and copy it by hand.", 6000));
     top.append(lbl, cp);
@@ -514,8 +514,112 @@ window.CaseDeskConsoleView = (h) => {
     if (sug.language) txt.lang = sug.language;
     const how = sug.source === "llm" || sug.source === "llm_retry" ? "Written by Case Desk from the account facts and checked"
       : sug.source === "seed" ? "Drafted from the account facts and checked" : "Built from the account facts";
-    box.append(top, txt, el("p", "sug-note", how + ". Not sent to the user: edit it, then send it yourself."));
+    box.append(top, txt, el("p", "sug-note", how + ". Not sent to the user until you send it below."));
     return box;
+  }
+
+  // ------------------------------------------------------------ the team reply: the developer writes to the subscriber
+  // POST /api/cases/{id}/reply sends the developer's own words (role "team", shown to the user as "Lumen team").
+  // POST /api/cases/{id}/fact-check is advisory: numbers/dates/links the account facts don't hold; one extra click sends.
+  // The detail pane is rebuilt on each change, so the draft, its open state and the focus live here, per case.
+  const drafts = new Map();   // case id -> { text, open, fc: { text, warnings }, confirmed }
+  const draftOf = (id) => { if (!drafts.has(id)) drafts.set(id, { text: "", open: false, fc: null, confirmed: null }); return drafts.get(id); };
+  const LINE = 21;
+  function grow(ta) { ta.style.height = "auto"; ta.style.height = Math.max(3 * LINE + 18, Math.min(ta.scrollHeight + 2, 8 * LINE + 18)) + "px"; }
+  function composerEl(c, sug, big, onClose) {
+    const dr = draftOf(c.id);
+    const nm = cap(h.nameOf(c.customer_user_id) || "the user");
+    const app = (S.meta && S.meta.app_name) || "Lumen";
+    const box = el("div", "composer" + (big ? " big" : " small"));
+    const id = "reply-" + (big ? "big-" : "small-") + c.id;
+    const lb = el("label", "cmp-label", big ? `Reply to ${nm}` : `Write to ${nm}`); lb.htmlFor = id;
+    const ta = el("textarea", "reply-text"); ta.id = id; ta.rows = 3; ta.maxLength = 2000; ta.dir = "auto"; ta.dataset.case = c.id;
+    ta.placeholder = big ? `Write to ${nm} in your own words…` : `Message ${nm}…`;
+    ta.value = dr.text;
+    const warn = el("div", "fc-warn"); warn.setAttribute("role", "status"); warn.setAttribute("aria-live", "polite");
+    const row = el("div", "cmp-row");
+    const hint = el("p", "cmp-hint", `Goes to ${nm}’s help chat as “${app} team”, exactly as written. `);
+    hint.append(el("kbd", null, /Mac|iP/.test(navigator.platform) ? "⌘" : "Ctrl"), document.createTextNode("+"), el("kbd", null, "Enter"), document.createTextNode(" sends."));
+    const send = el("button", "btn send", "Send"); send.type = "button";
+    const sendRes = big ? el("button", "btn send-resolve", "Send and mark resolved") : null; if (sendRes) sendRes.type = "button";
+    const paint = () => {
+      warn.textContent = "";
+      const w = dr.fc && dr.fc.text === ta.value.trim() ? dr.fc.warnings : [];
+      warn.hidden = !w.length;
+      if (w.length) {
+        const p = el("p", "fc-h"); p.append(lamp("warn"), el("span", null, "Heads-up: not in the account facts. You can still send it."));
+        const ul = el("ul"); w.forEach((x) => ul.append(el("li", null, x.message)));
+        warn.append(p, ul);
+      }
+      const armed = w.length > 0 && dr.armedFor === ta.value.trim();
+      send.textContent = armed ? "Send anyway" : "Send";
+      if (sendRes) sendRes.textContent = armed ? "Send anyway and resolve" : "Send and mark resolved";
+      const empty = !ta.value.trim();
+      send.disabled = empty || box.classList.contains("busy"); if (sendRes) sendRes.disabled = send.disabled;
+    };
+    let tmr = null;
+    const check = (text) => h.api(`/api/cases/${encodeURIComponent(c.id)}/fact-check`, { method: "POST", body: JSON.stringify({ text }) })
+      .then((r) => { dr.fc = { text, warnings: r.fact_check || [] }; if (ta.isConnected) paint(); return dr.fc.warnings; });
+    ta.addEventListener("input", () => {
+      dr.text = ta.value; grow(ta); paint();
+      clearTimeout(tmr);
+      const v = ta.value.trim();
+      if (v) tmr = setTimeout(() => { if (ta.value.trim() === v) check(v).catch(() => {}); }, 700);
+    });
+    async function go(resolve, force) {
+      const text = ta.value.trim();
+      if (!text) { ta.focus(); return; }
+      box.classList.add("busy"); paint();
+      try {
+        const w = dr.fc && dr.fc.text === text ? dr.fc.warnings : await check(text).catch(() => []);
+        if (w.length && !force) { // one confirm click: the warnings show, the button now says "Send anyway"
+          dr.armedFor = text; box.classList.remove("busy"); paint(); return;
+        }
+        const r = await h.api(`/api/cases/${encodeURIComponent(c.id)}/reply`, { method: "POST", body: JSON.stringify({ text, resolve: !!resolve }) });
+        drafts.delete(c.id);
+        const lc = S.cases.find((x) => x.id === c.id); if (lc && r.status) lc.status = r.status;
+        toast(resolve ? `Sent to ${nm} and marked resolved.` : `Sent to ${nm}.`);
+        await h.select(c.id);
+      } catch (e) { box.classList.remove("busy"); paint(); toast(e.message || "Couldn’t send. Try again.", 7000); }
+    }
+    // "Send anyway": the second click on the same text sends
+    const click = (resolve) => () => go(resolve, !!dr.armedFor && dr.armedFor === ta.value.trim());
+    send.onclick = click(false);
+    if (sendRes) sendRes.onclick = click(true);
+    ta.addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && !e.isComposing) { e.preventDefault(); if (!send.disabled) send.click(); } });
+    if (big && sug) {
+      const use = el("button", "btn use-draft", "Use the draft"); use.type = "button";
+      use.title = "Put the suggested reply in the box, to edit before you send";
+      use.onclick = () => { ta.value = sug.text; dr.text = ta.value; grow(ta); paint(); ta.focus(); check(sug.text.trim()).catch(() => {}); };
+      row.append(use);
+    }
+    row.append(el("span", "cmp-gap"));
+    if (!big && onClose) { const x = el("button", "btn cancel", "Close"); x.type = "button"; x.title = "Close (the draft is kept)"; x.onclick = onClose; row.append(x); }
+    row.append(send);
+    if (sendRes) row.append(sendRes);
+    box.append(lb, ta, warn, row, hint);
+    requestAnimationFrame(() => grow(ta));
+    paint();
+    return box;
+  }
+  function smallComposer(c) {
+    const dr = draftOf(c.id);
+    const wrap = el("section", "write-to"); wrap.setAttribute("aria-label", "Write to the user");
+    const nm = cap(h.nameOf(c.customer_user_id) || "the user");
+    const fill = (focus) => {
+      wrap.textContent = ""; wrap.classList.toggle("open", dr.open);
+      if (!dr.open) {
+        const b = el("button", "write-link", `Write to ${nm}`); b.type = "button";
+        b.onclick = () => { dr.open = true; fill("ta"); };
+        wrap.append(b);
+        if (focus) b.focus();
+      } else {
+        wrap.append(composerEl(c, null, false, () => { dr.open = false; fill("link"); }));
+        if (focus) wrap.querySelector("textarea").focus();
+      }
+    };
+    fill(null);
+    return wrap;
   }
 
   function renderDetail(d) {
@@ -523,6 +627,8 @@ window.CaseDeskConsoleView = (h) => {
     const c = d.case; const f = c.facts || {}; const fl = d.flags || {};
     const same = prev.id === c.id;
     const keep = same ? [box.scrollTop, ...[...box.querySelectorAll(".scroll")].map((n) => n.scrollTop)] : null;
+    const ae = document.activeElement;
+    const focusTa = same && ae && ae.classList && ae.classList.contains("reply-text") ? { id: ae.id, a: ae.selectionStart, b: ae.selectionEnd } : null;
     box.textContent = "";
     box.classList.add("has-case");
 
@@ -579,6 +685,7 @@ window.CaseDeskConsoleView = (h) => {
     const injected = !!(c.intent && c.intent.injection_suspected);
     if (injected !== !!orders.get(c.id)) { orders.set(c.id, injected); setTimeout(() => h.rerenderList(), 0); }
     const sug = c.suggested_reply && typeof c.suggested_reply.text === "string" && c.suggested_reply.text.trim() ? c.suggested_reply : null;
+    let bigComposer = false;
     if (fl.escalated || fl.privacy || (injected && sug)) {
       const pn = el("section", "person-note"); pn.setAttribute("aria-label", "Needs a person");
       const ph = el("h3"); ph.append(icon("person"), el("span", null, "A person needs to answer this"));
@@ -592,8 +699,9 @@ window.CaseDeskConsoleView = (h) => {
       lines.forEach(([t, text]) => { const li = el("li", "alert " + t); li.append(lamp(t === "bad" ? "bad" : "person"), el("span", null, text)); ul.append(li); });
       pn.append(ph, ul);
       if (sug) pn.append(suggestEl(sug));
-      pn.append(el("p", "pn-note", "Nothing here to approve. Reply from your support inbox."));
+      pn.append(composerEl(c, sug, true));
       tr.append(pn);
+      bigComposer = true;
     } else if (injected) {
       const ul = el("ul", "alerts solo"); const li = el("li", "alert bad");
       li.append(lamp("bad"), el("span", null, "The message tried to give Case Desk orders. It was ignored.")); ul.append(li); tr.append(ul);
@@ -605,9 +713,10 @@ window.CaseDeskConsoleView = (h) => {
       const pending = mm.status === "pending";
       const li = el("li", `turn ${m.role}${pending ? " pending" : ""}${mm.event === "grant_denied" ? " denied" : ""}`);
       const th = el("div", "turn-head");
-      const nm = el("span", "turn-who", m.role === "user" ? (h.nameOf(c.customer_user_id) || "User") : m.role === "system" ? "Lumen team" : "Case Desk");
+      const team = `${(S.meta && S.meta.app_name) || "Lumen"} team`;
+      const nm = el("span", "turn-who", m.role === "user" ? (h.nameOf(c.customer_user_id) || "User") : m.role === "system" ? team : m.role === "team" ? `You (${team})` : "Case Desk");
       nm.dataset.k = "m:" + m.id; nm.dataset.v = (mm.status || "") + (pending ? "" : String(m.text).length);
-      nm.dataset.tone = m.role === "assistant" ? "amber" : m.role === "system" ? (mm.event === "grant_denied" ? "info" : "ok") : "info";
+      nm.dataset.tone = m.role === "assistant" ? "amber" : m.role === "system" || m.role === "team" ? (mm.event === "grant_denied" ? "info" : "ok") : "info";
       th.append(nm);
       if (m.role === "assistant" && !pending) {
         const n = replyNote(mm);
@@ -623,6 +732,7 @@ window.CaseDeskConsoleView = (h) => {
       turns.append(li);
     }
     tr.append(turns);
+    if (!bigComposer) tr.append(smallComposer(c));   // any case: the developer can write to anyone
 
     // what Case Desk did: plain sentences (the policy code is in the title), the grant under its request
     const did = el("section", "did-sec");
@@ -757,6 +867,7 @@ window.CaseDeskConsoleView = (h) => {
     // the decision card reads the status sentence of the case it is about
     const sentence = h.stateLine(c.state, f);
     if (sentence && why.get(c.id) !== sentence) { why.set(c.id, sentence); if (S.approvals.some((a) => a.case_id === c.id && (a.status === "pending" || a.status === "failed"))) setTimeout(() => h.rerenderList(), 0); }
+    if (focusTa) { const n = document.getElementById(focusTa.id); if (n) { n.focus({ preventScroll: true }); n.setSelectionRange(focusTa.a, focusTa.b); } }
     if (keep) { box.scrollTop = keep[0]; box.querySelectorAll(".scroll").forEach((n, i) => { n.scrollTop = keep[i + 1] || 0; }); }
 
     // reverse video for whatever changed on this case since the last refresh (labels only)

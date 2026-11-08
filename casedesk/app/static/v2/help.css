@@ -138,6 +138,11 @@ body.help { overflow: hidden; background: var(--w-ground); }
 .msg.system .bubble::before { content: ""; flex: none; width: 10px; height: 10px; border-radius: 2px; background: currentColor; transform: translateY(-1px); }
 .msg.system.denied .bubble { background: var(--sel); color: var(--ink-2); font-weight: 400; }
 .msg.error .bubble { background: var(--coral-soft); color: var(--coral); border-inline-start: 2px solid var(--coral); border-radius: 2px 12px 12px 2px; }
+/* the app's team wrote this from the console (role "team"): a person, so a teal edge and a name, not Case Desk's amber */
+.msg.team { align-self: flex-start; gap: 4px; }
+.msg.team .team-who { font-size: 13px; font-weight: 600; letter-spacing: .02em; color: var(--teal); display: inline-flex; align-items: center; gap: 6px; }
+.msg.team .team-who::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.msg.team .bubble { background: var(--teal-soft); border-inline-start: 2px solid var(--teal); border-radius: 2px 12px 12px 2px; }
 
 .bubble.typing { display: inline-flex; align-items: center; gap: 10px; color: var(--ink-2); font-size: 15px; }
 .typing .dots { display: inline-flex; gap: 4px; }

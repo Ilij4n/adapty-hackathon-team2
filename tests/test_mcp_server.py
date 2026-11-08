@@ -78,10 +78,10 @@ def call(c, name: str, **args):
 def test_lists_the_tools_with_safety_annotations(app_client):
     tools = {t.name: t for t in run(app_client, [("__list__", {})])[0][1]}
     assert set(tools) == {"waiting_for_my_ok", "needs_a_person", "list_cases", "get_case", "daily_summary",
-                          "approve_grant", "deny_grant"}
+                          "approve_grant", "deny_grant", "reply_to_user", "resolve_case"}
     for name in ("waiting_for_my_ok", "needs_a_person", "list_cases", "get_case", "daily_summary"):
         assert tools[name].annotations.readOnlyHint is True
-    for name in ("approve_grant", "deny_grant"):
+    for name in ("approve_grant", "deny_grant", "reply_to_user", "resolve_case"):
         t = tools[name]
         assert t.annotations.destructiveHint is True and t.annotations.readOnlyHint is False
         assert "confirm" in t.inputSchema["properties"] and "confirm=true" in t.description
@@ -201,12 +201,16 @@ def test_bad_token_and_no_server_are_clear_errors(app_client):
     assert r.isError and "Can't reach Case Desk" in r.content[0].text
 
 
-def test_no_tool_talks_to_subscribers():
-    """Read-mostly by construction: the only POSTs are the console's approve/deny endpoints."""
+def test_only_reply_to_user_talks_to_subscribers():
+    """Read-mostly by construction: the only POSTs are approve/deny, the team reply (+ its dry-run fact check) and
+    resolve. Nothing writes as the subscriber or through the chat API."""
     import inspect
     src = inspect.getsource(M)
     assert "/api/chat" not in src
-    assert src.count("cd.post(") == 1 and "/api/approvals/{a['id']}/{verb}" in src
+    assert src.count("cd.post(") == 4
+    for path in ("/api/approvals/{a['id']}/{verb}", "/api/cases/{cid}/fact-check", "/api/cases/{cid}/reply",
+                 "/api/cases/{cid}/resolve"):
+        assert path in src
 
 
 def test_plain_english_helpers():

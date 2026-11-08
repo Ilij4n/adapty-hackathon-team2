@@ -243,7 +243,7 @@
       const meta = m.meta || {};
       const pending = meta.status === "pending";
       const t = el("div", `turn ${m.role}${pending ? " pending" : ""}`);
-      const who = el("div", "who", (m.role === "user" ? (nameOf(c.customer_user_id) || "User") : m.role === "system" ? "System" : "Case Desk") + " · " + fmtTime(m.created_at));
+      const who = el("div", "who", (m.role === "user" ? (nameOf(c.customer_user_id) || "User") : m.role === "system" ? "System" : m.role === "team" ? "You (team)" : "Case Desk") + " · " + fmtTime(m.created_at));
       if (meta.status === "error") who.append(el("span", "vflag bad", "something went wrong"));
       if (meta.abandoned) who.append(el("span", "vflag", "never seen by the user"));
       t.append(who, auto(el("div", "txt", pending ? "writing the reply…" : m.text)));

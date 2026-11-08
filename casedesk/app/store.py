@@ -29,7 +29,7 @@ CREATE INDEX IF NOT EXISTS cases_user ON cases(customer_user_id, updated_at);
 CREATE TABLE IF NOT EXISTS messages (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   case_id TEXT NOT NULL,
-  role TEXT NOT NULL,   -- user | assistant | system
+  role TEXT NOT NULL,   -- user | assistant | system | team (the developer's own words, from the console)
   text TEXT NOT NULL,
   meta TEXT,            -- JSON (assistant: status pending|ready, used_fallback, violations)
   created_at TEXT NOT NULL
@@ -169,6 +169,18 @@ class Store:
             return None
         rows[0]["meta"] = json.loads(rows[0]["meta"] or "{}")
         return rows[0]
+
+    def team_messages_for_user(self, customer_user_id: str, after: int = 0, limit: int = 50) -> list[dict]:
+        """The team's messages to this user (role "team") with id > `after`, oldest first. `awaiting` is true when
+        the user has not written in that case since (the reply is the latest word)."""
+        out = self._all("SELECT m.*, (SELECT MAX(u.id) FROM messages u WHERE u.case_id = m.case_id AND u.role = 'user')"
+                        " AS last_user FROM messages m JOIN cases c ON c.id = m.case_id WHERE c.customer_user_id=? "
+                        "AND m.role='team' AND m.id>? ORDER BY m.id LIMIT ?", (customer_user_id, int(after), limit))
+        for m in out:
+            m["meta"] = json.loads(m["meta"] or "{}")
+            last_user = m.pop("last_user", None)
+            m["awaiting"] = last_user is None or m["id"] > last_user
+        return out
 
     def message_summary(self, case_ids: list[str]) -> dict[str, tuple[int, str]]:
         """case id -> (message count, first user message), for the case list in one query."""

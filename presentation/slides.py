@@ -91,16 +91,18 @@ dict(id="real", bg="s8", secs=20, html="""
 <div class="cols">
   <div class="col" data-step="1"><h3 class="tea">Real</h3><ul>
     <li>Live demo server: <code>/help</code> · <code>/console</code></li>
-    <li>Real Claude writes the replies</li>
-    <li><b>558</b> automated tests</li>
-    <li>Adapty client built for the real API v2</li></ul></div>
+    <li>Real Claude writes the replies; every reply checked</li>
+    <li>Rules you choose: ask me · automatic up to N days · never</li>
+    <li>Works from Claude: our MCP server, tested with Claude Code</li>
+    <li>Suggested replies and a reply box for your team</li>
+    <li><b>700+</b> automated tests · Adapty client built for the real API v2</li></ul></div>
   <div class="col" data-step="2"><h3 class="amb">Stand-in</h3><ul>
     <li>Mock Adapty server, seeded with Adapty's Lumen hackathon data</li>
     <li>Real API: a config change, not yet run against a live account</li>
     <li>Seeded console cases: scripted text through the real engine</li></ul></div>
 </div>
 """, notes="""And to be honest about what's real today. [click]
-The live demo server runs real Claude, and there are 558 automated tests. [click]
+The live demo runs real Claude and checks every reply. You choose the rules for what it does alone, you can run it from Claude through our MCP server, your team gets suggested replies, and there are over seven hundred automated tests. [click]
 The Adapty side is a mock server with Adapty's Lumen hackathon data; our client is built for the real API v2; switching is a config change, but we have not run it against a live Adapty account yet. The seeded console cases are scripted text through the real engine."""),
 
 dict(id="next", bg="s3", secs=16, html=f"""
@@ -110,11 +112,12 @@ dict(id="next", bg="s3", secs=16, html=f"""
   <li data-step="1">A Case Desk tab in the Adapty dashboard</li>
   <li data-step="1">Priced as an add-on, like Refund Saver <small>(Adapty's call)</small></li>
   <li data-step="1">The complaint signal for Adapty, across apps</li>
+  <li data-step="1">Search, paging and assignment for bigger support teams</li>
   <li data-step="1">More languages tested</li>
 </ul>
 <div class="qa" data-step="2">Questions?</div>
 <div class="team foot">Team 2 · {TEAM}</div>
 """, notes="""What's next? [click]
-A real Adapty app, with keys and webhooks. A tab in the Adapty dashboard. An add-on like Refund Saver; the price is Adapty's call. The complaint signal across apps. And more languages tested. [click]
+A real Adapty app, with keys and webhooks. A tab in the Adapty dashboard. An add-on like Refund Saver; the price is Adapty's call. The complaint signal across apps. Search, paging and assignment for bigger teams. And more languages tested. [click]
 Thank you. We're happy to take your questions."""),
 ]

@@ -79,7 +79,8 @@
     "And we built it the AI-native way.",
     "Agents researched twenty ideas and debated them before we chose this one.",
     "Then parallel agents built each module against one written contract, and three bug-bash agents found and fixed thirty-seven issues.",
-    "Every one of Lumen's five thousand users, every kind of question: sixty-three thousand runs, zero crashes, zero broken facts."
+    "Every one of Lumen's five thousand users, every kind of question: sixty-three thousand runs, zero crashes, zero broken facts.",
+    "And it plugs straight into Claude: ask what's waiting, and approve it right from the chat."
    ],
    "audio": "audio/scene7.wav"
   },
@@ -91,7 +92,8 @@
     "Adapty already sells add-ons like Refund Saver: free for small apps, then a small share of revenue, and Case Desk fits right beside it.",
     "RevenueCat gives its customers a support menu; Adapty can give them an answer.",
     "For the developer, a ticket answered in seconds can be a refund or a one-star review that never happens.",
-    "And Adapty finally sees the complaint itself: what the subscriber said, and what fixed it.",
+    "And you decide what it does on its own: ask me, automatic up to a few days, or never.",
+    "Adapty finally sees the complaint itself: what the subscriber said, and what fixed it.",
     "So at two in the morning, the one-star review becomes a question, and it gets an answer."
    ],
    "audio": "audio/scene8.wav"

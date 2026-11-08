@@ -8,8 +8,8 @@ In-app subscription help for an app's subscribers, built on Adapty. Adapty Hacka
 A subscriber writes "you charged me after I cancelled" or "I paid but have no premium", in any language. Case Desk
 reads that user's Adapty profile through the server-side API. Plain code works out what is true: the state, the
 facts and which actions are allowed. Claude only writes the words, and a validator blocks any reply that uses a fact
-the code didn't supply. A courtesy grant is only ever a request, which the developer approves in the console with
-one click.
+the code didn't supply. By default a courtesy grant is only a request, which the developer approves in the console
+with one click; the owner can change that with a rule (ask me, automatic up to N days within code limits, or never).
 
 It is white-labelled for the app ("Lumen Help" in the demo; Lumen is Adapty's hackathon test app).
 
@@ -169,7 +169,7 @@ The author label is `<CASEDESK_APP_NAME> team`.
 ## Tests
 
 ```bash
-uv run pytest -q                                      # 721 tests; 2 skip without the organisers' seed repo
+uv run pytest -q                                      # 730 tests; 2 skip without the organisers' seed repo
 uv run playwright install chromium && uv run python tests/e2e_ui.py   # UI end-to-end
 uv run python eval/run_eval.py --backend claude-cli --concurrency 4  # live eval with real Claude
 ```

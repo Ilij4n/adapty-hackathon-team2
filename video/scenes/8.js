@@ -1,4 +1,4 @@
-/* Scene 8 — "For Adapty" (REVISION 2, the extended sales scene). Stage A: the Adapty pricing studio (plan card, add-ons shelf,
+/* Scene 8 — "For Adapty" (REVISION 2 + rules beat, the extended sales scene, 7 beats). Stage A: the Adapty pricing studio (plan card, add-ons shelf,
    a ticket conveyor into the ADAPTY box). Stage B: the shared Belgrade night (rfNight) for the closer.
    Beats:
      0 "Now, the business." — wide studio, big title card "The business" (kicker FOR ADAPTY).
@@ -8,10 +8,13 @@
      2 the split: RevenueCat "a support menu" (a phone with a list of menu buttons) vs Adapty + Case Desk "an answer"
        (Marko's question + the true reply).
      3 for the developer: a ticket answered in seconds; the refund request and the one-star review it would have become
-       appear as ghosts and get crossed out ("never happens").
-     4 the ADAPTY box: "What Adapty sees" — already: charges · renewals · refunds; new from Case Desk: the complaint,
+       appear as ghosts and get crossed out ("never happens"); a row of 4 product chips lights up in turn underneath.
+     4 the rules: a console "Rules" drawer (Night Shift navy): Courtesy premium = Ask me / Automatic up to [3] days / Never,
+       the selection slides on "ask", "automatic", "never" and back to Ask me; locked row "Always a person";
+       caption "You set the rules. Code enforces them."
+     5 the ADAPTY box: "What Adapty sees" — already: charges · renewals · refunds; new from Case Desk: the complaint,
        what the subscriber said, what fixed it.
-     5 closer (callback to S1): 02:00 in the night stage, Marko's one-star review draft (App Store) turns into a question in
+     6 closer (callback to S1): 02:00 in the night stage, Marko's one-star review draft (App Store) turns into a question in
        Lumen Help and gets a true answer; the founder is still asleep (office dark, z's, clock at 2). End: "Case Desk".
    Light beat: Bagley rings on the Case Desk drop, and dozes with the founder at the end.
    Scene-local helpers are prefixed s8_. */
@@ -84,7 +87,7 @@ const S8=X3.stage('s8-adapty',K=>{const s=K.scene({fov:35}),lp=LP3.world(K,s,{mo
   LP3.shadows(s);return o});
 
 /* camera per beat [pos, target]; each beat eases in from the previous beat's shot */
-const s8_SH=[[.3,3.1,11.4,.3,1.7,-1.4],[.3,2.5,8.6,.3,1.65,-1.4],[3.2,2.7,9.6,3.4,1.6,-1.4],[8.0,2.5,7.4,8.6,1.3,-.8],[10.4,2.3,6.0,11.3,1.35,-.8]];
+const s8_SH=[[.3,3.1,11.4,.3,1.7,-1.4],[.3,2.5,8.6,.3,1.65,-1.4],[3.2,2.7,9.6,3.4,1.6,-1.4],[8.0,2.5,7.4,8.6,1.3,-.8],[5.2,2.9,9.2,5.6,1.4,-1.4],[10.4,2.3,6.0,11.3,1.35,-.8]];
 const s8_pose=(o,t,c,i,T,w)=>{const p=t-c(i);o.lp.pose(T);for(const a of o.alive)if(a.userData.pose)a.userData.pose(T);
   const k=i===0?s8_SH[0].map((v,j)=>j==2?v-p*.15:v):s8_SH[i-1].map((v,j)=>L(v,s8_SH[i][j],sm(cl(p/1.4))));
   K3.look(o.camera,k[0]+Math.sin(T*.2)*.06,k[1]+Math.sin(T*.17)*.03,k[2],k[3],k[4],k[5]);
@@ -99,16 +102,16 @@ const s8_pose=(o,t,c,i,T,w)=>{const p=t-c(i);o.lp.pose(T);for(const a of o.alive
   o.belt.forEach((m,j)=>{m.position.x=o.cx0+(((j/14)+T*sp/(o.cx1-o.cx0))%1)*(o.cx1-o.cx0-.2)});
   o.tk.forEach((m,j)=>{const u=((T*sp/(o.cx1-o.cx0+.9))+j/3)%1,x=o.cx0-.3+u*(o.cx1-o.cx0+.9);m.visible=run;m.position.set(x,1.32,-.6);m.rotation.set(-.32,-.12,0);
     const sq=cl((x-(o.cx1-.3))/.7),gr=cl((x-o.cx0+.3)/.5);m.scale.set(gr*(1-sq*.7),gr*(1-sq*.7),1)});
-  o.adHalo.material.opacity=(i===4?.6:i===3?.4:.25)*(.85+.15*Math.sin(T*2.4));
-  rfBag(o.bag,T,{rings:(i===1&&p>cw+.2&&p<cw+1.4)||(i===0&&p<1.2)?1:0,tool:i===4&&p>w(4,'fixed')-.2?'check':0,tc:rfGO,
-    tilt:i===2?.14*P(p,w(2,'answer')-.2,.3):0})};
+  o.adHalo.material.opacity=(i===5?.6:i===3?.4:.25)*(.85+.15*Math.sin(T*2.4));
+  rfBag(o.bag,T,{rings:(i===1&&p>cw+.2&&p<cw+1.4)||(i===0&&p<1.2)?1:0,tool:i===5&&p>w(5,'fixed')-.2?'check':0,tc:rfGO,
+    tilt:i===2?.14*P(p,w(2,'an')-.1,.3):0})};
 
 /* ================= stage B: the Belgrade night closer ================= */
 const S8N=rfNight();
 const s8_NSH=[[-1.2,2.4,8.2,-1.6,1.0,-1.0],[0,2.7,10.2,0,1.15,-1.2]];
 const s8_night=(o,p,T,w)=>{const q=sm(cl(p/4.5)),k=s8_NSH[0].map((v,j)=>L(v,s8_NSH[1][j],q));
   K3.look(o.camera,k[0]+Math.sin(T*.2)*.05,k[1],k[2],k[3],k[4],k[5]);
-  const ans=p>w(5,'and')+.2;
+  const ans=p>w(6,'and')+.2;
   rfNightPose(o,T,{litB:0,phone:1,marko:{face:ans?'smile':'neutral',look:-.1},founder:{pose:'sit',face:'neutral'},mon:{n:0},
     help:ans?{lang:'EN',key:'s8-ans',msgs:[{me:1,text:s8_REV},{text:s8_ANS}]}:{lang:'EN',key:'s8-q',msgs:[{me:1,text:s8_REV}]}});
   /* asleep: eyes shut, slumped over the desk */
@@ -116,7 +119,7 @@ const s8_night=(o,p,T,w)=>{const q=sm(cl(p/4.5)),k=s8_NSH[0].map((v,j)=>L(v,s8_N
   const b=o.founder.userData.bones||{},br=Math.sin(T*1.1)*.03;if(b.chest)b.chest.rotateX(.32+br);if(b.head)b.head.rotateX(.42);
   /* the clock reads 2:00 */
   o.hHand.rotation.z=-(2/12)*Math.PI*2;o.mHand.rotation.z=-(T*.004)%(Math.PI*2)*.0;
-  rfBag(o.bag,T,{sleep:p>w(5,'gets')?1:0,rings:p>w(5,'and')&&p<w(5,'and')+1.1?1:0})};
+  rfBag(o.bag,T,{sleep:p>w(6,'gets')?1:0,rings:p>w(6,'and')&&p<w(6,'and')+1.1?1:0})};
 
 /* ---- 2D pieces */
 const s8_title=(g,x,y,big,kick,o={})=>{const a=o.a??1;if(a<=0)return;
@@ -140,10 +143,59 @@ const s8_draft=(g,W,H,q,T)=>{g.fillStyle='#f4f5f8';g.fillRect(0,0,W,H);g.fillSty
   ls.forEach((l,k)=>txt(g,24,198+k*24,l,{fs:17,c:'20,22,30',al:'left'}));
   if(Math.sin(T*8)>0){const l=ls[ls.length-1]||'';g.font=F({fs:17});g.fillStyle='rgba(40,120,250,1)';g.fillRect(24+g.measureText(l).width+1,188+(ls.length-1)*24,2,20)}};
 
+/* the feature lineup: 4 product chips in one row (centred at cx), each lights up at its time ts[k] and stays lit */
+const s8_FEAT=['One-click approve','Rules you choose','Suggested replies for your team','Works from Claude (MCP)'];
+const s8_lineup=(g,cx,y,p,ts,pop)=>{if(pop<=0)return;const fs=15;g.font=F({fs,w:600});
+  const ws=s8_FEAT.map(s=>g.measureText(s).width+fs*2.4),gap=12,tot=ws.reduce((a,b)=>a+b,0)+gap*3;let x=cx-tot/2;
+  s8_FEAT.forEach((s,k)=>{const on=P(p,ts[k]-.1,.3),hot=on*(1-P(p,ts[k]+.5,.4));
+    rfChip(g,x+ws[k]/2,y,s,{fs,c:on>.5?rfDESK:'130,140,165',a:.5+.5*on,pop,hot,s:1+.06*hot});x+=ws[k]+gap})};
+/* the console's Rules drawer (Night Shift navy), top-left x,y; sel 0..2 = Ask me / Automatic / Never (slides) */
+const s8_TEAL='64,214,170';
+const s8_rules=(g,x,y,w,h,o)=>{const {a=1,sel=0,hot=0,dayHot=0,lock=1,lockHot=0}=o;if(a<=0)return;g.save();g.globalAlpha*=a;g.translate(x+(1-a)*60,y);
+  g.shadowColor='rgba(0,0,0,.55)';g.shadowBlur=30;g.shadowOffsetY=10;g.beginPath();g.roundRect(0,0,w,h,14);g.fillStyle='#0f1729';g.fill();g.shadowColor='transparent';
+  g.lineWidth=1.5;g.strokeStyle='rgba(120,140,190,.35)';g.stroke();
+  txt(g,24,38,'Rules',{fs:28,w:800,al:'left',c:'236,240,250'});
+  g.beginPath();g.roundRect(w-86,22,62,32,7);g.strokeStyle='rgba(200,208,225,.5)';g.lineWidth=1.4;g.stroke();txt(g,w-55,38,'Close',{fs:13,w:700,c:'236,240,250'});
+  txt(g,24,76,'You choose what Case Desk does on its own.',{fs:15,al:'left',c:'176,188,214'});
+  txt(g,24,97,'Everything it does is in the audit log.',{fs:15,al:'left',c:'176,188,214'});
+  g.fillStyle='rgba(255,255,255,.1)';g.fillRect(24,120,w-48,1);
+  txt(g,24,148,'Courtesy premium',{fs:18,w:700,al:'left',c:'236,240,250'});
+  /* segmented control */
+  const fs=16,sy=166,sh=46;g.font=F({fs,w:700});const lab=['Ask me','Automatic up to','Never'],box=44;
+  const sw=[g.measureText(lab[0]).width+36,g.measureText(lab[1]).width+box+g.measureText('days').width+48,g.measureText(lab[2]).width+36];
+  const sx=[24,24+sw[0],24+sw[0]+sw[1]];
+  g.beginPath();g.roundRect(24,sy,sw[0]+sw[1]+sw[2],sh,8);g.fillStyle='#121c32';g.fill();g.strokeStyle='rgba(120,135,170,.55)';g.lineWidth=1.4;g.stroke();
+  g.fillStyle='rgba(120,135,170,.45)';g.fillRect(sx[1],sy+1,1,sh-2);g.fillRect(sx[2],sy+1,1,sh-2);
+  const k0=Math.min(1,Math.floor(sel)),f=sel-k0,hx=L(sx[k0],sx[k0+1],f),hw=L(sw[k0],sw[k0+1],f);
+  g.beginPath();g.roundRect(hx+1,sy+1,hw-2,sh-2,7);g.fillStyle=`rgba(${s8_TEAL},.16)`;g.fill();g.lineWidth=2;g.strokeStyle=`rgba(${s8_TEAL},1)`;
+  if(hot){g.shadowColor=`rgba(${s8_TEAL},.9)`;g.shadowBlur=18*hot}g.stroke();g.shadowColor='transparent';
+  const on=k=>cl(1-Math.abs(sel-k));const col=k=>{const u=on(k);return `${Math.round(L(200,64,u))},${Math.round(L(208,214,u))},${Math.round(L(225,170,u))}`};
+  txt(g,sx[0]+sw[0]/2,sy+sh/2,lab[0],{fs,w:700,c:col(0)});
+  const tx=sx[1]+18;txt(g,tx,sy+sh/2,lab[1],{fs,w:700,al:'left',c:col(1)});const bx=tx+g.measureText(lab[1]).width+8;
+  g.beginPath();g.roundRect(bx,sy+9,box,sh-18,5);g.fillStyle='#0b1222';g.fill();g.lineWidth=1.3;g.strokeStyle=`rgba(${dayHot?s8_TEAL:'150,160,190'},${.6+.4*dayHot})`;
+  if(dayHot){g.shadowColor=`rgba(${s8_TEAL},.9)`;g.shadowBlur=14*dayHot}g.stroke();g.shadowColor='transparent';
+  txt(g,bx+14,sy+sh/2,'3',{fs:15,w:700,c:'236,240,250'});txt(g,bx+32,sy+sh/2+1,'▾',{fs:11,c:'200,208,225'});
+  txt(g,bx+box+8,sy+sh/2,'days',{fs,w:700,al:'left',c:col(1)});
+  txt(g,sx[2]+sw[2]/2,sy+sh/2,lab[2],{fs,w:700,c:col(2)});
+  /* what the selected mode does (cross-fades) */
+  const D=['Case Desk asks you first. Each courtesy extension waits for your OK, and the user is told it is only requested.',
+    'Case Desk gives up to 3 days on its own and tells the user. Only after a failed payment; anything longer still waits for your OK.',
+    'Courtesy premium is off. Case Desk never gives it away.'];
+  g.font=F({fs:14.5});D.forEach((d,k)=>{const u=cl(1-2.2*Math.abs(sel-k));if(u<.02)return;rfWrap(g,d,w-48).forEach((l,j)=>txt(g,24,sy+sh+24+j*20,l,{fs:14.5,al:'left',c:'176,188,214',a:u}))});
+  g.fillStyle='rgba(255,255,255,.1)';g.fillRect(24,302,w-48,1);
+  /* the locked row */
+  g.save();g.globalAlpha*=lock;
+  txt(g,24,332,"Privacy, attacks and 'I want a person'",{fs:18,w:700,al:'left',c:'236,240,250'});
+  g.font=F({fs:15,w:700});const pw=g.measureText('Always a person').width+56;
+  g.beginPath();g.roundRect(24,352,pw,40,7);g.fillStyle='#1c2742';g.fill();if(lockHot){g.strokeStyle=`rgba(${s8_TEAL},${lockHot})`;g.lineWidth=1.6;g.shadowColor=`rgba(${s8_TEAL},.8)`;g.shadowBlur=14*lockHot;g.stroke();g.shadowColor='transparent'}
+  ic(g,'lock',46,372,8,'200,208,225',1);txt(g,62,372,'Always a person',{fs:15,w:700,al:'left',c:'236,240,250'});
+  txt(g,24,414,'By design: Case Desk hands these over and never decides them.',{fs:14.5,al:'left',c:'176,188,214'});
+  g.restore();g.restore()};
+
 let ON=null;
 return rfRun({base:(g,t,c,T,i,A2)=>{const w=(j,s)=>A2(j,s)-c(j),p=t-c(i);
-  const dis=i===5?P(p,-.1,.6):0;
-  if(dis<1)X3.draw(g,S8,o=>s8_pose(o,t,c,Math.min(i,4),T,w),t);
+  const dis=i===6?P(p,-.1,.6):0;
+  if(dis<1)X3.draw(g,S8,o=>s8_pose(o,t,c,Math.min(i,5),T,w),t);
   /* the founder's desk lamp (bulb + halo) stays dark; hidden only for this render and restored right after (seek-safe) */
   if(dis>0){let hid=[];X3.draw(g,S8N,o=>{ON=o;s8_night(o,p,T,w);o.dl.traverse(m=>{if(m!==o.dl&&m.visible&&(m.isLight||m.isSprite||(m.isMesh&&m.material&&!m.material.isMeshLambertMaterial)))hid.push(m)});hid.forEach(m=>m.visible=false)},t,{a:dis});
     hid.forEach(m=>m.visible=true)}},
@@ -170,11 +222,11 @@ return rfRun({base:(g,t,c,T,i,A2)=>{const w=(j,s)=>A2(j,s)-c(j),p=t-c(i);
         for(let k=0;k<5;k++){const y=50+k*44,q=P(p,W('support')-.6+k*.12,.3);g.globalAlpha*=1;g.fillStyle=`rgba(255,255,255,${q})`;g.beginPath();g.roundRect(10,y,W2-20,36,8);g.fill();
           g.fillStyle=`rgba(150,158,178,${q})`;g.fillRect(22,y+14,(W2-70)*(.55+LP3.hash(k*5)*.4),8);txt(g,W2-22,y+18,'›',{fs:18,w:700,c:'150,158,178',a:q})}}});
       txt(g,w/2,h-44,'a support menu',{fs:34,w:800,d:1,c:PA,a:P(p,W('menu')-.2,.35)})}});
-    s8_panel(g,670,128,540,430,rfDESK,{pop:aR,hot:P(p,W('answer')-.2,.3),body:(g,w,h)=>{
+    s8_panel(g,670,128,540,430,rfDESK,{pop:aR,hot:P(p,W('an')-.1,.3),body:(g,w,h)=>{
       txt(g,w/2,34,'Adapty + Case Desk',{fs:18,w:700,c:rfDESK});
       let y=66;y+=rfBub(g,40,y,w-80,s8_ASK,{me:1,fs:17,sub:'You charged me after I cancelled!',pop:P(p,W('adapty')+.1,.35)});
       rfBub(g,40,y,w-80,s8_ANS,{fs:17,pop:P(p,W('give')-.2,.35),maxW:.9});
-      txt(g,w/2,h-44,'an answer',{fs:34,w:800,d:1,c:rfDESK,a:P(p,W('answer')-.3,.35)})}})},
+      txt(g,w/2,h-44,'an answer',{fs:34,w:800,d:1,c:rfDESK,a:P(p,W('an')-.2,.35)})}})},
   /* 3 for the developer: answered in seconds, so the refund and the one-star review never happen */
   (g,p,d,T,W)=>{const k=P(p,W('never')-.1,.45);
     s8_panel(g,70,140,470,250,rfGO,{pop:P(p,W('ticket')-.2,.35),body:(g,w,h)=>{
@@ -186,9 +238,22 @@ return rfRun({base:(g,t,c,T,i,A2)=>{const w=(j,s)=>A2(j,s)-c(j),p=t-c(i);
     ghost(640,150,420,110,P(p,W('refund')-.2,.35),(g,w,h)=>{txt(g,24,34,'REFUND REQUEST',{fs:15,w:700,m:1,c:'176,188,214',al:'left'});txt(g,24,74,'a refund',{fs:22,w:700,al:'left'})});
     ghost(640,282,420,126,P(p,W('onestar')-.2,.35),(g,w,h)=>{txt(g,24,32,'★☆☆☆☆',{fs:24,c:rfGOLD,al:'left'});txt(g,w-24,32,'App Store review',{fs:14,c:'160,172,198',al:'right'});
       txt(g,24,80,'“Still Got Charged After Canceling…”',{fs:21,w:700,i:1,al:'left'})});
-    rfStamp(g,850,460,'NEVER HAPPENS',{p:P(p,W('never')+.05,.35),c:rfGO,fs:34,r:-.06});
+    rfStamp(g,850,452,'NEVER HAPPENS',{p:P(p,W('never')+.05,.35),c:rfGO,fs:34,r:-.06});
+    s8_lineup(g,520,532,p,[W('developer'),W('answered'),W('can'),W('refund')],P(p,W('developer')-.15,.35));
     txt(g,610,276,'→',{fs:40,w:800,c:'176,188,214',a:P(p,W('can')-.2,.4)*(1-.5*k)})},
-  /* 4 what Adapty sees */
+  /* 4 the rules: you decide what it does on its own */
+  (g,p,d,T,W)=>{const a=P(p,0,.45);
+    if(a>0){g.save();g.globalAlpha*=a;const gr=g.createLinearGradient(0,0,1180,0);gr.addColorStop(0,'rgba(8,12,26,.84)');gr.addColorStop(.42,'rgba(8,12,26,.78)');gr.addColorStop(.8,'rgba(8,12,26,.35)');gr.addColorStop(1,'rgba(8,12,26,0)');g.fillStyle=gr;g.fillRect(0,0,1280,720);g.restore()}
+    const s1=P(p,W('automatic')-.12,.35),s2=P(p,W('or')-.05,.3),s3=P(p,Math.min(W('never')+.4,d-.75),.35);
+    const sel=s3>0?2*(1-s3):s1+s2;
+    const pulse=k=>P(p,k-.05,.2)*(1-P(p,k+.55,.4));
+    s8_rules(g,512,122,512,436,{a,sel:Math.max(0,Math.min(2,sel)),hot:Math.max(pulse(W('ask')),pulse(W('automatic')),pulse(W('never'))),dayHot:pulse(W('few')),
+      lock:P(p,W('does')-.1,.35),lockHot:pulse(W('own'))});
+    {const ca=P(p,W('decide')-.25,.35);if(ca>0){g.save();g.globalAlpha*=ca*.8;g.shadowColor='rgba(8,12,26,.9)';g.shadowBlur=40;g.beginPath();g.roundRect(46,200,448,196,22);g.fillStyle='rgba(10,16,32,.78)';g.fill();g.restore()}}
+    txt(g,270,236,'CASE DESK · CONSOLE',{fs:16,w:700,m:1,c:rfDESK,a:P(p,.1,.35)});
+    txt(g,270,300,'You set the rules.',{fs:40,w:800,d:1,c:PA,a:P(p,W('decide')-.15,.35)});
+    txt(g,270,356,'Code enforces them.',{fs:40,w:800,d:1,c:s8_TEAL,a:P(p,W('own')-.1,.35)})},
+  /* 5 what Adapty sees */
   (g,p,d,T,W)=>{s8_panel(g,70,124,660,436,s8_AD,{pop:P(p,W('adapty')-.1,.35),body:(g,w,h)=>{
       txt(g,30,38,'WHAT ADAPTY SEES',{fs:20,w:800,m:1,c:s8_AD,al:'left'});
       txt(g,30,84,'already, on every subscriber',{fs:16,c:'176,188,214',al:'left',a:P(p,W('sees')-.3,.3)});
@@ -201,7 +266,7 @@ return rfRun({base:(g,t,c,T,i,A2)=>{const w=(j,s)=>A2(j,s)-c(j),p=t-c(i);
       rfBub(g,30,304,w-60,'I cancelled on the app, but it still tried to charge me after.',{me:1,fs:18,maxW:.9,pop:P(p,W('said')-.2,.35)});
       txt(g,30,388,'what fixed it',{fs:15,c:'176,188,214',al:'left',a:P(p,W('fixed')-.35,.3)});
       rfChip(g,30+188,416,'explained · granted · escalated',{c:rfGO,fs:18,pop:P(p,W('fixed')-.25,.35),mk:'v'})}})},
-  /* 5 the closer: 02:00, the review becomes a question and gets an answer; the founder sleeps */
+  /* 6 the closer: 02:00, the review becomes a question and gets an answer; the founder sleeps */
   (g,p,d,T,W)=>{const sw=P(p,W('becomes')-.1,.5),fl=Math.abs(1-2*sw),ans=P(p,W('and')-.05,.35),e=P(p,W('it')-.15,.45);
     rfChip(g,180,150,'02:00',{c:rfLUMG,fs:20,pop:P(p,W('two')-.15,.35),hot:P(p,W('two'),.3)*(1-P(p,W('two')+.9,.4)),a:1-e});
     const ph={w:296,h:384},pcx=640,pcy=378;
@@ -218,4 +283,4 @@ return rfRun({base:(g,t,c,T,i,A2)=>{const w=(j,s)=>A2(j,s)-c(j),p=t-c(i);
       for(let k=0;k<3;k++){const u=((T*.45+k/3)%1);txt(g,fx+18+u*30+k*6,fy-30-u*60,'z',{fs:18+k*5,d:1,w:800,c:'200,210,255',a:z*Math.sin(u*Math.PI)})}
       rfChip(g,Math.min(1120,fx+40),Math.max(200,fy-130),'founder · still asleep',{c:'200,210,255',fs:16,pop:P(p,W('morning')-.1,.35)})}
     s8_title(g,640,126,'Case Desk','',{a:e,fs:58})}
- ]},6)})()
+ ]},7)})()

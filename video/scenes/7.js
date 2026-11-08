@@ -5,7 +5,9 @@
                then three bug-bash agents (AI · UI · backend) with magnifiers walk in on the right, "37 found & fixed".
      C (x 7.5) the run wall: a big screen with 5,000 user dots lighting green, two server racks; the counter
                "5,000 users × every question = 63,296 runs · 0 crashes · 0 broken facts" (+ "544 tests").
-   Beats: 0 wide of the whole workshop, title · 1 zone A · 2 zone B then the trio · 3 zone C.
+   Beats: 0 wide of the whole workshop, title · 1 zone A · 2 zone B then the trio · 3 zone C ·
+   4 back to a wide, dimmed, with a Claude chat window on top: the REAL Claude Code transcript against Case Desk's MCP server
+   (docs/mcp/claude-code-transcripts.txt in case-desk), revealed on ask / waiting / approve; ends on a chip row before "chat".
    Light beat: one voter agent keeps its losing card up a moment too long, then droops (Bagley tilts at it).
    Agents are scene-local low-poly robots (s7_bot). Scene-local helpers are prefixed s7_. */
 (()=>{
@@ -80,6 +82,49 @@ const s7_wallFace=(x,W,H,f)=>{x.fillStyle='#0a1022';x.fillRect(0,0,W,H);x.fillSt
   const gx=W*.03,gy=H*.17,cw=(W*.94)/100,ch=(H*.79)/50;
   for(let k=0;k<5000;k++){const on=s7_ORD[k]<f;x.fillStyle=on?'#7ce3c6':'#26304f';x.fillRect(gx+(k%100)*cw,gy+Math.floor(k/100)*ch,cw*.66,ch*.66)}};
 
+/* ---- beat 4: the Claude chat window (dark, clean), centred at cx,cy, 700 x 440. Messages are the real Claude Code run
+   (case-desk docs/mcp/claude-code-transcripts.txt), trimmed but quoted exactly. Each message: [kind,text,revealWord,offset]. */
+const s7_MSG=[['me',"What is waiting for my OK in Case Desk?",'ask',-.1],
+  ['ai',["One courtesy grant is waiting for your OK:",["Who:","Ava (00239)"],["What:","3 days of Premium"],["Why:","Ava paid before, then the App Store couldn't take the renewal on 22 Oct 2026."]],'waiting',-.15],
+  ['me',"Approve Ava's grant",'approve',-.2],
+  ['tool',"approve_grant · confirm: true",'approve',.2],
+  ['ai',["I approved Ava's grant. Ava now has 3 days of Premium, running until 7 Nov 2026."],'it',.05]];
+const s7_claude=(g,cx,cy,o)=>{const {pop,T,W,p}=o;if(pop<=0)return;const w=760,h=420,x0=cx-w/2,y0=cy-h/2,FN='"IBM Plex Sans",sans-serif';
+  g.save();g.translate(cx,cy);const sc=bk(cl(pop));g.scale(sc,sc);g.translate(-cx,-cy);g.globalAlpha*=cl(pop*1.5);
+  g.shadowColor='rgba(0,0,0,.6)';g.shadowBlur=40;g.shadowOffsetY=12;g.beginPath();g.roundRect(x0,y0,w,h,18);g.fillStyle='#262624';g.fill();g.shadowColor='transparent';
+  g.lineWidth=1.2;g.strokeStyle='rgba(255,255,255,.12)';g.stroke();
+  /* header: clawd + "Claude", connector chip */
+  g.fillStyle='#1f1e1d';g.beginPath();g.roundRect(x0,y0,w,52,[18,18,0,0]);g.fill();g.fillStyle='rgba(255,255,255,.08)';g.fillRect(x0,y0+52,w,1);
+  logo(g,'clawd',x0+34,y0+26,34,{T});g.font=`600 21px ${FN}`;g.fillStyle='#f0eee6';g.textAlign='left';g.textBaseline='middle';g.fillText('Claude',x0+60,y0+27);
+  {const t='Case Desk · MCP';g.font=`600 14px ${FN}`;const cw=g.measureText(t).width+40,chx=x0+w-cw-16,hot=P(p,W('claude')-.1,.3)*(1-P(p,W('claude')+.9,.4));
+   g.beginPath();g.roundRect(chx,y0+12,cw,28,14);g.fillStyle='rgba(217,119,87,.16)';g.fill();g.lineWidth=1.4;g.strokeStyle=`rgba(217,119,87,${.7+.3*hot})`;
+   if(hot){g.shadowColor='rgba(217,119,87,.9)';g.shadowBlur=18*hot}g.stroke();g.shadowColor='transparent';
+   g.fillStyle='#7ce3c6';g.beginPath();g.arc(chx+15,y0+26,4.5,0,6.283);g.fill();g.fillStyle='#f5d0bf';g.fillText(t,chx+26,y0+27)}
+  /* input bar: the first question is typed here (from "plugs" to "ask"), then sent; the bar hides once the chat fills */
+  {const sent=P(p,W('ask')-.1,.3),ty=P(p,W('plugs')+.2,W('ask')-W('plugs')-.35),ba=1-sent;if(ba>0){const by=y0+h-62,q0=s7_MSG[0][1];g.save();g.globalAlpha*=ba;
+    g.beginPath();g.roundRect(x0+24,by,w-48,44,14);g.fillStyle='#30302e';g.fill();g.strokeStyle='rgba(255,255,255,.14)';g.lineWidth=1;g.stroke();
+    g.font=`400 18px ${FN}`;g.textAlign='left';const tt=q0.slice(0,Math.round(q0.length*ty));g.fillStyle=tt?'#f0eee6':'#8a877e';g.fillText(tt||'Reply to Claude…',x0+42,by+22);
+    if(tt&&((T*2)%1)<.6){g.fillStyle='#f0eee6';g.fillRect(x0+43+g.measureText(tt).width,by+11,2,22)}
+    g.fillStyle=ty>=1?'#d97757':'rgba(217,119,87,.4)';g.beginPath();g.roundRect(x0+w-66,by+7,30,30,8);g.fill();g.fillStyle='#fff';g.font=`700 16px ${FN}`;g.textAlign='center';g.fillText('↑',x0+w-51,by+23);g.restore()}}
+  /* messages */
+  const mx=x0+28,mw=w-56,fs=18,lh=25;let y=y0+70;
+  for(const [kind,text,wd,off] of s7_MSG){const q=P(p,W(wd)+off,.35);if(q<=0)break;
+    if(kind==='me'){g.font=`400 ${fs}px ${FN}`;const tw=g.measureText(text).width,bw=tw+30,bx=mx+mw-bw;g.save();g.globalAlpha*=q;
+      g.beginPath();g.roundRect(bx,y+(1-q)*8,bw,40,12);g.fillStyle='#141413';g.fill();g.fillStyle='#f0eee6';g.textAlign='left';g.fillText(text,bx+15,y+20+(1-q)*8);g.restore();y+=52}
+    else if(kind==='tool'){g.save();g.globalAlpha*=q;g.font=`500 14px "IBM Plex Mono",monospace`;const tw=g.measureText(text).width,bw=tw+46;
+      g.beginPath();g.roundRect(mx+30,y,bw,28,8);g.fillStyle='rgba(255,255,255,.05)';g.fill();g.strokeStyle='rgba(255,255,255,.16)';g.lineWidth=1;g.stroke();
+      g.fillStyle='#7ce3c6';g.font=`700 14px ${FN}`;g.fillText('✓',mx+42,y+15);g.fillStyle='#c9c6bc';g.font=`500 14px "IBM Plex Mono",monospace`;g.fillText(text,mx+60,y+15);g.restore();y+=38}
+    else{/* Claude: spark mark + plain text, streamed in line by line */
+      g.save();g.globalAlpha*=cl(q*3);logo(g,'claude',mx+9,y+12,22,{T,a:1});g.restore();
+      const rows=[];text.forEach((ln,k)=>{if(typeof ln==='string'){g.font=`400 ${fs}px ${FN}`;rfWrap(g,ln,mw-32).forEach(l=>rows.push(['',l,0]))}
+        else{g.font=`700 ${fs}px ${FN}`;const bw=g.measureText(ln[0]+' ').width;g.font=`400 ${fs}px ${FN}`;rfWrap(g,ln[1],mw-32-18-bw).forEach((l,j)=>rows.push([j?'':ln[0],l,j?bw:0,1,bw]))}});
+      const nShow=P(p,W(wd)+off,.25+rows.length*.09)*rows.length;
+      rows.forEach(([lab,l,ind,bul,bw],k)=>{const a=cl(nShow-k);if(a<=0)return;g.save();g.globalAlpha*=a;const tx=mx+32+(bul?18:0);g.fillStyle='#e8e5dc';g.textAlign='left';
+        if(bul&&lab){g.fillStyle='#d97757';g.beginPath();g.arc(mx+38,y+lh*k+12,2.8,0,6.283);g.fill();g.fillStyle='#f0eee6';g.font=`700 ${fs}px ${FN}`;g.fillText(lab,tx,y+lh*k+12)}
+        g.font=`400 ${fs}px ${FN}`;g.fillStyle='#e8e5dc';g.fillText(l,tx+(bul?bw:0),y+lh*k+12);g.restore()});
+      y+=rows.length*lh+16}}
+  g.restore()};
+
 /* ================= the workshop stage ================= */
 const S7=X3.stage('s7-workshop',K=>{const s=K.scene({fov:35}),lp=LP3.world(K,s,{mood:'interior',clouds:0,shadow:16,sunDir:[4,10,8]}),P=lp.P,M=LP3.mat,G=LP3.geo;
   const cam=s.userData.cam;s.add(cam);const o={scene:s,lp,P,camera:cam,alive:[]};const R=(f,x,y,z,ry=0)=>{const m=K.add(s,f,x,y,z);m.rotation.y=ry;return m};
@@ -136,7 +181,7 @@ const S7=X3.stage('s7-workshop',K=>{const s=K.scene({fov:35}),lp=LP3.world(K,s,{
   LP3.shadows(s);return o});
 
 /* camera shots [pos, target] per beat; beat 2 drifts right to the trio after "three" */
-const s7_SH=[[0,4.2,15.5,0,1.5,-1.2],[s7_AX+.3,3.4,6.3,s7_AX+.3,1.2,-.6],[s7_BX+.4,2.9,6.6,s7_BX+.4,1.05,-.5],[s7_CX,2.4,6.4,s7_CX,1.9,-2.6]];
+const s7_SH=[[0,4.2,15.5,0,1.5,-1.2],[s7_AX+.3,3.4,6.3,s7_AX+.3,1.2,-.6],[s7_BX+.4,2.9,6.6,s7_BX+.4,1.05,-.5],[s7_CX,2.4,6.4,s7_CX,1.9,-2.6],[s7_BX+1.2,3.9,13.5,s7_BX+1.2,1.4,-1.4]];
 const s7_B2=[s7_BX+2.0,2.8,6.6,s7_BX+2.3,1.25,-.3];
 const s7_lerp=(a,b,q)=>a.map((v,j)=>L(v,b[j],q));
 const s7_pose=(o,t,c,i,T,w)=>{const p=t-c(i);o.lp.pose(T);for(const a of o.alive)if(a.userData.pose)a.userData.pose(T);
@@ -163,7 +208,7 @@ const s7_pose=(o,t,c,i,T,w)=>{const p=t-c(i);o.lp.pose(T);for(const a of o.alive
   const tri=i<2?0:i>2?1:P(p,w(2,'bugbash')-.3,.6),found=i===2?P(p,w(2,'found'),.8):i>2?1:0;
   o.bugs.forEach((b,k)=>{const e=sm(cl(tri*1.6-k*.3));b.visible=e>0;b.position.x=s7_BX+2.5+k*1.0+(1-e)*2.5;b.userData.pose(T,{ph:k*2,arms:e>.9?'lens':'idle',lift:found>0&&found<1?.6:0,look:-.2+.3*Math.sin(T*.8+k)})});
   /* zone C: the wall fills, watchers cheer at the end */
-  const f=i<3?0:P(p,w(3,'five')-.2,w(3,'runs')-w(3,'five')+.2);
+  const f=i<3?0:i>3?1:P(p,w(3,'five')-.2,w(3,'runs')-w(3,'five')+.2);
   rfPaint(o.wallTx,'w'+Math.round(f*60),(x,W,H)=>s7_wallFace(x,W,H,Math.round(f*60)/60));
   const ch=i===3?P(p,w(3,'facts')-.3,.3):0;
   o.watch.forEach((b,k)=>b.userData.pose(T,{ph:k*3,arms:ch>.5?'cheer':'idle',lift:ch>.5?1:0,look:0}));
@@ -205,5 +250,15 @@ return rfRun({base:(g,t,c,T,i,A2)=>{const w=(j,s)=>A2(j,s)-c(j);X3.draw(g,S7,o=>
       txt(g,640,276,'63,296',{fs:86,d:1,w:800,c:rfGOLD,a:r,glow:16});txt(g,640,336,'runs',{fs:22,c:PA,a:r})}
     rfStat(g,500,470,'0','crashes',{c:rfGO,pop:P(p,W('crashes')-.2,.4),w:210,h:116,fs:56});
     rfStat(g,780,470,'0','broken facts',{c:rfGO,pop:P(p,W('broken')-.2,.4),w:210,h:116,fs:56,hot:P(p,W('facts'),.3)*(1-P(p,W('facts')+1.2,.4))});
-    rfChip(g,640,555,'+ 544 automated tests',{c:CY,fs:15,pop:P(p,W('facts')+.3,.4)})}
- ]},4)})()
+    rfChip(g,640,555,'+ 544 automated tests',{c:CY,fs:15,pop:P(p,W('facts')+.3,.4)})},
+  /* 4 Claude + MCP: a Claude chat window over the dimmed workshop; the real transcript (trimmed, quoted exactly) */
+  (g,p,d,T,W)=>{const a0=P(p,.05,.5),pop=P(p,W('plugs')-.1,.45);
+    /* dim the workshop, lighter toward Bagley's corner */
+    g.save();g.globalAlpha*=a0;const vg=g.createRadialGradient(560,340,120,560,340,760);vg.addColorStop(0,'rgba(8,8,14,.74)');vg.addColorStop(.75,'rgba(8,8,14,.55)');vg.addColorStop(1,'rgba(8,8,14,.2)');
+    g.fillStyle=vg;g.fillRect(0,0,1280,720);g.restore();
+    s7_claude(g,560,322,{pop,T,W,p});
+    /* calm end: the chip row (the server has 7 tools at HEAD, not 9, so no number) */
+    const cr=P(p,W('from')-.1,.4);[['MCP server',rfDESK],['works with Claude Code & Desktop','217,119,87'],['you still confirm',rfGO]].reduce((x,[t,c],k)=>{
+      g.save();g.font=F({fs:14,w:600});const cw=g.measureText(t).width+14*2.4;g.restore();rfChip(g,x+cw/2,555,t,{c,fs:14,pop:P(cr,k*.18,.5)});return x+cw+12},
+      560-(3*12+[ 'MCP server','works with Claude Code & Desktop','you still confirm'].reduce((s,t)=>{g.save();g.font=F({fs:14,w:600});const v=g.measureText(t).width+14*2.4;g.restore();return s+v},0)-12)/2)},
+ ]},5)})()

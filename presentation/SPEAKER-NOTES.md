@@ -4,7 +4,7 @@ Read the plain text. Lines in [brackets] are actions, not words. [click] = press
 
 The deck shows these notes with N (bottom panel + timer) or P (separate presenter window for a second screen).
 
-Spoken before the video: ≈96 s. After the video: ≈75 s. Video ≈3:04. Whole slot ≈5 min + Q&A.
+Spoken before the video: ≈96 s. After the video: ≈90 s. Video ≈3:04. Whole slot ≈5 min + Q&A.
 
 ## 1. title — ≈19 s (46 words)
 
@@ -49,16 +49,16 @@ Code sorts the profile into one of thirteen states; a fixed table picks the acti
 Two real Adapty calls: read the profile, grant an access level. [click]
 And the grant only comes from the console, re-checked when you approve.
 
-## 8. real — ≈29 s (70 words)
+## 8. real — ≈41 s (99 words)
 
 And to be honest about what's real today. [click]
-The live demo server runs real Claude, and there are 558 automated tests. [click]
+The live demo runs real Claude and checks every reply. You choose the rules for what it does alone, you can run it from Claude through our MCP server, your team gets suggested replies, and there are over seven hundred automated tests. [click]
 The Adapty side is a mock server with Adapty's Lumen hackathon data; our client is built for the real API v2; switching is a config change, but we have not run it against a live Adapty account yet. The seeded console cases are scripted text through the real engine.
 
-## 9. next — ≈18 s (43 words)
+## 9. next — ≈21 s (50 words)
 
 What's next? [click]
-A real Adapty app, with keys and webhooks. A tab in the Adapty dashboard. An add-on like Refund Saver; the price is Adapty's call. The complaint signal across apps. And more languages tested. [click]
+A real Adapty app, with keys and webhooks. A tab in the Adapty dashboard. An add-on like Refund Saver; the price is Adapty's call. The complaint signal across apps. Search, paging and assignment for bigger teams. And more languages tested. [click]
 Thank you. We're happy to take your questions.
 
 ## Likely jury questions (short, honest answers)

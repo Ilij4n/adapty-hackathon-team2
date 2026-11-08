@@ -4,7 +4,7 @@ Read the plain text. Lines in [brackets] are actions, not words. [click] = press
 
 The deck shows these notes with N (bottom panel + timer) or P (separate presenter window for a second screen).
 
-Spoken before the video: ≈86 s. After the video: ≈108 s. Video ≈3:04. Whole slot ≈5 min + Q&A.
+Spoken before the video: ≈92 s. After the video: ≈108 s. Video ≈3:04. Whole slot ≈5 min + Q&A.
 
 ## 1. title — ≈19 s (46 words)
 
@@ -25,9 +25,9 @@ Two: free premium only goes out with your OK, or under a rule you set. Privacy r
 Three: the whole support desk works from inside Claude. You can approve a grant, answer a subscriber or close a case, over MCP.
 In the video, the app is Lumen, Adapty's own test app. Watch for Marko, who writes in Serbian, then Lucía and Ava.
 
-## 4. watch — ≈2 s (6 words)
+## 4. watch — ≈8 s (20 words)
 
-That's all you need. Three minutes.
+And now you'll see something special. Our demo, told by our own AI: Bagley built this video, start to finish.
 [→ starts the video right here: same frame, it pulls into focus]
 
 ## 5. video — VIDEO (≈3:04, narrated)

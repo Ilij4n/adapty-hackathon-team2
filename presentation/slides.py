@@ -47,9 +47,9 @@ Three: the whole support desk works from inside Claude. You can approve a grant,
 In the video, the app is Lumen, Adapty's own test app. Watch for Marko, who writes in Serbian, then Lucía and Ava."""),
 
 dict(id="watch", bg="live", secs=5, html="""
-<h1 class="mega sm">Watch it.</h1>
-<p class="lead">Three minutes, twenty seconds.</p>
-""", notes="""That's all you need. Three minutes.
+<h1 class="mega sm">And now, something special.</h1>
+<p class="lead">Our demo, told by our own AI. Three minutes, twenty seconds.</p>
+""", notes="""And now you'll see something special. Our demo, told by our own AI: Bagley built this video, start to finish.
 [→ starts the video right here: same frame, it pulls into focus]"""),
 
 dict(id="video", bg=None, secs=0, video=True, html="", notes="""[The video plays by itself. Don't talk over it; it is narrated.]

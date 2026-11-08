@@ -98,3 +98,10 @@
 }
 #detail .tc-err[hidden], #detail .tc-warn[hidden] { display: none; }
 #detail .tc-warn { font-size: var(--t-s); }
+
+/* the reason a person must answer (was v2's "A person needs to answer this" box), one line above the hint */
+#detail .tc-why {
+  display: flex; flex-wrap: wrap; gap: .2em .9em; margin: 0 0 2px; padding-inline-start: calc(1em + 2px);
+  font-size: .9em; line-height: 1.35; font-weight: 600; color: var(--ink);
+}
+#detail .tc-why .bad { color: var(--coral); }

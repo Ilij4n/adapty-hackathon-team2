@@ -10,7 +10,7 @@
    kicker, "<Name> gets premium for 3 days. Nothing else changes.", and the "Also waiting" heading (kept for screen
    readers). The DOM contract is untouched: dock.js changes words, not buttons. */
 
-.dock { --hint-w: 9.5rem; }
+.dock { --hint-w: 10.5rem; }
 
 .dock:not(.is-empty) .q-days,
 #queue .q-kick,
@@ -22,28 +22,28 @@
 
 /* the count: amber, a step above the console's body */
 .dock:not(.is-empty) .dock-head { padding: 2px 0 0; }
-.dock:not(.is-empty) .dock-head h2 { font-size: 16px; line-height: 1.3; white-space: nowrap; }
+.dock:not(.is-empty) .dock-head h2 { font-size: 19px; line-height: 1.3; white-space: nowrap; }
 
 /* the request in front: who and what, then why */
 #queue .q-item.big { padding: 0; gap: 0; }
 #queue .q-body { gap: 1px; }
-#queue .big .q-l1 { font-size: 16px; line-height: 1.3; gap: 0 10px; }
-#queue .big .q-l1 .uid { font-size: 13px; }
+#queue .big .q-l1 { font-size: 19px; line-height: 1.3; gap: 0 10px; }
+#queue .big .q-l1 .uid { font-size: 14px; }
 #queue .q-why {
-  max-width: 68ch; font-size: 14px; line-height: 1.4; color: var(--ink-2); text-wrap: pretty;
+  max-width: 68ch; font-size: 16px; line-height: 1.4; color: var(--ink-2); text-wrap: pretty;
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
 }
 #queue .grant-row { flex-wrap: nowrap; gap: 8px; }
-#queue .btn.approve.big { min-height: 40px; padding: 0 18px; font-size: 15px; border-radius: var(--r-ctl); white-space: nowrap; }
-#queue .big .btn.deny { min-height: 40px; padding: 0 16px; font-size: 14px; }
-#queue .q-item .hint { font-size: 12.5px; line-height: 1.35; color: var(--ink-3); text-wrap: balance; }
+#queue .btn.approve.big { min-height: 48px; padding: 0 26px; font-size: 17px; border-radius: var(--r-ctl); white-space: nowrap; }
+#queue .big .btn.deny { min-height: 48px; padding: 0 22px; font-size: 16px; }
+#queue .q-item .hint { font-size: 14px; line-height: 1.35; color: var(--ink-3); text-wrap: balance; }
 #queue .q-item .fail, #queue .q-item .refused { font-size: var(--t-s); }
 
 /* the rest: one short row each */
 #queue .q-rest { margin-top: 10px; }
 #queue .q-item.row { gap: 4px 12px; padding: 5px 0; }
-#queue .q-item.row .q-l1 { font-size: 14px; }
-#queue .q-item.row .btn { min-height: 30px; padding: 0 10px; font-size: var(--t-s); }
+#queue .q-item.row .q-l1 { font-size: 16px; }
+#queue .q-item.row .btn { min-height: 38px; padding: 0 14px; font-size: 15px; }
 
 /* after the click: one green line */
 #queue .q-done { padding: 0; }
@@ -66,7 +66,7 @@
   #queue .q-item.big > .hint { grid-area: hint; }
   #queue .q-item.big > .fail, #queue .q-item.big > .refused { grid-column: 1 / -1; margin: 0; }
   #queue .q-rest { border: 0; padding: 0; }
-  #queue .q-rows { max-height: calc(3 * 41px); overflow-y: auto; }   /* three rows, then the list scrolls */
+  #queue .q-rows { max-height: calc(3 * 49px); overflow-y: auto; }   /* three rows, then the list scrolls */
   #queue .q-item.row { margin-inline: -8px; padding-inline: 8px; border-top: 1px solid var(--line); }
   @container (min-width: 700px) {
     /* one row: the reason sits right before the button, the hint right after it */
@@ -91,3 +91,8 @@
   #queue .q-item.row { padding: 4px 0; border-top: 1px solid var(--line); }
   #queue .q-item.row .btn { min-height: 44px; }
 }
+
+/* Ilijan: the Give button in a lighter amber fill (dark text keeps it readable), a touch lighter again on hover */
+#queue .btn.approve, #queue .btn.approve.big { background: #ffc785; border-color: #ffc785; color: #241400; }
+#queue .btn.approve:hover:not([disabled]) { background: #ffd6a3; border-color: #ffd6a3; }
+#queue .btn.approve:active:not([disabled]) { background: #f5b86e; border-color: #f5b86e; }

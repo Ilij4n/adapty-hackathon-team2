@@ -240,6 +240,14 @@
       const sug = pn && !answered && s0 && typeof s0.text === "string" && s0.text.trim() ? { ...s0, text: s0.text.trim() } : null;
       const turns = document.querySelector("#detail .transcript .turns");
       if (turns) turns.after(composer(c, sug));
+      // the "A person needs to answer this" box leaves too (Ilijan: the hint is enough); its reasons become one short
+      // line above the composer's hint, the injection warning in coral
+      if (pn) {
+        const why = [...pn.querySelectorAll(".alerts li")].map((li) => ({ bad: li.classList.contains("bad"), text: li.textContent.trim() })).filter((x) => x.text);
+        const tc = document.querySelector("#detail .tc");
+        if (why.length && tc) { const w = h.el("p", "tc-why"); why.forEach((x) => w.append(h.el("span", x.bad ? "bad" : null, x.text))); tc.prepend(w); }
+        pn.remove();
+      }
       if (focus) { const n = document.getElementById(focus.id); if (n) { n.focus({ preventScroll: true }); try { n.setSelectionRange(focus.a, focus.b); } catch { /* */ } } }
       if (keep && box) { box.scrollTop = keep[0]; box.querySelectorAll(".scroll").forEach((n, i) => { n.scrollTop = keep[i + 1] || 0; }); }
       if (same && Math.abs(window.scrollY - wy) > 1) window.scrollTo(0, wy);

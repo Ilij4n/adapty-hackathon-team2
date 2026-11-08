@@ -62,10 +62,45 @@ are filled from each case's FactSheet and must pass the validator; if one fails,
 Seeding never calls an LLM. Ava (00239), Marko (00009) and the other `/help` picker users are never seeded, so the
 live demo starts clean. Running it twice adds nothing; `--reset` removes and re-adds only the seeded cases.
 
+## Use it from Claude (MCP)
+
+`casedesk/mcp_server.py` is an MCP server, so you can run your support from Claude Code or Claude Desktop. You can
+ask what is waiting for your OK, which cases need a person, or what happened in a case, and approve or deny a
+grant. It calls a running Case Desk's console API. You still make the decision: approving or denying needs your OK
+in the client, and the call must also include `confirm: true`. Without it nothing changes. No tool sends anything to
+a subscriber.
+
+Tools: `waiting_for_my_ok`, `needs_a_person`, `list_cases(filter, limit)`, `get_case(case_id)`, `daily_summary(hours)`,
+`approve_grant(approval_id, confirm)`, `deny_grant(approval_id, confirm, reason?)`.
+
+```bash
+uv sync --extra mcp
+claude mcp add casedesk -e CASEDESK_URL=http://127.0.0.1:8100 -e CASEDESK_CONSOLE_TOKEN=demo-console \
+  -e PYTHONPATH="$(pwd)" -- "$(pwd)/.venv/bin/python" -m casedesk.mcp_server
+claude "What is waiting for my OK in Case Desk?"
+```
+
+Claude Desktop (`claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "casedesk": {
+      "command": "/path/to/case-desk/.venv/bin/python",
+      "args": ["-m", "casedesk.mcp_server"],
+      "env": {"PYTHONPATH": "/path/to/case-desk", "CASEDESK_URL": "http://127.0.0.1:8100",
+              "CASEDESK_CONSOLE_TOKEN": "demo-console"}
+    }
+  }
+}
+```
+
+`demo-console` is the demo token. Against a real deployment, use its `CONSOLE_TOKEN`.
+
 ## Tests
 
 ```bash
-uv run pytest -q                                      # 558 tests; 2 skip without the organisers' seed repo
+uv run pytest -q                                      # 571 tests; 2 skip without the organisers' seed repo
 uv run playwright install chromium && uv run python tests/e2e_ui.py   # UI end-to-end
 uv run python eval/run_eval.py --backend claude-cli --concurrency 4  # live eval with real Claude
 ```

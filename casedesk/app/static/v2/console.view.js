@@ -193,7 +193,7 @@ window.CaseDeskConsoleView = (h) => {
     const dock = $("#dock");
     const days = pend.reduce((n, a) => n + (a.days || 3), 0);
     $("#qCount").textContent = pend.length;
-    $("#qWord").textContent = pend.length ? "waiting for your OK" : "Nothing else waiting";
+    $("#qWord").textContent = pend.length ? "waiting for your OK" : done.length ? "Nothing else waiting" : "Nothing waiting for your OK";
     $("#qCount").hidden = !pend.length;
     $("#qDays").textContent = pend.length ? `${days} ${days === 1 ? "day" : "days"} of premium asked for` : "";
     $("#qEmpty").hidden = pend.length > 0 || done.length > 0;

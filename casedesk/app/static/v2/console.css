@@ -423,6 +423,7 @@
   .dock .q-rows { max-height: 170px; overflow-y: auto; }  /* three rows, then the list scrolls inside the sheet */
   .btn, .q-item.row .btn { min-height: 44px; }
   .ev-toggle { min-height: 40px; }
+  .detail:not(.ev-open) .inspector { height: 0; overflow: hidden; border: 0; padding: 0; }
 }
 @media (max-width: 420px) {
   .ro-line { font-size: 22px; }

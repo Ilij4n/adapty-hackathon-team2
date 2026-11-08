@@ -151,3 +151,8 @@ Touch up anything you think needs it, in `static/v6/` (keep the DOM contract in 
 must print E2E OK). If you change `v2/console.html` or `v2/help.html`, mirror the change into `v6/`.
 
 Checks at this commit: `tests/e2e_ui.py --variant 6`: E2E OK (combined composer, ghost text, width, help fix).
+
+**Later tweaks (Ilijan, ~13:15):** the decision footer got bigger type (who/what 19px, reason 16px, hint 14px) and
+48px buttons, and the Give button a lighter amber fill (`#ffc785`, dark text). v2's "A person needs to answer this"
+box is gone in v6: its reason lines become one bold line (`.tc-why`) right above the composer's hint (the injection
+warning in coral). E2E `--variant 6` OK after these.
